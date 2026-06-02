@@ -1,0 +1,23 @@
+{
+  "name": "Bellepros Piri Rush",
+  "short_name": "Piri Rush",
+  "description": "Run, catch piri-piri chickens, earn real Bellepros rewards! Proudly Montreal.",
+  "start_url": "/",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#14080A",
+  "theme_color": "#E8192C",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "screenshots": [
+    { "src": "assets/screenshot-1.png", "sizes": "390x844", "type": "image/png", "form_factor": "narrow" }
+  ],
+  "categories": ["games"],
+  "lang": "en-CA",
+  "related_applications": [
+    { "platform": "play", "url": "https://play.google.com/store/apps/details?id=com.bellepros.piri_rush" },
+    { "platform": "itunes", "url": "https://apps.apple.com/ca/app/bellepros-piri-rush/id000000000" }
+  ]
+}

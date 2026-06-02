@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#E8192C">
+  <meta name="description" content="Bellepros Piri Rush — Run, catch piri-piri chickens, earn real rewards at Bellepros! Proudly Montreal.">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Bellepros Piri Rush 🍗🔥">
+  <meta property="og:description" content="Catch piri-piri chickens, earn real Bellepros rewards! Free to play.">
+  <meta property="og:type" content="game">
+
+  <title>Bellepros Piri Rush</title>
+  <link rel="stylesheet" href="css/main.css">
+
+  <!-- PWA manifest -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/icon-192.png">
+</head>
+<body>
+
+<div id="game-container">
+  <!-- ══ CANVAS (game world renders here) ══ -->
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- ══ SCREEN: GAME (transparent HUD) ══ -->
+  <div id="screen-game" class="screen">
+    <button id="pause-btn" aria-label="Pause">⏸</button>
+  </div>
+
+  <!-- ══ SCREEN: MENU ══ -->
+  <div id="screen-menu" class="screen">
+    <!-- Top bar -->
+    <div class="menu-top">
+      <div class="menu-player-info">
+        <span id="menu-level" class="menu-level">Level 1</span>
+        <span id="menu-tier" class="menu-tier">Bronze</span>
+      </div>
+      <div id="menu-coins" class="menu-coins-display">🪙 0</div>
+    </div>
+
+    <!-- XP bar -->
+    <div class="menu-xp-bar">
+      <div id="menu-xp-bar-fill" class="menu-xp-bar-fill" style="width:0%"></div>
+    </div>
+
+    <!-- Piri Zone indicator -->
+    <div id="piri-zone-indicator"></div>
+
+    <!-- Character display -->
+    <div class="menu-character">
+      <div id="menu-char-emoji" class="menu-char-emoji-display">👨‍🍳</div>
+      <div id="menu-char-name" class="menu-char-name">Classic Chef</div>
+    </div>
+
+    <!-- Logo -->
+    <div class="menu-logo">
+      <div class="logo-brand">bellepros</div>
+      <div class="logo-title">PIRI<br>RUSH</div>
+      <div class="logo-tagline">Catch the heat. Run the streets.</div>
+    </div>
+
+    <!-- Bottom panel -->
+    <div class="menu-bottom">
+      <!-- Sponsored challenge -->
+      <div class="sponsored-challenge" id="sponsored-challenge"></div>
+
+      <!-- PLAY button -->
+      <button class="btn-play btn-glow" onclick="Audio.init(); game.startRun();">▶ PLAY</button>
+
+      <!-- Nav buttons -->
+      <div class="menu-nav-row">
+        <button class="btn-nav" onclick="Audio.play('button'); Screens.show('characters');">
+          <span class="nav-icon">👨‍🍳</span>
+          CHEFS
+        </button>
+        <button class="btn-nav" onclick="Audio.play('button'); Screens.show('missions');" style="position:relative">
+          <span class="nav-icon">🎯</span>
+          MISSIONS
+          <div id="missions-badge" class="badge" style="display:none">!</div>
+        </button>
+        <button class="btn-nav" onclick="Audio.play('button'); Screens.show('social');" style="position:relative">
+          <span class="nav-icon">👥</span>
+          SOCIAL
+          <div id="social-badge" class="badge" style="display:none">!</div>
+        </button>
+        <button class="btn-nav" onclick="Audio.play('button'); Screens.show('leaderboard');">
+          <span class="nav-icon">🏆</span>
+          RANKS
+        </button>
+      </div>
+
+      <div class="menu-bottom-row">
+        <button class="btn-secondary" onclick="Audio.play('button'); Screens.show('shop');">🪙 Piri Shop</button>
+        <button class="btn-secondary" onclick="Audio.play('button'); Screens.show('ar');">📱 AR Mode</button>
+      </div>
+
+      <div class="menu-bottom-row">
+        <button class="btn-secondary" onclick="Audio.play('button'); Screens.show('store');">🌶️ Spicy Pass</button>
+        <button class="btn-secondary" onclick="Audio.play('button'); Screens.show('settings');">⚙️ Settings</button>
+      </div>
+
+      <div class="menu-footer">Proudly Montreal 🍁 &nbsp;·&nbsp; v1.0.0</div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: PAUSE ══ -->
+  <div id="screen-pause" class="screen">
+    <div class="pause-panel">
+      <div class="pause-title">⏸ PAUSED</div>
+      <button id="pause-resume-btn" class="btn-primary">▶ Resume</button>
+      <button id="pause-mute-btn" class="btn-outline" style="width:100%">🔇 Mute</button>
+      <button id="pause-menu-btn" class="btn-outline" style="width:100%">🏠 Main Menu</button>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: RESULTS ══ -->
+  <div id="screen-results" class="screen">
+    <div class="results-backdrop"></div>
+    <div class="results-panel" style="margin-top:auto">
+      <div class="results-title">Run Complete</div>
+
+      <div class="results-score-block">
+        <div class="results-score-label">Score</div>
+        <div id="results-score" class="results-score-value">0</div>
+        <div id="results-is-best" class="results-new-best" style="display:none">🏆 NEW BEST!</div>
+      </div>
+
+      <div class="results-stats-grid">
+        <div class="results-stat">
+          <div id="results-streak" class="results-stat-value">0x</div>
+          <div class="results-stat-label">Best Streak</div>
+        </div>
+        <div class="results-stat">
+          <div id="results-chickens" class="results-stat-value">0</div>
+          <div class="results-stat-label">Chickens</div>
+        </div>
+        <div class="results-stat">
+          <div id="results-coins-count" class="results-stat-value">0</div>
+          <div class="results-stat-label">Coins</div>
+        </div>
+      </div>
+
+      <div class="results-xp-coins">
+        <div id="results-xp" class="results-xp">+0 XP</div>
+        <div id="results-coins" class="results-coins-earned">🪙 0</div>
+      </div>
+
+      <div id="results-piri-bonus" class="results-piri-bonus"></div>
+      <div id="results-levelups" class="results-levelups"></div>
+
+      <div class="results-actions">
+        <!-- Revive with ad -->
+        <button id="revive-btn" class="btn-primary revive-btn" style="display:none">
+          📺 Watch Ad → Revive
+        </button>
+
+        <button id="results-play-again" class="btn-primary btn-glow">▶ Play Again</button>
+
+        <div class="results-bottom-row">
+          <button id="results-menu" class="btn-outline">🏠 Menu</button>
+          <button id="results-share" class="btn-outline">📤 Share</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: CHARACTERS ══ -->
+  <div id="screen-characters" class="screen">
+    <div class="screen-header">
+      <button id="char-back" class="btn-back">←</button>
+      <div class="screen-title">Chef Selection 👨‍🍳</div>
+    </div>
+    <div class="screen-scroll">
+      <div id="char-grid"></div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: SHOP ══ -->
+  <div id="screen-shop" class="screen">
+    <div class="screen-header">
+      <button id="shop-back" class="btn-back">←</button>
+      <div class="screen-title">Piri Shop 🛒</div>
+    </div>
+    <div class="shop-header-stats">
+      <span>Balance:</span>
+      <span id="shop-coins" class="shop-coins-display">0</span>
+      <span id="shop-tier" class="shop-tier-badge">Bronze</span>
+    </div>
+    <div class="screen-scroll">
+      <div class="card-title" style="padding: 16px 0 8px">Redeem Rewards</div>
+      <div id="shop-items"></div>
+      <div class="shop-actions">
+        <button id="shop-store-btn" class="btn-secondary">💎 Buy Coins</button>
+        <button id="shop-history-btn" class="btn-secondary">📋 My Rewards</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: REWARDS HISTORY ══ -->
+  <div id="screen-rewards" class="screen">
+    <div class="screen-header">
+      <button id="rewards-back" class="btn-back">←</button>
+      <div class="screen-title">My Rewards 🎫</div>
+    </div>
+    <div class="screen-scroll">
+      <div id="rewards-list"></div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: MISSIONS ══ -->
+  <div id="screen-missions" class="screen">
+    <div class="screen-header">
+      <button id="missions-back" class="btn-back">←</button>
+      <div class="screen-title">Missions 🎯</div>
+    </div>
+    <div class="screen-scroll">
+      <div class="mission-section-title">Daily Missions</div>
+      <div id="daily-missions"></div>
+      <div class="mission-section-title">Weekly Challenges</div>
+      <div id="weekly-missions"></div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: SOCIAL ══ -->
+  <div id="screen-social" class="screen">
+    <div class="screen-header">
+      <button id="social-back" class="btn-back">←</button>
+      <div class="screen-title">Social 👥</div>
+    </div>
+    <div class="screen-scroll">
+      <!-- Referral -->
+      <div class="social-section">
+        <div class="social-section-title">Referral Program</div>
+        <div class="referral-box">
+          <div class="referral-desc">Share your code. Both players get a Legendary Chicken! 🍗👑</div>
+          <div id="referral-code" class="referral-code">PIRI-XXXX</div>
+          <button id="copy-referral" class="btn-primary" style="width:100%">📋 Copy & Share</button>
+          <div class="referral-input-row" style="margin-top:12px">
+            <input id="referral-input" class="input-text" type="text" placeholder="Enter friend's code" maxlength="11">
+            <button id="redeem-referral-btn" class="btn-primary btn-sm">Redeem</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pending challenges -->
+      <div class="social-section">
+        <div class="social-section-title">Challenges</div>
+        <div id="pending-challenges"></div>
+        <div style="display:flex;gap:8px">
+          <button id="challenge-send-btn" class="btn-secondary" style="flex:1">⚔️ Send Challenge</button>
+          <button id="simulate-challenge" class="btn-secondary" style="flex:1">📨 Simulate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: LEADERBOARD ══ -->
+  <div id="screen-leaderboard" class="screen">
+    <div class="screen-header">
+      <button id="lb-back" class="btn-back">←</button>
+      <div class="screen-title">Top Runners 🏆</div>
+      <button id="challenge-top" class="btn-secondary" style="font-size:11px;padding:8px 10px">⚔️ Challenge</button>
+    </div>
+    <div class="screen-scroll" style="padding:0">
+      <div id="leaderboard-list"></div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: SETTINGS ══ -->
+  <div id="screen-settings" class="screen">
+    <div class="screen-header">
+      <button id="settings-back" class="btn-back">←</button>
+      <div class="screen-title">Settings ⚙️</div>
+    </div>
+    <div class="screen-scroll">
+      <div class="card">
+        <div class="card-title">Audio</div>
+        <div class="settings-item">
+          <div>
+            <div class="settings-label">Music & Sounds</div>
+          </div>
+          <button id="settings-mute" class="btn-secondary" style="white-space:nowrap">🔇 Mute</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Profile</div>
+        <div class="settings-item">
+          <div style="flex:1">
+            <div class="settings-label">Player Name</div>
+            <input id="settings-name" class="input-text" type="text" placeholder="Your name" maxlength="20" style="margin-top:8px;width:100%">
+          </div>
+        </div>
+        <button id="settings-save-name" class="btn-primary" style="margin-top:8px">Save Name</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Permissions</div>
+        <div class="settings-item">
+          <div>
+            <div class="settings-label">Push Notifications</div>
+            <div class="settings-desc">Mission reminders, Piri Zone alerts</div>
+          </div>
+          <button id="settings-notif" class="btn-secondary">Enable</button>
+        </div>
+        <div class="settings-item">
+          <div>
+            <div class="settings-label">Simulate Piri Zone</div>
+            <div class="settings-desc">Test location features</div>
+          </div>
+          <button id="settings-geo" class="btn-secondary">Test</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Legal</div>
+        <div class="settings-item">
+          <div class="settings-label">Privacy Policy (GDPR / Bill 25)</div>
+          <button id="settings-privacy" class="btn-secondary">View</button>
+        </div>
+      </div>
+
+      <div class="card" style="border-color:rgba(232,25,44,0.3)">
+        <div class="card-title" style="color:var(--primary)">Danger Zone</div>
+        <button id="settings-reset" class="btn-outline" style="width:100%;border-color:rgba(232,25,44,0.4);color:var(--primary)">
+          🗑️ Reset All Progress
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: IN-APP STORE ══ -->
+  <div id="screen-store" class="screen">
+    <div class="screen-header">
+      <button id="store-back" class="btn-back">←</button>
+      <div class="screen-title">Spicy Pass 🌶️</div>
+    </div>
+    <div class="screen-scroll">
+      <!-- Spicy Pass -->
+      <div id="spicy-pass-card" class="spicy-pass-card"></div>
+
+      <!-- Coin bundles -->
+      <div class="store-section-title">Piri Coins</div>
+      <div id="coin-bundles"></div>
+
+      <!-- Skin packs -->
+      <div class="store-section-title">Chef Bundles</div>
+      <div id="skin-bundles"></div>
+
+      <div style="text-align:center;margin-top:16px">
+        <button id="store-restore" class="btn-outline" style="width:auto;padding:10px 24px;font-size:12px">
+          Restore Purchases
+        </button>
+      </div>
+
+      <div style="font-size:10px;color:var(--text-muted);text-align:center;margin-top:12px;line-height:1.6">
+        Subscriptions auto-renew unless cancelled 24h before renewal period.<br>
+        Manage subscriptions in your App Store / Google Play account.<br>
+        Privacy Policy · Terms of Service
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: AR MODE ══ -->
+  <div id="screen-ar" class="screen">
+    <video id="ar-video" playsinline muted></video>
+    <canvas id="ar-canvas"></canvas>
+    <div class="ar-controls">
+      <button id="ar-close-btn" class="ar-btn">✕ Exit AR</button>
+      <button id="ar-photo-btn" class="ar-btn">📸 Share</button>
+    </div>
+  </div>
+
+  <!-- ══ REDEMPTION MODAL ══ -->
+  <div id="redemption-modal">
+    <div class="modal-content">
+      <span class="modal-emoji">🍗</span>
+      <div class="modal-title">Reward Unlocked!</div>
+      <div class="modal-qr-area">
+        <div class="modal-code">BELLES-XXXX</div>
+        <div class="modal-barcode">||||| ||| || |||||</div>
+      </div>
+      <div class="modal-instructions">Show this code at Bellepros</div>
+      <div class="modal-expiry"></div>
+      <button class="btn-primary" onclick="document.getElementById('redemption-modal').style.display='none'">Done ✓</button>
+    </div>
+  </div>
+
+  <!-- ══ TOAST NOTIFICATION ══ -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</div>
+
+<!-- ══ SCRIPTS — load order matters ══ -->
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/systems/analytics.js"></script>
+<script src="js/systems/progression.js"></script>
+<script src="js/systems/missions.js"></script>
+<script src="js/systems/geofencing.js"></script>
+<script src="js/systems/rewards.js"></script>
+<script src="js/systems/social.js"></script>
+<script src="js/systems/monetization.js"></script>
+<script src="js/systems/ar.js"></script>
+<script src="js/background.js"></script>
+<script src="js/entities/particle.js"></script>
+<script src="js/entities/chicken.js"></script>
+<script src="js/entities/obstacle.js"></script>
+<script src="js/entities/player.js"></script>
+<script src="js/ui/hud.js"></script>
+<script src="js/screens.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>

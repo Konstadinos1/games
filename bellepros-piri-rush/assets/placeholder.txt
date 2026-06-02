@@ -1,0 +1,20 @@
+Asset directory for Bellepros Piri Rush.
+
+Required assets for production:
+  icon-192.png   — App icon 192×192 (PWA / Android)
+  icon-512.png   — App icon 512×512 (PWA / Android)
+  badge-96.png   — Notification badge 96×96
+  screenshot-1.png — Store screenshot 390×844
+
+Audio (place Web Audio API-generated sounds here or add mp3/ogg files):
+  All sounds are synthesized programmatically via audio.js using Web Audio API.
+  For production, replace with professionally produced audio files for better quality.
+
+Character sprite sheets (optional — game uses emoji + canvas drawing by default):
+  If adding custom sprites, update entities/player.js drawPlayer() method.
+
+Fonts:
+  Game uses system fonts (San Francisco / Roboto / Arial) for performance.
+  For brand font, add to index.html <head>:
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  Then update css/main.css font-family to: 'Nunito', -apple-system, ...

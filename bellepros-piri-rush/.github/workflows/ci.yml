@@ -51,7 +51,10 @@ jobs:
         with: { node-version: '20', cache: 'npm' }
 
       - name: Install dependencies
-        run: npm ci --ignore-scripts
+        run: npm ci
+
+      - name: Build web assets
+        run: npm run build
 
       - name: Capacitor sync iOS
         run: npx cap sync ios
@@ -119,7 +122,10 @@ jobs:
         with: { distribution: temurin, java-version: '21' }
 
       - name: Install dependencies
-        run: npm ci --ignore-scripts
+        run: npm ci
+
+      - name: Build web assets
+        run: npm run build
 
       - name: Capacitor sync Android
         run: npx cap sync android

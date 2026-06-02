@@ -3,8 +3,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId:    'com.bellepros.piri_rush',
   appName:  'Piri Rush',
-  webDir:   '.',   // serve the root index.html
-  bundledWebRuntime: false,
+  webDir:   'www',
 
   server: {
     // For live reload during development:

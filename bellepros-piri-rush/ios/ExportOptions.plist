@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>method</key>
+  <string>app-store</string>
+
+  <key>destination</key>
+  <string>upload</string>
+
+  <key>teamID</key>
+  <string>$(TEAM_ID)</string>
+
+  <key>uploadBitcode</key>
+  <false/>
+
+  <key>uploadSymbols</key>
+  <true/>
+
+  <key>compileBitcode</key>
+  <false/>
+
+  <key>signingStyle</key>
+  <string>manual</string>
+
+  <key>signingCertificate</key>
+  <string>Apple Distribution</string>
+
+  <key>provisioningProfiles</key>
+  <dict>
+    <key>com.bellepros.piri_rush</key>
+    <string>Bellepros Piri Rush AppStore</string>
+  </dict>
+</dict>
+</plist>

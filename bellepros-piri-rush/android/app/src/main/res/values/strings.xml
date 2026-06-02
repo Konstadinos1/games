@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Piri Rush</string>
+    <string name="title_activity_main">Piri Rush</string>
+    <string name="package_name">com.bellepros.piri_rush</string>
+    <string name="custom_url_scheme">com.bellepros.piri_rush</string>
+</resources>

@@ -1,0 +1,96 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ──────────────────────────────────────
+
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return request.auth.uid == uid;
+    }
+
+    function isValidScore(score) {
+      return score is int && score >= 0 && score <= 9999999;
+    }
+
+    function isValidLevel(level) {
+      return level is int && level >= 1 && level <= 100;
+    }
+
+    // ── User profiles (public read, owner write) ──────
+    match /users/{uid} {
+      allow read: if isAuth();
+      allow write: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['displayName', 'avatar', 'fcmToken', 'platform', 'lastSeen', 'updatedAt'])
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() <= 30;
+    }
+
+    // ── Cloud saves (private to owner) ───────────────
+    match /saves/{uid} {
+      allow read:  if isOwner(uid);
+      allow write: if isOwner(uid)
+        && isValidLevel(request.resource.data.level)
+        && isValidScore(request.resource.data.highScore)
+        && request.resource.data.unlockedChars is list
+        && request.resource.data.unlockedChars.size() <= 25;
+    }
+
+    // ── Leaderboard (public read, owner write) ────────
+    match /leaderboard/global/scores/{uid} {
+      allow read: if isAuth();
+      allow write: if isOwner(uid)
+        && isValidScore(request.resource.data.highScore)
+        && isValidLevel(request.resource.data.level)
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() <= 30;
+    }
+
+    // ── Challenges (inbox: target reads/writes, sender writes) ──
+    match /challenges/{uid}/inbox/{challengeId} {
+      allow read:   if isOwner(uid);
+      allow create: if isAuth()
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.to   == uid
+        && isValidScore(request.resource.data.score);
+      allow update: if isOwner(uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'myScore', 'resolvedAt'])
+        && request.resource.data.status in ['accepted', 'won', 'lost'];
+    }
+
+    match /challenges/{uid}/sent/{challengeId} {
+      allow read:  if isOwner(uid);
+      allow write: if isOwner(uid);
+    }
+
+    // ── Referral codes (any auth user can read/redeem) ──
+    match /referrals/{code} {
+      allow read:   if isAuth();
+      allow create: if isAuth() && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if isAuth()
+        // Only allow appending to redeemedBy and incrementing redeemCount
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['redeemedBy', 'redeemCount'])
+        && !(request.auth.uid in resource.data.redeemedBy);
+    }
+
+    // ── FCM queue (auth write only, Cloud Function reads and deletes) ──
+    match /fcm_queue/{docId} {
+      allow create: if isAuth();
+      allow read, delete: if false; // Cloud Function uses Admin SDK
+    }
+
+    // ── Analytics (owner write only) ──
+    match /analytics/{uid} {
+      allow read:  if false;
+      allow write: if isOwner(uid);
+    }
+
+    // ── Deny all other paths ──
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

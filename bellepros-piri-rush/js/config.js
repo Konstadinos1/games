@@ -148,7 +148,7 @@ const CONFIG = {
     XP_PER_100_SCORE: 1,
     XP_PER_COIN: 2,
     BASE_LEVEL_XP: 150,
-    LEVEL_XP_SCALE: 1.15,
+    LEVEL_XP_SCALE: 1.07,   // ~200 hrs to level 100 at avg play pace
     MAX_LEVEL: 100
   },
 

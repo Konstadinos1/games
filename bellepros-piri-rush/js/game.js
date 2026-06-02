@@ -122,6 +122,9 @@ class Game {
 
     Geofencing.start();
     Monetization.initStore();
+    FirebaseBackend.init().then(ready => {
+      if (ready) FirebaseBackend.signInAnonymously();
+    });
     Analytics.sessionStart();
 
     setTimeout(() => {
@@ -208,6 +211,9 @@ class Game {
     if (levelUps.length > 0) {
       levelUps.forEach(lvl => { this.hud.showLevelUp(lvl); Analytics.characterUnlocked('', lvl); });
     }
+
+    // Sync to Firebase cloud save
+    FirebaseBackend.syncAfterRun();
 
     // Show interstitial ad
     if (Monetization.shouldShowInterstitial()) {

@@ -326,6 +326,32 @@ class ScreenManager {
     const sent = Social.getSentChallenges();
     const referralCode = Social.getMyReferralCode();
 
+    // Auth status banner
+    const authBanner = document.getElementById('social-auth-banner');
+    if (authBanner) {
+      if (FirebaseBackend.isSignedIn()) {
+        authBanner.innerHTML = `<span style="color:var(--success)">✓ Signed in as ${FirebaseBackend.getDisplayName()}</span>`;
+      } else {
+        authBanner.innerHTML = `
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Sign in to sync progress, challenge real players & appear on the global leaderboard</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button id="signin-google" class="btn-secondary" style="flex:1;font-size:12px">🔵 Google</button>
+            <button id="signin-apple"  class="btn-secondary" style="flex:1;font-size:12px">⬛ Apple</button>
+          </div>
+        `;
+        document.getElementById('signin-google')?.addEventListener('click', async () => {
+          Audio.play('button');
+          const user = await FirebaseBackend.signInWithGoogle();
+          if (user) { this.showToast(`Welcome, ${user.displayName}! ✓`, 3000, 'success'); this._renderSocial(); }
+        });
+        document.getElementById('signin-apple')?.addEventListener('click', async () => {
+          Audio.play('button');
+          const user = await FirebaseBackend.signInWithApple();
+          if (user) { this.showToast(`Welcome, ${user.displayName}! ✓`, 3000, 'success'); this._renderSocial(); }
+        });
+      }
+    }
+
     document.getElementById('referral-code').textContent = referralCode;
     document.getElementById('copy-referral').onclick = () => {
       navigator.clipboard?.writeText(`Join me on Bellepros Piri Rush! Use code ${referralCode} for a FREE Legendary Chicken! 🍗👑`);
@@ -390,8 +416,10 @@ class ScreenManager {
   }
 
   // ── Leaderboard ──
-  _renderLeaderboard() {
-    const entries = Progression.getLeaderboard();
+  async _renderLeaderboard() {
+    const list = document.getElementById('leaderboard-list');
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted)">Loading…</div>';
+    const entries = await FirebaseBackend.fetchLeaderboard(100);
     const list = document.getElementById('leaderboard-list');
     list.innerHTML = '';
 

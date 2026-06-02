@@ -1,0 +1,42 @@
+{
+  "name": "bellepros-piri-rush",
+  "version": "1.0.0",
+  "description": "Bellepros Piri Rush — hyper-casual mobile game",
+  "private": true,
+  "scripts": {
+    "serve":          "python3 -m http.server 7890",
+    "build":          "echo 'No build step — pure HTML5/JS'",
+    "cap:sync":       "cap sync",
+    "cap:ios":        "cap sync ios && cap open ios",
+    "cap:android":    "cap sync android && cap open android",
+    "firebase:deploy":"firebase deploy",
+    "firebase:rules": "firebase deploy --only firestore:rules",
+    "firebase:fn":    "firebase deploy --only functions",
+    "emulate":        "firebase emulators:start",
+    "lint":           "eslint js/**/*.js",
+    "test":           "node tests/economy.test.js"
+  },
+  "dependencies": {
+    "@capacitor/android":            "^6.0.0",
+    "@capacitor/app":                "^6.0.0",
+    "@capacitor/app-review":         "^6.0.0",
+    "@capacitor/camera":             "^6.0.0",
+    "@capacitor/core":               "^6.0.0",
+    "@capacitor/geolocation":        "^6.0.0",
+    "@capacitor/haptics":            "^6.0.0",
+    "@capacitor/ios":                "^6.0.0",
+    "@capacitor/local-notifications":"^6.0.0",
+    "@capacitor/push-notifications": "^6.0.0",
+    "@capacitor/share":              "^6.0.0",
+    "@capacitor/splash-screen":      "^6.0.0",
+    "@capacitor/status-bar":         "^6.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli":     "^6.0.0",
+    "firebase-tools":     "^13.0.0",
+    "eslint":             "^8.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

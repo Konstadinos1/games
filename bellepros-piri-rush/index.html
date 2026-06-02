@@ -232,6 +232,9 @@
       <div class="screen-title">Social 👥</div>
     </div>
     <div class="screen-scroll">
+      <!-- Auth status -->
+      <div id="social-auth-banner" class="card" style="margin-bottom:12px"></div>
+
       <!-- Referral -->
       <div class="social-section">
         <div class="social-section-title">Referral Program</div>
@@ -394,8 +397,19 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </div>
 
+<!-- ══ Firebase SDK (v9 compat — swap for modular SDK when bundling) ══ -->
+<!-- Uncomment after adding your config to js/firebase-config.js       -->
+<!--
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-messaging-compat.js"></script>
+-->
+
 <!-- ══ SCRIPTS — load order matters ══ -->
 <script src="js/config.js"></script>
+<script src="js/firebase-config.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/systems/analytics.js"></script>
@@ -412,6 +426,7 @@
 <script src="js/entities/obstacle.js"></script>
 <script src="js/entities/player.js"></script>
 <script src="js/ui/hud.js"></script>
+<script src="js/systems/firebase-backend.js"></script>
 <script src="js/screens.js"></script>
 <script src="js/game.js"></script>
 </body>

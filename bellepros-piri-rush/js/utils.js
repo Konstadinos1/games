@@ -26,7 +26,7 @@ const Utils = {
   },
 
   formatNumber(n) {
-    return n.toLocaleString('en-CA');
+    return (n == null ? 0 : n).toLocaleString('en-CA');
   },
 
   distanceBetween(lat1, lng1, lat2, lng2) {

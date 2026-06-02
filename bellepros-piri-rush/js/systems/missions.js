@@ -49,7 +49,8 @@ class MissionsSystem {
     const shuffled = pool.sort(() => rng() - 0.5).slice(0, count);
 
     return shuffled.map(template => {
-      const diffIdx = harder ? Math.min(2, Math.floor(rng() * 3)) : Math.floor(rng() * 2);
+      const rawIdx = harder ? Math.min(2, Math.floor(rng() * 3)) : Math.floor(rng() * 2);
+      const diffIdx = Math.min(rawIdx, template.targets.length - 1);
       const target = template.targets[diffIdx];
       return {
         id: template.id,

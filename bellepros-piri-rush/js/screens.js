@@ -420,7 +420,6 @@ class ScreenManager {
     const list = document.getElementById('leaderboard-list');
     list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted)">Loading…</div>';
     const entries = await FirebaseBackend.fetchLeaderboard(100);
-    const list = document.getElementById('leaderboard-list');
     list.innerHTML = '';
 
     entries.forEach(e => {

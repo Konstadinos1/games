@@ -19,22 +19,22 @@ const CONFIG = {
 
   CHICKEN_TYPES: {
     COMMON: {
-      id: 'COMMON', name: 'Classic Burger', coins: 1, score: 100,
+      id: 'COMMON', name: 'Steamie / Fries', coins: 1, score: 100,
       glowColor: 'rgba(255,255,255,0.3)', weight: 60, size: 38, xpBonus: 5,
       hue: null
     },
     RARE: {
-      id: 'RARE', name: 'Piri Hot Dog', coins: 5, score: 500,
+      id: 'RARE', name: 'Hamburger / Hot Dog', coins: 5, score: 500,
       glowColor: 'rgba(255,215,0,0.6)', weight: 25, size: 44, xpBonus: 15,
       hue: 50
     },
     EPIC: {
-      id: 'EPIC', name: 'Smoked Poutine', coins: 10, score: 1000,
+      id: 'EPIC', name: 'Poutine / Onion Rings', coins: 10, score: 1000,
       glowColor: 'rgba(255,80,20,0.7)', weight: 12, size: 50, xpBonus: 30,
       hue: 20
     },
     LEGENDARY: {
-      id: 'LEGENDARY', name: 'Bellepros Chicken', coins: 25, score: 2500,
+      id: 'LEGENDARY', name: 'Bellepros Special', coins: 25, score: 2500,
       glowColor: 'rgba(180,80,255,0.8)', weight: 3, size: 58, xpBonus: 75,
       hue: 290
     }

@@ -170,116 +170,200 @@ class Background {
 
   _drawStorefront(ctx, isPiriZone, t) {
     const W = CONFIG.CANVAS_WIDTH;
-    // Store building base
-    const storeY = 320;
-    const storeH = 210;
+    const storeY = 310;
+    const storeH = 222;
 
-    // Building body — red brand color
-    ctx.fillStyle = isPiriZone ? '#5a0010' : '#c41020';
+    // ── Classic Quebec diner building — cream/yellow body ──
+    const wallColor  = isPiriZone ? '#3a1a00' : '#F5E6C0';
+    const wallColor2 = isPiriZone ? '#4a2200' : '#EDD98A';
+    ctx.fillStyle = wallColor;
     ctx.fillRect(0, storeY, W, storeH);
 
-    // Lighter upper facade
-    ctx.fillStyle = isPiriZone ? '#7a0018' : '#e8192c';
-    ctx.fillRect(0, storeY, W, 70);
+    // Horizontal stripe detail mid-wall
+    ctx.fillStyle = wallColor2;
+    ctx.fillRect(0, storeY + storeH * 0.55, W, 18);
 
-    // Roof line
-    ctx.fillStyle = isPiriZone ? '#3a000c' : '#8b0010';
-    ctx.fillRect(0, storeY - 8, W, 16);
+    // ── Big red illuminated sign band across top ──
+    const signH = 72;
+    const signY = storeY;
+    ctx.fillStyle = isPiriZone ? '#5a0010' : '#D01020';
+    ctx.fillRect(0, signY, W, signH);
 
-    // ── BELLEPROS wordmark ──
-    const logoY = storeY + 38;
-    // Dark red background pill for logo
-    ctx.fillStyle = 'rgba(0,0,0,0.35)';
-    ctx.beginPath();
-    ctx.roundRect(W / 2 - 130, logoY - 28, 260, 48, 8);
-    ctx.fill();
+    // Sign highlight strip (top)
+    ctx.fillStyle = isPiriZone ? '#7a0018' : '#E8192C';
+    ctx.fillRect(0, signY, W, 10);
 
-    // Main BELLEPROS text
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 32px Arial, sans-serif';
+    // Sign shadow (bottom)
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.fillRect(0, signY + signH - 6, W, 6);
+
+    // ── BELLEPROS logo on sign ──
+    // Yellow glow background behind text
+    const glowX = W / 2;
+    const glowY = signY + signH / 2;
+    const gGrd = ctx.createRadialGradient(glowX, glowY, 0, glowX, glowY, 160);
+    gGrd.addColorStop(0, `rgba(255,215,0,${0.18 + 0.06 * Math.sin(t * 0.003)})`);
+    gGrd.addColorStop(1, 'transparent');
+    ctx.fillStyle = gGrd;
+    ctx.fillRect(0, signY, W, signH);
+
+    // Hot dog icon left, burger right (actual menu items)
+    ctx.font = '22px serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.letterSpacing = '2px';
-    ctx.fillText('BELLEPROS', W / 2, logoY - 6);
+    ctx.fillText('🌭', 28, glowY);
+    ctx.fillText('🍔', W - 28, glowY);
 
-    // Tagline
+    // BELLEPROS wordmark
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 34px Arial Black, Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    // Drop shadow for depth
+    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur = 6;
+    ctx.fillText('BELLEPROS', W / 2, glowY - 9);
+    ctx.shadowBlur = 0;
+
+    // Sub-tagline in yellow
     ctx.fillStyle = '#FFD700';
-    ctx.font = 'bold 11px Arial, sans-serif';
-    ctx.fillText('PIRI-PIRI ROTISSERIE', W / 2, logoY + 14);
+    ctx.font = 'bold 10px Arial, sans-serif';
+    ctx.letterSpacing = '2px';
+    ctx.fillText('STEAMIES  •  BURGERS  •  POUTINE', W / 2, glowY + 14);
+    ctx.letterSpacing = '0px';
 
-    // Pepper icon on each side
-    ctx.font = '18px serif';
-    ctx.fillText('🌶️', W / 2 - 120, logoY - 6);
-    ctx.fillText('🌶️', W / 2 + 120, logoY - 6);
+    // ── Neon-style border on sign ──
+    const neonAlpha = 0.6 + 0.35 * Math.sin(t * 0.004);
+    ctx.strokeStyle = `rgba(255,215,0,${neonAlpha})`;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(4, signY + 4, W - 8, signH - 8);
 
-    // Store windows
-    const winY = storeY + 80;
-    const winH = 80;
-    const wins = [30, 120, 220, 310];
-    wins.forEach(wx => {
-      // Window frame
-      ctx.fillStyle = '#333';
-      ctx.fillRect(wx - 2, winY - 2, 66, winH + 4);
+    // ── Big store windows ──
+    const winY  = storeY + signH + 10;
+    const winH2 = 78;
+    // 3 wide windows + door gap
+    const winDefs = [
+      { x: 14, w: 82 },
+      { x: 108, w: 62 },
+      { x: 222, w: 62 },
+      { x: 296, w: 82 },
+    ];
+    winDefs.forEach(wd => {
+      // Frame
+      ctx.fillStyle = isPiriZone ? '#333' : '#8B1A00';
+      ctx.fillRect(wd.x - 3, winY - 3, wd.w + 6, winH2 + 6);
       // Glass
-      const winGrad = ctx.createLinearGradient(wx, winY, wx + 64, winY + winH);
-      winGrad.addColorStop(0, 'rgba(180,220,255,0.4)');
-      winGrad.addColorStop(0.5, 'rgba(220,240,255,0.65)');
-      winGrad.addColorStop(1, 'rgba(160,200,240,0.4)');
-      ctx.fillStyle = winGrad;
-      ctx.fillRect(wx, winY, 64, winH);
-      // Warm light inside
-      if (!isPiriZone) {
-        ctx.fillStyle = `rgba(255,180,80,${0.15 + 0.05 * Math.sin(t * 0.002)})`;
-        ctx.fillRect(wx, winY, 64, winH);
-      }
-      // Window divider
-      ctx.strokeStyle = 'rgba(100,120,140,0.5)';
+      const wGrd = ctx.createLinearGradient(wd.x, winY, wd.x + wd.w, winY + winH2);
+      wGrd.addColorStop(0,   'rgba(200,230,255,0.55)');
+      wGrd.addColorStop(0.45,'rgba(240,250,255,0.70)');
+      wGrd.addColorStop(1,   'rgba(180,210,240,0.45)');
+      ctx.fillStyle = wGrd;
+      ctx.fillRect(wd.x, winY, wd.w, winH2);
+      // Warm interior light
+      const warmAlpha = isPiriZone ? 0 : (0.12 + 0.05 * Math.sin(t * 0.002 + wd.x));
+      ctx.fillStyle = `rgba(255,180,60,${warmAlpha})`;
+      ctx.fillRect(wd.x, winY, wd.w, winH2);
+      // Vertical divider
+      ctx.strokeStyle = 'rgba(100,130,160,0.4)';
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(wx + 32, winY);
-      ctx.lineTo(wx + 32, winY + winH);
+      ctx.moveTo(wd.x + wd.w / 2, winY);
+      ctx.lineTo(wd.x + wd.w / 2, winY + winH2);
       ctx.stroke();
     });
 
-    // Front door
-    ctx.fillStyle = '#222';
-    ctx.fillRect(W / 2 - 28, storeY + 100, 56, 130);
-    // Door glass
-    const dGrad = ctx.createLinearGradient(W / 2 - 24, storeY + 104, W / 2 + 24, storeY + 104);
-    dGrad.addColorStop(0, 'rgba(160,200,240,0.5)');
-    dGrad.addColorStop(1, 'rgba(180,220,255,0.3)');
-    ctx.fillStyle = dGrad;
-    ctx.fillRect(W / 2 - 24, storeY + 104, 24, 126);
-    ctx.fillRect(W / 2 + 0, storeY + 104, 24, 126);
+    // Window sills
+    ctx.fillStyle = isPiriZone ? '#4a2000' : '#A0520A';
+    winDefs.forEach(wd => {
+      ctx.fillRect(wd.x - 4, winY + winH2 + 3, wd.w + 8, 6);
+    });
+
+    // ── Menu board above windows (classic diner style) ──
+    ctx.fillStyle = isPiriZone ? '#2a1000' : '#1a0a00';
+    ctx.fillRect(0, winY - 3, W, 8);
+
+    // ── Front door ──
+    const doorX = W / 2 - 26;
+    const doorW = 52;
+    const doorY = storeY + signH + 10;
+    const doorH = storeH - signH - 10;
+    ctx.fillStyle = isPiriZone ? '#2a0800' : '#8B1A00';
+    ctx.fillRect(doorX - 4, doorY, doorW + 8, doorH);
+    // Door panels
+    const dpGrd = ctx.createLinearGradient(doorX, doorY, doorX + doorW, doorY);
+    dpGrd.addColorStop(0, 'rgba(200,230,255,0.45)');
+    dpGrd.addColorStop(1, 'rgba(170,210,240,0.35)');
+    ctx.fillStyle = dpGrd;
+    ctx.fillRect(doorX, doorY + 4, doorW / 2 - 2, doorH - 4);
+    ctx.fillRect(doorX + doorW / 2 + 2, doorY + 4, doorW / 2 - 2, doorH - 4);
     // Door handle
     ctx.fillStyle = '#FFD700';
-    ctx.fillRect(W / 2 - 6, storeY + 162, 12, 4);
+    ctx.beginPath();
+    ctx.arc(doorX + doorW / 2 - 6, doorY + doorH * 0.48, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(doorX + doorW / 2 + 6, doorY + doorH * 0.48, 4, 0, Math.PI * 2);
+    ctx.fill();
 
-    // OPEN / PIRI ZONE sign
+    // ── OPEN sign / PIRI ZONE banner ──
     if (isPiriZone) {
-      const signAlpha = 0.7 + 0.3 * Math.sin(t * 0.006);
-      ctx.fillStyle = `rgba(232,25,44,${signAlpha})`;
+      const bAlpha = 0.8 + 0.2 * Math.sin(t * 0.007);
+      ctx.fillStyle = `rgba(232,25,44,${bAlpha})`;
       ctx.beginPath();
-      ctx.roundRect(W / 2 - 55, storeY + 72, 110, 24, 4);
-      ctx.fill();
-      ctx.fillStyle = '#FFF';
-      ctx.font = 'bold 11px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('🌶️ PIRI ZONE — 2X REWARDS!', W / 2, storeY + 88);
-    } else {
-      ctx.fillStyle = '#27AE60';
-      ctx.beginPath();
-      ctx.roundRect(W / 2 - 28, storeY + 72, 56, 20, 4);
+      ctx.roundRect(W / 2 - 90, winY + winH2 + 14, 180, 22, 4);
       ctx.fill();
       ctx.fillStyle = '#FFF';
       ctx.font = 'bold 10px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('OPEN', W / 2, storeY + 85);
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🌶️  PIRI ZONE — 2× REWARDS!  🌶️', W / 2, winY + winH2 + 25);
+    } else {
+      // Neon OPEN sign
+      const oAlpha = 0.75 + 0.25 * Math.sin(t * 0.005);
+      ctx.fillStyle = `rgba(255,80,0,${oAlpha})`;
+      ctx.beginPath();
+      ctx.roundRect(doorX - 40, winY + 8, 36, 20, 4);
+      ctx.fill();
+      ctx.fillStyle = '#FFF';
+      ctx.font = 'bold 9px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('OPEN', doorX - 22, winY + 18);
     }
 
-    // Sidewalk apron in front of store
-    ctx.fillStyle = isPiriZone ? '#2a0a10' : '#b0a898';
-    ctx.fillRect(0, storeY + storeH, W, 14);
+    // ── Sidewalk apron ──
+    ctx.fillStyle = isPiriZone ? '#2a1000' : '#C8B89A';
+    ctx.fillRect(0, storeY + storeH, W, 16);
+
+    // Awning stripe above windows
+    const awningColors = isPiriZone
+      ? ['#3a0010','#200008']
+      : ['#D01020','#F5E6C0'];
+    const awningH = 18;
+    const stripeW = 14;
+    const awningY = winY - 20;
+    for (let x = 0; x < W; x += stripeW * 2) {
+      ctx.fillStyle = awningColors[0];
+      ctx.fillRect(x, awningY, stripeW, awningH);
+      ctx.fillStyle = awningColors[1];
+      ctx.fillRect(x + stripeW, awningY, stripeW, awningH);
+    }
+    // Awning shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.fillRect(0, awningY + awningH - 3, W, 5);
+
+    // Steam wisps rising from kitchen (visible through windows)
+    if (!isPiriZone) {
+      for (let i = 0; i < 3; i++) {
+        const sx = 40 + i * 130;
+        const sy = winY + 10 + Math.sin(t * 0.003 + i * 2) * 6;
+        const sa = 0.15 + 0.08 * Math.sin(t * 0.004 + i);
+        ctx.fillStyle = `rgba(255,255,255,${sa})`;
+        ctx.beginPath();
+        ctx.ellipse(sx, sy, 8, 14, Math.sin(t * 0.002 + i) * 0.3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
   }
 
   _drawParkingLot(ctx, isPiriZone) {

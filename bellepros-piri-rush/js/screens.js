@@ -576,7 +576,8 @@ class ScreenManager {
     overlayCanvas.height = window.innerHeight;
 
     AR.onCatch = (chicken) => {
-      this.showToast(`${chicken.type === 'LEGENDARY' ? '👑 LEGENDARY' : chicken.type} Chicken caught! +${chicken.score} pts`, 2000, 'success');
+      const foodNames = { COMMON: '🍔 Burger', RARE: '🌭 Hot Dog', EPIC: '🍟 Poutine', LEGENDARY: '🍗 Bellepros Chicken' };
+      this.showToast(`${chicken.type === 'LEGENDARY' ? '👑 LEGENDARY ' : ''}${foodNames[chicken.type] || 'Food'} caught! +${chicken.score} pts`, 2000, 'success');
       Audio.play('ar_catch');
     };
 

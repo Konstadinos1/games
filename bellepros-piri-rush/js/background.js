@@ -6,60 +6,54 @@ class Background {
     this.speed = 0;
     this.time = 0;
 
-    // Building layer data (generated procedurally from seed)
-    this._farBuildings  = this._genBuildings(25, 80, 200, 600, ['#1a1a2e', '#16213e', '#0f3460', '#23344a', '#1d2d44']);
-    this._midBuildings  = this._genBuildings(18, 110, 320, 380, ['#2c3e50', '#34495e', '#3d566e', '#2e4057', '#405e76']);
-    this._nearBuildings = this._genBuildings(12, 160, 500, 280, ['#4a5568', '#3a4a5c', '#546477', '#3e505e', '#4d5f6e']);
-
-    // Street details pool
-    this._details = this._genStreetDetails();
-    this._clouds  = this._genClouds();
-    this._stars   = this._genStars();
+    // Parked cars in lot background
+    this._parkedCars = this._genParkedCars();
+    // Parking lot light poles
+    this._lights = this._genLights();
+    // Shopping carts in background
+    this._bgCarts = this._genBgCarts();
+    // Clouds
+    this._clouds = this._genClouds();
   }
 
-  _genBuildings(count, minH, maxH, baseY, colors) {
-    const buildings = [];
-    for (let i = 0; i < count; i++) {
-      const w = Utils.randomBetween(40, 100);
-      buildings.push({
-        x: i * (CONFIG.CANVAS_WIDTH / count * 1.2),
-        y: baseY - Utils.randomBetween(minH, maxH),
-        w,
-        h: Utils.randomBetween(minH, maxH),
-        color: colors[Math.floor(Math.random() * colors.length)],
-        winRows: Utils.randomInt(2, 8),
-        winCols: Utils.randomInt(1, 4),
-        litWindows: Array.from({ length: 40 }, () => Math.random() < 0.4),
+  _genParkedCars() {
+    const colors = ['#3498DB','#E74C3C','#F39C12','#9B59B6','#BDC3C7','#1ABC9C','#E67E22','#2C3E50'];
+    const cars = [];
+    for (let i = 0; i < 14; i++) {
+      cars.push({
+        x: i * 160 + Utils.randomBetween(0, 60),
+        row: Utils.randomInt(0, 1),  // 0=far row, 1=near row
+        color: colors[Utils.randomInt(0, colors.length - 1)],
+        w: Utils.randomBetween(70, 95),
+        h: 34,
       });
     }
-    return buildings;
+    return cars;
   }
 
-  _genStreetDetails() {
-    const details = [];
-    for (let i = 0; i < 30; i++) {
-      const type = ['hydrant', 'bench', 'light', 'sign', 'tree'][Utils.randomInt(0, 4)];
-      details.push({ type, x: i * 140 + Utils.randomBetween(0, 100), phase: Math.random() * Math.PI * 2 });
+  _genLights() {
+    const lights = [];
+    for (let i = 0; i < 8; i++) {
+      lights.push({ x: i * 210 + 60, phase: i * 0.4 });
     }
-    return details;
+    return lights;
+  }
+
+  _genBgCarts() {
+    const carts = [];
+    for (let i = 0; i < 6; i++) {
+      carts.push({ x: i * 300 + 100, speed: 0.3 + Math.random() * 0.2 });
+    }
+    return carts;
   }
 
   _genClouds() {
-    return Array.from({ length: 8 }, (_, i) => ({
-      x: i * 130 + Utils.randomBetween(0, 80),
-      y: Utils.randomBetween(30, 160),
-      w: Utils.randomBetween(80, 180),
-      h: Utils.randomBetween(30, 60),
-      speed: Utils.randomBetween(0.15, 0.4),
-    }));
-  }
-
-  _genStars() {
-    return Array.from({ length: 40 }, () => ({
-      x: Math.random() * CONFIG.CANVAS_WIDTH,
-      y: Math.random() * 250,
-      r: Math.random() * 1.5 + 0.5,
-      twinkle: Math.random() * Math.PI * 2,
+    return Array.from({ length: 6 }, (_, i) => ({
+      x: i * 160 + Utils.randomBetween(0, 80),
+      y: Utils.randomBetween(20, 90),
+      w: Utils.randomBetween(100, 200),
+      h: Utils.randomBetween(28, 50),
+      speed: Utils.randomBetween(0.08, 0.2),
     }));
   }
 
@@ -69,26 +63,23 @@ class Background {
     const scroll = gameSpeed * dt * 0.06;
     this.offset += scroll;
 
-    // Scroll buildings
-    this._scrollLayer(this._farBuildings,  scroll * 0.15, CONFIG.CANVAS_WIDTH + 120);
-    this._scrollLayer(this._midBuildings,  scroll * 0.35, CONFIG.CANVAS_WIDTH + 120);
-    this._scrollLayer(this._nearBuildings, scroll * 0.6,  CONFIG.CANVAS_WIDTH + 180);
-    this._scrollDetails(scroll);
-    this._clouds.forEach(c => { c.x -= c.speed * scroll * 10; if (c.x + c.w < 0) c.x = CONFIG.CANVAS_WIDTH + 20; });
-  }
-
-  _scrollLayer(layer, dx, wrap) {
-    const spread = wrap * 1.4;
-    layer.forEach(b => {
-      b.x -= dx;
-      if (b.x + b.w < -20) b.x += spread;
+    // Scroll parked cars (slow parallax)
+    this._parkedCars.forEach(c => {
+      c.x -= scroll * (c.row === 0 ? 0.18 : 0.35);
+      const wrap = CONFIG.CANVAS_WIDTH + 110;
+      if (c.x + c.w < -10) c.x += 14 * 160;
     });
-  }
-
-  _scrollDetails(dx) {
-    this._details.forEach(d => {
-      d.x -= dx * 0.9;
-      if (d.x < -30) d.x += 30 * 140 / 28;
+    this._lights.forEach(l => {
+      l.x -= scroll * 0.3;
+      if (l.x < -10) l.x += 8 * 210;
+    });
+    this._bgCarts.forEach(c => {
+      c.x -= scroll * c.speed;
+      if (c.x < -30) c.x += 6 * 300;
+    });
+    this._clouds.forEach(c => {
+      c.x -= c.speed * scroll * 8;
+      if (c.x + c.w < 0) c.x = CONFIG.CANVAS_WIDTH + 20;
     });
   }
 
@@ -97,228 +88,379 @@ class Background {
     const H = CONFIG.CANVAS_HEIGHT;
     const t = this.time;
 
-    // ── Sky ──
-    const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.65);
+    // ── Sky: late afternoon / golden hour ──
+    const skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.55);
     if (isPiriZone) {
-      skyGrad.addColorStop(0, '#1a0008');
-      skyGrad.addColorStop(0.4, '#3d0015');
-      skyGrad.addColorStop(1, '#7a1a30');
+      skyGrad.addColorStop(0, '#2d0a00');
+      skyGrad.addColorStop(0.5, '#6b1800');
+      skyGrad.addColorStop(1, '#c43510');
     } else {
-      skyGrad.addColorStop(0, '#0d0d1a');
-      skyGrad.addColorStop(0.35, '#1a1a3e');
-      skyGrad.addColorStop(0.75, '#2e3a5c');
-      skyGrad.addColorStop(1, '#4a6080');
+      skyGrad.addColorStop(0, '#1a2a4a');
+      skyGrad.addColorStop(0.3, '#2e4a7a');
+      skyGrad.addColorStop(0.7, '#c07030');
+      skyGrad.addColorStop(1, '#e8922a');
     }
     ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, W, H * 0.65);
-
-    // Stars
-    this._stars.forEach(s => {
-      const alpha = 0.4 + 0.5 * Math.sin(t * 0.001 + s.twinkle);
-      ctx.fillStyle = `rgba(255,255,240,${alpha})`;
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    // Moon
-    const moonX = 340, moonY = 60;
-    ctx.fillStyle = '#FFFDE7';
-    ctx.beginPath();
-    ctx.arc(moonX, moonY, 28, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = isPiriZone ? '#3d0015' : '#1a1a3e';
-    ctx.beginPath();
-    ctx.arc(moonX + 10, moonY - 4, 22, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Piri Zone effect
-    if (isPiriZone) {
-      const piriGlow = ctx.createRadialGradient(W / 2, H * 0.6, 0, W / 2, H * 0.6, W * 0.8);
-      piriGlow.addColorStop(0, `rgba(232,25,44,${0.1 + 0.05 * Math.sin(t * 0.005)})`);
-      piriGlow.addColorStop(1, 'transparent');
-      ctx.fillStyle = piriGlow;
-      ctx.fillRect(0, 0, W, H);
-    }
+    ctx.fillRect(0, 0, W, H * 0.55);
 
     // Clouds
     this._clouds.forEach(c => this._drawCloud(ctx, c));
 
-    // Far buildings
-    this._farBuildings.forEach(b => this._drawBuilding(ctx, b, 0.6));
+    // Piri Zone atmosphere
+    if (isPiriZone) {
+      const glow = ctx.createRadialGradient(W / 2, H * 0.5, 0, W / 2, H * 0.5, W);
+      glow.addColorStop(0, `rgba(232,25,44,${0.15 + 0.08 * Math.sin(t * 0.005)})`);
+      glow.addColorStop(1, 'transparent');
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, W, H);
+    }
 
-    // Mid buildings
-    this._midBuildings.forEach(b => this._drawBuilding(ctx, b, 0.8));
+    // ── Bellepros storefront (far background) ──
+    this._drawStorefront(ctx, isPiriZone, t);
 
-    // Horizon gradient
-    const horizGrad = ctx.createLinearGradient(0, H * 0.52, 0, H * 0.68);
-    horizGrad.addColorStop(0, 'rgba(100,120,160,0)');
-    horizGrad.addColorStop(1, 'rgba(70,70,90,0.5)');
-    ctx.fillStyle = horizGrad;
-    ctx.fillRect(0, H * 0.52, W, H * 0.16);
+    // ── Far parked car row ──
+    const farRowY = 530;
+    this._parkedCars.filter(c => c.row === 0).forEach(c => {
+      this._drawParkedCar(ctx, c.x, farRowY, c.w, c.h, c.color, 0.75);
+    });
 
-    // Near buildings
-    this._nearBuildings.forEach(b => this._drawBuilding(ctx, b, 1.0));
+    // ── Lot surface ──
+    this._drawParkingLot(ctx, isPiriZone);
 
-    // Ground – road & sidewalk
-    this._drawGround(ctx, isPiriZone);
+    // ── Lot lights ──
+    this._lights.forEach(l => this._drawLightPole(ctx, l, t));
 
-    // Street details
-    this._details.forEach(d => this._drawDetail(ctx, d, t));
+    // ── Near parked car row ──
+    const nearRowY = 590;
+    this._parkedCars.filter(c => c.row === 1).forEach(c => {
+      this._drawParkedCar(ctx, c.x, nearRowY, c.w * 1.15, c.h * 1.1, c.color, 0.95);
+    });
 
-    // Speed lines at high speed
+    // Background shopping carts
+    this._bgCarts.forEach(c => this._drawBgCart(ctx, c));
+
+    // Speed heat shimmer at high speed
     if (this.speed > 9) {
-      const alpha = Math.min((this.speed - 9) / 6, 0.3);
-      ctx.strokeStyle = `rgba(255,255,255,${alpha * 0.5})`;
+      const alpha = Math.min((this.speed - 9) / 6, 0.25);
+      ctx.strokeStyle = `rgba(255,180,50,${alpha * 0.4})`;
       ctx.lineWidth = 1;
-      for (let i = 0; i < 8; i++) {
-        const lineY = 500 + Math.sin(t * 0.01 + i) * 30;
+      for (let i = 0; i < 6; i++) {
+        const lineY = 540 + Math.sin(t * 0.01 + i) * 20;
         const lineX = ((this.offset * 0.5 + i * 80) % (W + 100)) - 50;
         ctx.beginPath();
         ctx.moveTo(lineX, lineY);
-        ctx.lineTo(lineX - 60, lineY + 4);
+        ctx.lineTo(lineX - 60, lineY + 3);
         ctx.stroke();
       }
     }
   }
 
-  _drawBuilding(ctx, b, opacity) {
-    ctx.save();
-    ctx.globalAlpha = opacity;
-    ctx.fillStyle = b.color;
-    ctx.fillRect(b.x, b.y, b.w, b.h);
-
-    // Windows
-    const wW = Math.max(4, (b.w - 10) / b.winCols - 2);
-    const wH = 6;
-    const colGap = (b.w - 10) / b.winCols;
-    const rowGap = 18;
-    for (let row = 0; row < b.winRows; row++) {
-      for (let col = 0; col < b.winCols; col++) {
-        const winIdx = row * b.winCols + col;
-        const isLit = b.litWindows[winIdx % b.litWindows.length];
-        ctx.fillStyle = isLit ? 'rgba(255,220,100,0.85)' : 'rgba(80,100,120,0.4)';
-        ctx.fillRect(b.x + 5 + col * colGap, b.y + 8 + row * rowGap, wW, wH);
-      }
-    }
-    ctx.restore();
-  }
-
   _drawCloud(ctx, c) {
     ctx.save();
-    ctx.globalAlpha = 0.15;
-    ctx.fillStyle = '#9ab';
+    ctx.globalAlpha = 0.22;
+    ctx.fillStyle = '#e8c090';
     ctx.beginPath();
     ctx.ellipse(c.x, c.y, c.w / 2, c.h / 2, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.ellipse(c.x + c.w * 0.25, c.y - c.h * 0.2, c.w * 0.35, c.h * 0.6, 0, 0, Math.PI * 2);
+    ctx.ellipse(c.x + c.w * 0.2, c.y - c.h * 0.25, c.w * 0.3, c.h * 0.55, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   }
 
-  _drawGround(ctx, isPiriZone) {
+  _drawStorefront(ctx, isPiriZone, t) {
     const W = CONFIG.CANVAS_WIDTH;
-    const H = CONFIG.CANVAS_HEIGHT;
-    const groundY = 690;
+    // Store building base
+    const storeY = 320;
+    const storeH = 210;
 
-    // Road
-    ctx.fillStyle = isPiriZone ? '#2a0a10' : '#2a2a2a';
-    ctx.fillRect(0, groundY, W, H - groundY);
+    // Building body — red brand color
+    ctx.fillStyle = isPiriZone ? '#5a0010' : '#c41020';
+    ctx.fillRect(0, storeY, W, storeH);
 
-    // Sidewalk
-    ctx.fillStyle = isPiriZone ? '#3d1520' : '#5a5a55';
-    ctx.fillRect(0, groundY, W, 30);
+    // Lighter upper facade
+    ctx.fillStyle = isPiriZone ? '#7a0018' : '#e8192c';
+    ctx.fillRect(0, storeY, W, 70);
 
-    // Road markings
-    ctx.fillStyle = '#888';
-    ctx.fillRect(0, groundY - 5, W, 5);
+    // Roof line
+    ctx.fillStyle = isPiriZone ? '#3a000c' : '#8b0010';
+    ctx.fillRect(0, storeY - 8, W, 16);
 
-    // Dashed center line
+    // ── BELLEPROS wordmark ──
+    const logoY = storeY + 38;
+    // Dark red background pill for logo
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.beginPath();
+    ctx.roundRect(W / 2 - 130, logoY - 28, 260, 48, 8);
+    ctx.fill();
+
+    // Main BELLEPROS text
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 32px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.letterSpacing = '2px';
+    ctx.fillText('BELLEPROS', W / 2, logoY - 6);
+
+    // Tagline
     ctx.fillStyle = '#FFD700';
-    ctx.globalAlpha = 0.5;
-    const dashW = 40, dashGap = 30;
-    const totalPeriod = dashW + dashGap;
-    const offset = this.offset % totalPeriod;
-    for (let x = -totalPeriod + offset; x < W + totalPeriod; x += totalPeriod) {
-      ctx.fillRect(x, groundY + 18, dashW, 3);
-    }
-    ctx.globalAlpha = 1;
+    ctx.font = 'bold 11px Arial, sans-serif';
+    ctx.fillText('PIRI-PIRI ROTISSERIE', W / 2, logoY + 14);
 
-    // Sidewalk cracks / tiles
-    ctx.strokeStyle = isPiriZone ? '#5a2030' : '#888';
-    ctx.lineWidth = 0.5;
-    ctx.globalAlpha = 0.4;
-    const tileW = 60;
-    const tileOffset = this.offset % tileW;
-    for (let x = -tileW + tileOffset; x < W + tileW; x += tileW) {
+    // Pepper icon on each side
+    ctx.font = '18px serif';
+    ctx.fillText('🌶️', W / 2 - 120, logoY - 6);
+    ctx.fillText('🌶️', W / 2 + 120, logoY - 6);
+
+    // Store windows
+    const winY = storeY + 80;
+    const winH = 80;
+    const wins = [30, 120, 220, 310];
+    wins.forEach(wx => {
+      // Window frame
+      ctx.fillStyle = '#333';
+      ctx.fillRect(wx - 2, winY - 2, 66, winH + 4);
+      // Glass
+      const winGrad = ctx.createLinearGradient(wx, winY, wx + 64, winY + winH);
+      winGrad.addColorStop(0, 'rgba(180,220,255,0.4)');
+      winGrad.addColorStop(0.5, 'rgba(220,240,255,0.65)');
+      winGrad.addColorStop(1, 'rgba(160,200,240,0.4)');
+      ctx.fillStyle = winGrad;
+      ctx.fillRect(wx, winY, 64, winH);
+      // Warm light inside
+      if (!isPiriZone) {
+        ctx.fillStyle = `rgba(255,180,80,${0.15 + 0.05 * Math.sin(t * 0.002)})`;
+        ctx.fillRect(wx, winY, 64, winH);
+      }
+      // Window divider
+      ctx.strokeStyle = 'rgba(100,120,140,0.5)';
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(x, groundY);
-      ctx.lineTo(x, groundY + 28);
+      ctx.moveTo(wx + 32, winY);
+      ctx.lineTo(wx + 32, winY + winH);
       ctx.stroke();
+    });
+
+    // Front door
+    ctx.fillStyle = '#222';
+    ctx.fillRect(W / 2 - 28, storeY + 100, 56, 130);
+    // Door glass
+    const dGrad = ctx.createLinearGradient(W / 2 - 24, storeY + 104, W / 2 + 24, storeY + 104);
+    dGrad.addColorStop(0, 'rgba(160,200,240,0.5)');
+    dGrad.addColorStop(1, 'rgba(180,220,255,0.3)');
+    ctx.fillStyle = dGrad;
+    ctx.fillRect(W / 2 - 24, storeY + 104, 24, 126);
+    ctx.fillRect(W / 2 + 0, storeY + 104, 24, 126);
+    // Door handle
+    ctx.fillStyle = '#FFD700';
+    ctx.fillRect(W / 2 - 6, storeY + 162, 12, 4);
+
+    // OPEN / PIRI ZONE sign
+    if (isPiriZone) {
+      const signAlpha = 0.7 + 0.3 * Math.sin(t * 0.006);
+      ctx.fillStyle = `rgba(232,25,44,${signAlpha})`;
+      ctx.beginPath();
+      ctx.roundRect(W / 2 - 55, storeY + 72, 110, 24, 4);
+      ctx.fill();
+      ctx.fillStyle = '#FFF';
+      ctx.font = 'bold 11px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('🌶️ PIRI ZONE — 2X REWARDS!', W / 2, storeY + 88);
+    } else {
+      ctx.fillStyle = '#27AE60';
+      ctx.beginPath();
+      ctx.roundRect(W / 2 - 28, storeY + 72, 56, 20, 4);
+      ctx.fill();
+      ctx.fillStyle = '#FFF';
+      ctx.font = 'bold 10px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('OPEN', W / 2, storeY + 85);
     }
-    ctx.globalAlpha = 1;
+
+    // Sidewalk apron in front of store
+    ctx.fillStyle = isPiriZone ? '#2a0a10' : '#b0a898';
+    ctx.fillRect(0, storeY + storeH, W, 14);
   }
 
-  _drawDetail(ctx, d, t) {
-    if (d.x < -50 || d.x > CONFIG.CANVAS_WIDTH + 50) return;
-    const groundY = 690;
-    ctx.save();
-    ctx.translate(d.x, groundY);
+  _drawParkingLot(ctx, isPiriZone) {
+    const W = CONFIG.CANVAS_WIDTH;
+    const H = CONFIG.CANVAS_HEIGHT;
+    const lotY = 544;
 
-    switch (d.type) {
-      case 'hydrant':
-        ctx.fillStyle = '#C0392B';
-        ctx.fillRect(-6, -24, 12, 24);
-        ctx.fillStyle = '#E74C3C';
-        ctx.fillRect(-9, -26, 18, 6);
-        ctx.fillRect(-10, -10, 20, 4);
-        break;
-
-      case 'light':
-        ctx.fillStyle = '#888';
-        ctx.fillRect(-2, -70, 4, 70);
-        ctx.fillStyle = '#555';
-        ctx.fillRect(-2, -72, 30, 4);
-        ctx.fillStyle = `rgba(255,230,100,${0.7 + 0.2 * Math.sin(t * 0.003 + d.phase)})`;
-        ctx.beginPath();
-        ctx.arc(28, -72, 8, 0, Math.PI * 2);
-        ctx.fill();
-        break;
-
-      case 'bench':
-        ctx.fillStyle = '#8B6914';
-        ctx.fillRect(-20, -8, 40, 4);
-        ctx.fillRect(-18, -4, 5, 8);
-        ctx.fillRect(13, -4, 5, 8);
-        ctx.fillRect(-22, -14, 44, 5);
-        break;
-
-      case 'sign':
-        ctx.fillStyle = '#2C3E50';
-        ctx.fillRect(-2, -50, 4, 50);
-        ctx.fillStyle = '#E8192C';
-        ctx.fillRect(-20, -50, 40, 20);
-        ctx.fillStyle = '#FFF';
-        ctx.font = 'bold 7px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('BELLES', 0, -37);
-        ctx.fillText('PROS', 0, -28);
-        break;
-
-      case 'tree':
-        ctx.fillStyle = '#5D4037';
-        ctx.fillRect(-4, -35, 8, 35);
-        ctx.fillStyle = '#2E7D32';
-        ctx.beginPath();
-        ctx.arc(0, -42, 22, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#388E3C';
-        ctx.beginPath();
-        ctx.arc(-6, -50, 14, 0, Math.PI * 2);
-        ctx.fill();
-        break;
+    // Asphalt surface
+    const asphalt = ctx.createLinearGradient(0, lotY, 0, H);
+    if (isPiriZone) {
+      asphalt.addColorStop(0, '#1a0810');
+      asphalt.addColorStop(1, '#300d18');
+    } else {
+      asphalt.addColorStop(0, '#3a3a38');
+      asphalt.addColorStop(1, '#2e2e2c');
     }
+    ctx.fillStyle = asphalt;
+    ctx.fillRect(0, lotY, W, H - lotY);
+
+    // Curb / sidewalk strip at store front
+    ctx.fillStyle = isPiriZone ? '#3a1520' : '#6a6560';
+    ctx.fillRect(0, lotY, W, 12);
+
+    // Painted parking space lines (far bay)
+    ctx.strokeStyle = isPiriZone ? 'rgba(255,100,100,0.35)' : 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 1.5;
+    const spaceW = 55;
+    const farLineY = lotY + 55;
+    const farLineH = 42;
+    const lineOffset = this.offset * 0.18 % spaceW;
+    for (let x = -spaceW + lineOffset; x < W + spaceW; x += spaceW) {
+      ctx.beginPath();
+      ctx.moveTo(x, farLineY);
+      ctx.lineTo(x, farLineY + farLineH);
+      ctx.stroke();
+    }
+    // Far lane line
+    ctx.strokeStyle = isPiriZone ? 'rgba(255,150,150,0.4)' : 'rgba(255,255,255,0.45)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, lotY + 108);
+    ctx.lineTo(W, lotY + 108);
+    ctx.stroke();
+
+    // Drive lane — where player runs (slightly different shade)
+    ctx.fillStyle = isPiriZone ? 'rgba(60,0,20,0.4)' : 'rgba(0,0,0,0.12)';
+    ctx.fillRect(0, lotY + 108, W, 140);
+
+    // Painted parking space lines (near bay, below player lane)
+    ctx.strokeStyle = isPiriZone ? 'rgba(255,100,100,0.3)' : 'rgba(255,255,255,0.25)';
+    ctx.lineWidth = 1.5;
+    const nearLineY = lotY + 260;
+    const nearOffset = this.offset * 0.6 % spaceW;
+    for (let x = -spaceW + nearOffset; x < W + spaceW; x += spaceW) {
+      ctx.beginPath();
+      ctx.moveTo(x, nearLineY);
+      ctx.lineTo(x, nearLineY + 50);
+      ctx.stroke();
+    }
+
+    // Drive lane arrows (painted on ground)
+    ctx.fillStyle = isPiriZone ? 'rgba(255,100,100,0.15)' : 'rgba(255,255,255,0.10)';
+    const arrowPeriod = 180;
+    const arrowOffset = this.offset * 0.5 % arrowPeriod;
+    for (let x = -arrowPeriod + arrowOffset; x < W + arrowPeriod; x += arrowPeriod) {
+      ctx.save();
+      ctx.translate(x + 20, lotY + 170);
+      ctx.beginPath();
+      ctx.moveTo(10, 0);
+      ctx.lineTo(-10, -8);
+      ctx.lineTo(-4, 0);
+      ctx.lineTo(-10, 8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  _drawLightPole(ctx, light, t) {
+    const x = light.x;
+    const groundY = 554;
+    const poleH = 130;
+    const topY = groundY - poleH;
+
+    // Pole
+    ctx.fillStyle = '#888';
+    ctx.fillRect(x - 3, topY, 6, poleH);
+
+    // Arm
+    ctx.fillStyle = '#999';
+    ctx.fillRect(x - 3, topY, 36, 5);
+
+    // Lamp housing
+    ctx.fillStyle = '#555';
+    ctx.fillRect(x + 25, topY - 10, 20, 12);
+
+    // Light glow
+    const gAlpha = 0.6 + 0.1 * Math.sin(t * 0.004 + light.phase);
+    const grd = ctx.createRadialGradient(x + 35, topY + 2, 0, x + 35, topY + 2, 50);
+    grd.addColorStop(0, `rgba(255,220,100,${gAlpha})`);
+    grd.addColorStop(0.3, `rgba(255,200,80,${gAlpha * 0.4})`);
+    grd.addColorStop(1, 'transparent');
+    ctx.fillStyle = grd;
+    ctx.fillRect(x - 15, topY - 20, 100, 80);
+
+    // Light cone on ground
+    ctx.fillStyle = `rgba(255,220,100,0.04)`;
+    ctx.beginPath();
+    ctx.moveTo(x + 35, topY + 2);
+    ctx.lineTo(x - 30, groundY + 80);
+    ctx.lineTo(x + 100, groundY + 80);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  _drawParkedCar(ctx, x, y, w, h, color, alpha) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.25)';
+    ctx.fillRect(x + 4, y + h + 2, w - 4, 6);
+
+    // Body
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, w, h);
+
+    // Roof
+    ctx.fillStyle = this._darken(color, 0.7);
+    ctx.fillRect(x + w * 0.15, y - h * 0.45, w * 0.7, h * 0.5);
+
+    // Windshield
+    ctx.fillStyle = 'rgba(180,220,255,0.7)';
+    ctx.fillRect(x + w * 0.18, y - h * 0.4, w * 0.27, h * 0.35);
+    ctx.fillRect(x + w * 0.52, y - h * 0.4, w * 0.27, h * 0.35);
+
+    // Wheels
+    ctx.fillStyle = '#1a1a1a';
+    [x + 10, x + w - 22].forEach(wx => {
+      ctx.beginPath();
+      ctx.arc(wx + 6, y + h, 8, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
     ctx.restore();
+  }
+
+  _drawBgCart(ctx, c) {
+    if (c.x < -30 || c.x > CONFIG.CANVAS_WIDTH + 30) return;
+    const y = 585;
+    ctx.save();
+    ctx.globalAlpha = 0.35;
+    ctx.strokeStyle = '#AAA';
+    ctx.lineWidth = 1.5;
+    // Frame
+    ctx.strokeRect(c.x, y - 22, 22, 20);
+    // Handle
+    ctx.beginPath();
+    ctx.moveTo(c.x - 4, y - 22);
+    ctx.lineTo(c.x + 4, y - 34);
+    ctx.lineTo(c.x + 22, y - 34);
+    ctx.stroke();
+    // Wheels
+    ctx.fillStyle = '#888';
+    ctx.beginPath();
+    ctx.arc(c.x + 4, y, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(c.x + 18, y, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  _darken(hex, factor) {
+    if (!hex.startsWith('#') || hex.length < 7) return hex;
+    let r = parseInt(hex.slice(1, 3), 16);
+    let g = parseInt(hex.slice(3, 5), 16);
+    let b = parseInt(hex.slice(5, 7), 16);
+    r = Math.floor(r * factor);
+    g = Math.floor(g * factor);
+    b = Math.floor(b * factor);
+    return `rgb(${r},${g},${b})`;
   }
 }

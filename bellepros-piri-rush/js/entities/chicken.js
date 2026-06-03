@@ -1,33 +1,45 @@
 'use strict';
 
+// Food item emojis and names per rarity
+const FOOD_EMOJI = {
+  COMMON:    '🍔',  // Burger
+  RARE:      '🌭',  // Hot Dog
+  EPIC:      '🍟',  // Poutine
+  LEGENDARY: '🍗',  // Rotisserie Chicken
+};
+
+const FOOD_LABEL = {
+  COMMON:    'BURGER',
+  RARE:      'HOT DOG',
+  EPIC:      'POUTINE 🔥',
+  LEGENDARY: 'CHICKEN ⭐',
+};
+
 class Chicken {
   constructor(type, x, game) {
-    this.type = type;  // 'COMMON' | 'RARE' | 'EPIC' | 'LEGENDARY'
+    this.type = type;
     this.cfg = CONFIG.CHICKEN_TYPES[type];
     this.x = x;
     this.game = game;
 
-    // Spawn at random height in "catchable" zone
-    this.baseY = Utils.randomBetween(420, 640);
+    this.baseY = Utils.randomBetween(420, 630);
     this.y = this.baseY;
-    this.vy = 0;
     this.phase = Math.random() * Math.PI * 2;
-    this.amplitude = Utils.randomBetween(20, 55);
+    this.amplitude = Utils.randomBetween(18, 50);
     this.frequency = Utils.randomBetween(0.002, 0.005);
     this.size = this.cfg.size;
     this.active = true;
     this.caught = false;
 
-    // AR mode flag
     this.isARChicken = false;
-    this.arX = 0; this.arY = 0; // screen coords in AR
+    this.arX = 0; this.arY = 0;
 
-    // Trail for epic/legendary
     this.trail = [];
     this.trailTimer = 0;
-
-    // Rotation for legendary
     this.rotation = 0;
+
+    // Unique wobble per item
+    this.wobbleSpeed = Utils.randomBetween(0.003, 0.007);
   }
 
   update(dt, gameSpeed) {
@@ -36,10 +48,9 @@ class Chicken {
     this.y = this.baseY + Math.sin(this.game.time * this.frequency + this.phase) * this.amplitude;
 
     if (this.type === 'LEGENDARY') {
-      this.rotation += 0.04;
+      this.rotation += 0.035;
     }
 
-    // Trail
     if (this.type === 'EPIC' || this.type === 'LEGENDARY') {
       this.trailTimer += dt;
       if (this.trailTimer > 40) {
@@ -63,22 +74,23 @@ class Chicken {
     if (!this.active) return;
 
     const cfg = this.cfg;
+    const emoji = FOOD_EMOJI[this.type];
     ctx.save();
 
-    // Trail
-    this.trail.forEach((p, i) => {
-      ctx.globalAlpha = p.alpha * 0.6;
-      ctx.font = `${this.size * 0.7}px serif`;
+    // Trail (epic/legendary)
+    this.trail.forEach(p => {
+      ctx.globalAlpha = p.alpha * 0.5;
+      ctx.font = `${this.size * 0.65}px serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('🍗', p.x, p.y);
+      ctx.fillText(emoji, p.x, p.y);
     });
     ctx.globalAlpha = 1;
 
-    // Glow
+    // Glow ring (non-common)
     if (this.type !== 'COMMON') {
       const pulse = 0.7 + 0.3 * Math.sin(t * 0.006 + this.phase);
-      const glowR = this.size * (1.3 + 0.2 * pulse);
+      const glowR = this.size * (1.4 + 0.2 * pulse);
       const grd = ctx.createRadialGradient(this.x, this.y, this.size * 0.2, this.x, this.y, glowR);
       grd.addColorStop(0, cfg.glowColor);
       grd.addColorStop(1, 'rgba(0,0,0,0)');
@@ -88,57 +100,65 @@ class Chicken {
       ctx.fill();
     }
 
-    // Fire ring for EPIC
+    // EPIC: flame ring
     if (this.type === 'EPIC') {
-      ctx.strokeStyle = 'rgba(255,120,20,0.8)';
+      ctx.strokeStyle = 'rgba(255,120,20,0.85)';
       ctx.lineWidth = 3;
-      const fireR = this.size * 0.8 + 3 * Math.sin(t * 0.012);
+      const fireR = this.size * 0.82 + 3 * Math.sin(t * 0.012);
       ctx.beginPath();
       ctx.arc(this.x, this.y, fireR, 0, Math.PI * 2);
       ctx.stroke();
-    }
-
-    // Orbiting stars for LEGENDARY
-    if (this.type === 'LEGENDARY') {
-      for (let i = 0; i < 4; i++) {
-        const angle = this.rotation + i * (Math.PI / 2);
-        const ox = Math.cos(angle) * (this.size + 8);
-        const oy = Math.sin(angle) * (this.size + 8);
-        ctx.font = '12px serif';
+      // Steam wisps around poutine
+      for (let i = 0; i < 3; i++) {
+        const angle = (t * 0.003 + i * 2.1) % (Math.PI * 2);
+        const sx = this.x + Math.cos(angle) * (this.size + 4);
+        const sy = this.y + Math.sin(angle) * (this.size + 4) - 4;
+        ctx.fillStyle = `rgba(255,200,80,${0.5 + 0.3 * Math.sin(t * 0.008 + i)})`;
+        ctx.font = '10px serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(['⭐', '✨', '💫', '🌟'][i], this.x + ox, this.y + oy);
+        ctx.fillText('💨', sx, sy);
       }
-
-      ctx.save();
-      ctx.translate(this.x, this.y);
-      ctx.rotate(Math.sin(t * 0.003) * 0.2);
-      ctx.font = `${this.size}px serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-
-      // Color overlay for rare/legendary
-      if (cfg.hue !== null) {
-        ctx.filter = `hue-rotate(${cfg.hue}deg) saturate(2) brightness(1.3)`;
-      }
-      ctx.fillText('🍗', 0, 0);
-      ctx.filter = 'none';
-      ctx.restore();
-    } else {
-      ctx.save();
-      ctx.translate(this.x, this.y);
-      const bob = Math.sin(t * this.frequency * 3 + this.phase) * 3;
-      ctx.translate(0, bob);
-      ctx.font = `${this.size}px serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      if (cfg.hue !== null) {
-        ctx.filter = `hue-rotate(${cfg.hue}deg) saturate(2) brightness(1.4)`;
-      }
-      ctx.fillText('🍗', 0, 0);
-      ctx.filter = 'none';
-      ctx.restore();
     }
+
+    // LEGENDARY: orbiting sauce drops
+    if (this.type === 'LEGENDARY') {
+      const orbitEmojis = ['🌶️', '✨', '💫', '🌶️'];
+      for (let i = 0; i < 4; i++) {
+        const angle = this.rotation + i * (Math.PI / 2);
+        const ox = Math.cos(angle) * (this.size + 10);
+        const oy = Math.sin(angle) * (this.size + 10);
+        ctx.font = '13px serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(orbitEmojis[i], this.x + ox, this.y + oy);
+      }
+    }
+
+    // Main food emoji
+    ctx.save();
+    ctx.translate(this.x, this.y);
+
+    if (this.type === 'LEGENDARY') {
+      ctx.rotate(Math.sin(t * 0.003) * 0.18);
+    } else {
+      const bob = Math.sin(t * this.wobbleSpeed * 3 + this.phase) * 3;
+      ctx.translate(0, bob);
+      // Slight tilt sway
+      ctx.rotate(Math.sin(t * this.wobbleSpeed + this.phase) * 0.12);
+    }
+
+    ctx.font = `${this.size}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Color filter for rare items
+    if (cfg.hue !== null) {
+      ctx.filter = `hue-rotate(${cfg.hue}deg) saturate(1.8) brightness(1.3)`;
+    }
+    ctx.fillText(emoji, 0, 0);
+    ctx.filter = 'none';
+    ctx.restore();
 
     // Rarity badge
     if (this.type !== 'COMMON') {
@@ -146,9 +166,8 @@ class Chicken {
       ctx.textAlign = 'center';
       ctx.fillStyle = '#FFF';
       ctx.shadowColor = '#000';
-      ctx.shadowBlur = 4;
-      const badge = { RARE: 'RARE', EPIC: 'EPIC 🔥', LEGENDARY: 'LEGEND ⭐' }[this.type];
-      ctx.fillText(badge, this.x, this.y - this.size * 0.7 - 4);
+      ctx.shadowBlur = 5;
+      ctx.fillText(FOOD_LABEL[this.type], this.x, this.y - this.size * 0.7 - 5);
       ctx.shadowBlur = 0;
     }
 

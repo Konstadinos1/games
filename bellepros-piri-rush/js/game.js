@@ -471,30 +471,77 @@ class Game {
   }
 
   _drawBootSplash(ctx, W, H) {
-    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+    // Parking lot background tint
+    ctx.fillStyle = '#14080A';
     ctx.fillRect(0, 0, W, H);
 
-    // Logo
-    ctx.fillStyle = CONFIG.COLORS.PRIMARY;
-    ctx.fillRect(W / 2 - 100, H / 2 - 120, 200, 120);
-    ctx.fillStyle = '#FFF';
-    ctx.font = 'bold 36px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('bellepros', W / 2, H / 2 - 60);
-    ctx.fillStyle = '#FFD700';
-    ctx.font = 'bold 22px Arial';
-    ctx.fillText('PIRI RUSH', W / 2, H / 2 - 30);
+    // Soft radial glow
+    const grd = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W * 0.7);
+    grd.addColorStop(0, 'rgba(232,25,44,0.18)');
+    grd.addColorStop(1, 'transparent');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, W, H);
 
-    ctx.fillStyle = '#FFF';
-    ctx.font = '16px Arial';
-    ctx.fillText('Loading...', W / 2, H / 2 + 20);
+    // ── Bellepros logo card ──
+    const cardW = 240, cardH = 130;
+    const cardX = W / 2 - cardW / 2;
+    const cardY = H / 2 - cardH / 2 - 40;
+
+    // Card shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.beginPath();
+    ctx.roundRect(cardX + 6, cardY + 6, cardW, cardH, 12);
+    ctx.fill();
+
+    // Card background — brand red
+    ctx.fillStyle = CONFIG.COLORS.PRIMARY;
+    ctx.beginPath();
+    ctx.roundRect(cardX, cardY, cardW, cardH, 12);
+    ctx.fill();
+
+    // Subtle inner highlight at top
+    const hlGrd = ctx.createLinearGradient(cardX, cardY, cardX, cardY + cardH * 0.5);
+    hlGrd.addColorStop(0, 'rgba(255,255,255,0.15)');
+    hlGrd.addColorStop(1, 'transparent');
+    ctx.fillStyle = hlGrd;
+    ctx.beginPath();
+    ctx.roundRect(cardX, cardY, cardW, cardH * 0.5, [12, 12, 0, 0]);
+    ctx.fill();
+
+    // BELLEPROS wordmark
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 40px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('bellepros', W / 2, cardY + cardH * 0.38);
+
+    // PIRI RUSH sub-title
+    ctx.fillStyle = '#FFD700';
+    ctx.font = 'bold 20px Arial, sans-serif';
+    ctx.letterSpacing = '3px';
+    ctx.fillText('PIRI RUSH', W / 2, cardY + cardH * 0.72);
+    ctx.letterSpacing = '0px';
+
+    // Pepper icons on sides
+    ctx.font = '20px serif';
+    ctx.fillText('🌶️', cardX + 22, cardY + cardH * 0.38);
+    ctx.fillText('🌶️', cardX + cardW - 22, cardY + cardH * 0.38);
+
+    // Loading text
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = '15px Arial';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText('Loading...', W / 2, H / 2 + 70);
 
     const dots = '.'.repeat(Math.floor(this.time / 300) % 4);
-    ctx.fillText(dots, W / 2, H / 2 + 44);
+    ctx.fillStyle = 'rgba(255,215,0,0.8)';
+    ctx.font = '18px Arial';
+    ctx.fillText(dots, W / 2, H / 2 + 92);
 
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    ctx.font = '12px Arial';
-    ctx.fillText('Proudly Montreal 🍁', W / 2, H - 30);
+    // Tagline
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '11px Arial';
+    ctx.fillText('Catch the heat. Run the lot. Proudly Montreal 🍁', W / 2, H - 30);
   }
 
   // ── Main loop ──

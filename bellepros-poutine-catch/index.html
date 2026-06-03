@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#09090b">
+    <title>Pluie de Poutine — Bellepros Laval</title>
+
+    <!-- Tailwind (CDN) — styling framework per spec. Game logic is pure vanilla JS so it still runs if the CDN is blocked. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- High-contrast Google Fonts: Fredoka One (retro/comic titles) + Outfit (legible UI) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* ---- Critical CSS: keeps the game laid out & playable even if the Tailwind CDN is unreachable ---- */
+        :root { --bp-red:#E8192C; --bp-amber:#F59E0B; --bp-gold:#FFD700; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body { margin:0; padding:0; height:100%; }
+        body {
+            font-family:'Outfit', system-ui, -apple-system, sans-serif;
+            background:#09090b; color:#fff;
+            touch-action: manipulation; overflow:hidden;
+            min-height:100vh; min-height:100dvh;
+            display:flex; align-items:center; justify-content:center;
+        }
+        .neon-title {
+            font-family:'Fredoka One','Outfit',cursive;
+            text-shadow:3px 3px 0px #7f1d1d, 6px 6px 0px #000;
+            letter-spacing:.5px;
+        }
+        .font-display { font-family:'Fredoka One','Outfit',cursive; }
+
+        /* Stage: fixed logical design size, uniformly scaled to fit any screen via #scaler */
+        #scaler { transform-origin:center center; will-change:transform; }
+        #stage  { position:relative; width:414px; height:736px; }
+        #game   { position:absolute; inset:0; width:414px; height:736px; display:block; border-radius:22px; }
+
+        .overlay { position:absolute; inset:0; display:flex; flex-direction:column;
+                   align-items:center; justify-content:center; padding:20px; border-radius:22px; }
+        .hidden  { display:none !important; }
+
+        /* Arcade-cabinet neon frame (desktop flourish) */
+        .cabinet-glow { box-shadow:0 0 0 3px rgba(232,25,44,.55), 0 0 36px 6px rgba(232,25,44,.35),
+                        0 0 90px 18px rgba(245,158,11,.18), inset 0 0 60px rgba(0,0,0,.6); }
+        .inset-screen { box-shadow: inset 0 0 50px rgba(0,0,0,.85), inset 0 0 8px rgba(0,0,0,.9); }
+
+        /* Animated pulse for primary action buttons */
+        @keyframes bp-pulse { 0%,100%{ transform:scale(1); box-shadow:0 0 0 0 rgba(245,158,11,.55);}
+                              50%{ transform:scale(1.04); box-shadow:0 0 30px 8px rgba(245,158,11,.55);} }
+        .pulse-cta { animation: bp-pulse 1.5s ease-in-out infinite; }
+        @keyframes bp-pop { 0%{ transform:scale(.7); opacity:0;} 60%{ transform:scale(1.06);} 100%{ transform:scale(1); opacity:1;} }
+        .pop-in { animation: bp-pop .42s cubic-bezier(.2,1.4,.4,1) both; }
+        @keyframes bp-float { 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-7px);} }
+        .float-soft { animation: bp-float 3.2s ease-in-out infinite; }
+        @keyframes bp-spin { to { transform:rotate(360deg);} }
+        .neon-flicker { animation: bp-flick 4s infinite steps(1); }
+        @keyframes bp-flick { 0%,19%,21%,80%,100%{opacity:1;} 20%,82%{opacity:.78;} }
+        @keyframes bp-marquee { 0%{ background-position:0 0;} 100%{ background-position:40px 0;} }
+
+        .btn { min-height:48px; min-width:48px; cursor:pointer; transition:transform .08s ease, filter .15s ease, background .15s ease;
+                border:none; font-family:'Outfit',sans-serif; font-weight:800; }
+        .btn:hover { filter:brightness(1.08); }
+        .btn:active { transform:scale(.95); }
+
+        /* Coupon ticket perforation */
+        .ticket-notch { position:relative; }
+        .ticket-notch::before, .ticket-notch::after {
+            content:''; position:absolute; width:26px; height:26px; background:#09090b; border-radius:50%;
+            top:50%; transform:translateY(-50%); }
+        .ticket-notch::before { left:-13px; } .ticket-notch::after { right:-13px; }
+        .dashed-sep { border-top:2px dashed rgba(0,0,0,.25); }
+
+        /* Subtle CRT scanlines on the screen for arcade feel */
+        .scanlines { position:absolute; inset:0; pointer-events:none; border-radius:22px; z-index:40;
+            background:repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,.06) 3px);
+            mix-blend-mode:multiply; opacity:.5; }
+        .vig { position:absolute; inset:0; pointer-events:none; border-radius:22px; z-index:39;
+            box-shadow: inset 0 0 80px 10px rgba(0,0,0,.55); }
+
+        input[type=range]{ accent-color: var(--bp-amber); }
+        .no-scroll { overscroll-behavior:none; }
+        ::-webkit-scrollbar{ width:0; height:0; }
+    </style>
+</head>
+<body class="bg-zinc-950 text-white no-scroll">
+
+    <!-- ============================== ARCADE CABINET / STOREFRONT FRAME ============================== -->
+    <div id="cabinet" class="relative flex flex-col items-center">
+
+        <!-- Desktop marquee (hidden on small screens) -->
+        <div id="marquee" class="hidden md:flex flex-col items-center mb-3 select-none">
+            <div class="flex items-center gap-3 px-7 py-2 rounded-2xl"
+                 style="background:linear-gradient(180deg,#1c1917,#0c0a09); box-shadow:0 0 0 2px rgba(232,25,44,.5), 0 0 26px rgba(232,25,44,.35);">
+                <span class="inline-flex items-center justify-center w-9 h-9 rounded-full"
+                      style="background:var(--bp-red); box-shadow:0 0 14px rgba(232,25,44,.7);">
+                    <i class="fa-solid fa-pepper-hot text-white text-lg"></i>
+                </span>
+                <span class="font-display text-2xl tracking-wide"
+                      style="color:#fff; text-shadow:0 0 12px rgba(232,25,44,.7);">BELLEPROS</span>
+                <span class="text-amber-400/80 text-sm font-bold tracking-[.3em] uppercase">Laval</span>
+            </div>
+        </div>
+
+        <!-- The cabinet body wraps the scaled screen -->
+        <div id="cabinet-body" class="relative rounded-[34px] p-2 md:p-4 md:cabinet-glow"
+             style="background:linear-gradient(160deg,#27272a,#09090b 60%);">
+            <div id="screen-wrap" class="relative rounded-[24px] overflow-hidden inset-screen" style="background:#000;">
+                <div id="fit" class="flex items-center justify-center">
+                    <div id="scaler">
+                        <div id="stage" class="no-scroll">
+
+                            <!-- The single game canvas: storefront, items, tray, particles, FX all drawn here -->
+                            <canvas id="game" width="828" height="1472" aria-label="Pluie de Poutine game canvas"></canvas>
+                            <div class="vig"></div>
+                            <div class="scanlines"></div>
+
+                            <!-- ===================== FLOATING HUD (visible while playing) ===================== -->
+                            <div id="hud" class="absolute top-0 left-0 right-0 z-30 px-3 pt-3 flex items-start justify-between gap-2 hidden">
+                                <!-- Left: score + progress to coupon -->
+                                <div class="rounded-2xl px-3 py-2 backdrop-blur-md min-w-[124px]"
+                                     style="background:rgba(9,9,11,.55); box-shadow:0 0 0 1px rgba(255,255,255,.08);">
+                                    <div class="flex items-baseline gap-1.5">
+                                        <span id="hudScoreLabel" data-i18n="hud_score" class="text-[10px] font-bold tracking-widest text-amber-300/80 uppercase">Pointage</span>
+                                    </div>
+                                    <div id="hudScore" class="font-display text-2xl leading-none text-white" style="text-shadow:0 2px 0 #7f1d1d;">0</div>
+                                    <!-- Progress bar to coupon -->
+                                    <div class="mt-1.5 h-2 w-full rounded-full overflow-hidden" style="background:rgba(255,255,255,.14);">
+                                        <div id="hudProgress" class="h-full rounded-full transition-all duration-200"
+                                             style="width:0%; background:linear-gradient(90deg,#F59E0B,#FFD700);"></div>
+                                    </div>
+                                    <div id="hudGoal" class="mt-1 text-[10px] font-semibold text-zinc-300/80">0 / 100</div>
+                                </div>
+
+                                <!-- Center: combo -->
+                                <div id="hudCombo" class="opacity-0 transition-opacity rounded-xl px-3 py-1.5 backdrop-blur-md self-center mt-1"
+                                     style="background:rgba(232,25,44,.22); box-shadow:0 0 0 1px rgba(232,25,44,.4);">
+                                    <div class="font-display text-base leading-none text-amber-300" style="text-shadow:0 0 10px rgba(245,158,11,.8);">x1</div>
+                                </div>
+
+                                <!-- Right: lives + controls -->
+                                <div class="flex flex-col items-end gap-2">
+                                    <div class="flex items-center gap-2">
+                                        <button id="btnLang" class="btn rounded-xl px-2.5 text-xs text-white backdrop-blur-md"
+                                                style="background:rgba(9,9,11,.55); box-shadow:0 0 0 1px rgba(255,255,255,.12); height:40px;"
+                                                aria-label="Switch language">
+                                            <i class="fa-solid fa-language mr-1 text-amber-300"></i><span id="btnLangTxt">EN</span>
+                                        </button>
+                                        <button id="btnMute" class="btn rounded-xl text-white backdrop-blur-md flex items-center justify-center"
+                                                style="background:rgba(9,9,11,.55); box-shadow:0 0 0 1px rgba(255,255,255,.12); width:40px; height:40px;"
+                                                aria-label="Toggle sound"><i id="muteIcon" class="fa-solid fa-volume-high text-amber-300"></i></button>
+                                        <button id="btnPause" class="btn rounded-xl text-white backdrop-blur-md flex items-center justify-center"
+                                                style="background:rgba(9,9,11,.55); box-shadow:0 0 0 1px rgba(255,255,255,.12); width:40px; height:40px;"
+                                                aria-label="Pause"><i class="fa-solid fa-pause text-amber-300"></i></button>
+                                    </div>
+                                    <div id="hudLives" class="flex items-center gap-1 rounded-xl px-2.5 py-1.5 backdrop-blur-md"
+                                         style="background:rgba(9,9,11,.55); box-shadow:0 0 0 1px rgba(255,255,255,.08); height:40px;">
+                                        <!-- hearts injected -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ===================== START / MENU SCREEN ===================== -->
+                            <div id="screen-menu" class="overlay z-30" style="background:radial-gradient(120% 80% at 50% 0%, rgba(9,9,11,.35), rgba(9,9,11,.82) 70%);">
+                                <!-- top controls -->
+                                <div class="absolute top-3 right-3 flex gap-2">
+                                    <button id="btnLang2" class="btn rounded-xl px-3 text-sm text-white backdrop-blur-md"
+                                            style="background:rgba(9,9,11,.6); box-shadow:0 0 0 1px rgba(255,255,255,.14); height:44px;" aria-label="Switch language">
+                                        <i class="fa-solid fa-language mr-1 text-amber-300"></i><span id="btnLangTxt2">EN</span>
+                                    </button>
+                                    <button id="btnMute2" class="btn rounded-xl text-white backdrop-blur-md flex items-center justify-center"
+                                            style="background:rgba(9,9,11,.6); box-shadow:0 0 0 1px rgba(255,255,255,.14); width:44px; height:44px;" aria-label="Toggle sound">
+                                        <i id="muteIcon2" class="fa-solid fa-volume-high text-amber-300"></i></button>
+                                </div>
+
+                                <div class="flex-1"></div>
+
+                                <!-- brand + title -->
+                                <div class="text-center float-soft">
+                                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-3"
+                                         style="background:var(--bp-red); box-shadow:0 6px 22px rgba(232,25,44,.45);">
+                                        <i class="fa-solid fa-pepper-hot text-white"></i>
+                                        <span class="font-display text-lg tracking-wide">BELLEPROS</span>
+                                        <span class="text-white/70 text-xs font-bold tracking-[.25em] uppercase">Laval</span>
+                                    </div>
+                                    <h1 id="title" class="neon-title text-[44px] leading-[0.95] text-amber-400">PLUIE<br>DE POUTINE</h1>
+                                    <p id="subtitle" class="mt-2 text-zinc-300 text-sm font-semibold tracking-wide">Rôtisserie • Poutine • Steamies</p>
+                                </div>
+
+                                <!-- how-to legend -->
+                                <div class="mt-5 w-full max-w-[330px] rounded-2xl p-3 backdrop-blur-md"
+                                     style="background:rgba(24,24,27,.6); box-shadow:0 0 0 1px rgba(255,255,255,.08);">
+                                    <p id="tagline" class="text-center text-[13px] text-zinc-300 leading-snug mb-3">Attrape les ingrédients, évite la pluie et débloque un vrai rabais en magasin!</p>
+                                    <div id="legend" class="grid grid-cols-5 gap-1.5"></div>
+                                </div>
+
+                                <!-- play button -->
+                                <button id="btnPlay" class="btn pulse-cta mt-6 rounded-2xl px-10 py-4 text-2xl font-display text-white flex items-center gap-3"
+                                        style="background:linear-gradient(180deg,#F59E0B,#E8192C); box-shadow:0 10px 30px rgba(232,25,44,.5);">
+                                    <i class="fa-solid fa-play"></i><span data-i18n="play">JOUER</span>
+                                </button>
+
+                                <div class="mt-3 text-zinc-400 text-xs font-semibold">
+                                    <i class="fa-solid fa-trophy text-amber-400 mr-1"></i>
+                                    <span data-i18n="best">Record</span>: <span id="menuBest">0</span>
+                                </div>
+
+                                <div class="flex-1"></div>
+
+                                <!-- storefront footer -->
+                                <div class="text-center pb-1">
+                                    <p id="locLine" class="text-[11px] text-zinc-400 font-semibold">Bellepros Laval • 2500, boul. Daniel-Johnson</p>
+                                    <p id="scanLine" class="text-[10px] text-amber-400/70 font-bold tracking-[.25em] uppercase mt-0.5">Scanne • Joue • Gagne</p>
+                                </div>
+                            </div>
+
+                            <!-- ===================== PAUSE SCREEN ===================== -->
+                            <div id="screen-pause" class="overlay z-30 hidden" style="background:rgba(9,9,11,.78); backdrop-filter:blur(6px);">
+                                <i class="fa-solid fa-pepper-hot text-amber-400 text-3xl mb-2"></i>
+                                <h2 id="pauseTitle" class="neon-title text-4xl text-amber-400 mb-6" data-i18n="pause_title">PAUSE</h2>
+                                <button id="btnResume" class="btn pulse-cta rounded-2xl px-8 py-3.5 text-xl font-display text-white mb-3 flex items-center gap-2"
+                                        style="background:linear-gradient(180deg,#F59E0B,#E8192C); box-shadow:0 8px 24px rgba(232,25,44,.45);">
+                                    <i class="fa-solid fa-play"></i><span data-i18n="resume">Reprendre</span>
+                                </button>
+                                <button id="btnRestart" class="btn rounded-xl px-7 py-3 text-base text-white mb-3" style="background:rgba(255,255,255,.1); box-shadow:0 0 0 1px rgba(255,255,255,.15);">
+                                    <i class="fa-solid fa-rotate-right mr-2"></i><span data-i18n="restart">Recommencer</span>
+                                </button>
+                                <button id="btnMenu1" class="btn rounded-xl px-7 py-2.5 text-sm text-zinc-300" style="background:rgba(255,255,255,.06);">
+                                    <i class="fa-solid fa-house mr-2"></i><span data-i18n="menu">Menu</span>
+                                </button>
+                            </div>
+
+                            <!-- ===================== COUPON UNLOCKED MODAL ===================== -->
+                            <div id="screen-coupon" class="overlay z-30 hidden" style="background:radial-gradient(100% 70% at 50% 30%, rgba(245,158,11,.18), rgba(9,9,11,.88) 70%); backdrop-filter:blur(4px);">
+                                <div class="pop-in w-full max-w-[330px]">
+                                    <div class="text-center mb-3">
+                                        <div class="inline-block px-4 py-1 rounded-full text-xs font-black tracking-[.25em] uppercase mb-2"
+                                             style="background:var(--bp-red);"><span data-i18n="reward_unlocked">Récompense débloquée</span></div>
+                                        <h2 id="couponTitle" class="neon-title text-3xl text-amber-400" data-i18n="coupon_title">COUPON DÉBLOQUÉ!</h2>
+                                        <p id="couponCongrats" class="text-zinc-300 text-xs mt-1" data-i18n="coupon_congrats">Bravo! Tu as atteint 100 points.</p>
+                                    </div>
+
+                                    <!-- The physical ticket -->
+                                    <div class="ticket-notch rounded-2xl overflow-hidden" style="background:#FFF6E6; color:#1c1917; box-shadow:0 18px 40px rgba(0,0,0,.55);">
+                                        <div class="px-4 pt-4 pb-3 text-center" style="background:linear-gradient(180deg,#E8192C,#b91c1c); color:#fff;">
+                                            <div class="flex items-center justify-center gap-2 text-[11px] font-bold tracking-[.2em] uppercase opacity-90">
+                                                <i class="fa-solid fa-pepper-hot"></i> Bellepros Laval
+                                            </div>
+                                            <div id="couponOffer" class="font-display text-2xl mt-1 leading-tight" data-i18n="coupon_offer">DOUBLE FROMAGE GRATUIT</div>
+                                            <div id="couponOfferSub" class="text-[12px] font-semibold opacity-90" data-i18n="coupon_offer_sub">à l'achat d'un combo régulier</div>
+                                        </div>
+
+                                        <div class="flex items-center gap-3 px-4 py-3">
+                                            <!-- Deterministic mock QR (pure JS grid algorithm) -->
+                                            <div class="rounded-lg p-1.5" style="background:#fff; box-shadow:0 0 0 1px rgba(0,0,0,.12);">
+                                                <canvas id="qr" width="252" height="252" style="width:120px;height:120px;display:block;border-radius:4px;"></canvas>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="text-[10px] font-bold uppercase tracking-wide text-zinc-500" data-i18n="coupon_code_label">Code coupon</div>
+                                                <div id="couponCode" class="font-display text-lg text-red-700 break-all leading-tight">BP-LVL-XXXXXX</div>
+                                                <p id="couponScan" class="text-[10.5px] text-zinc-600 mt-1 leading-snug" data-i18n="coupon_scan">Présente ce code au comptoir Bellepros Laval.</p>
+                                            </div>
+                                        </div>
+                                        <div class="dashed-sep mx-4"></div>
+                                        <div id="couponValid" class="px-4 py-2 text-center text-[10.5px] font-semibold text-zinc-500" data-i18n="coupon_valid">Valide 7 jours • Limite 1 par client</div>
+                                    </div>
+
+                                    <button id="btnCouponContinue" class="btn pulse-cta mt-4 w-full rounded-2xl py-3.5 text-lg font-display text-white flex items-center justify-center gap-2"
+                                            style="background:linear-gradient(180deg,#F59E0B,#E8192C); box-shadow:0 8px 24px rgba(232,25,44,.45);">
+                                        <i class="fa-solid fa-forward"></i><span data-i18n="coupon_continue">Continuer à jouer</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- ===================== GAME OVER SCREEN ===================== -->
+                            <div id="screen-gameover" class="overlay z-30 hidden" style="background:radial-gradient(100% 70% at 50% 25%, rgba(232,25,44,.2), rgba(9,9,11,.9) 70%); backdrop-filter:blur(4px);">
+                                <h2 id="goTitle" class="neon-title text-4xl text-red-500 mb-1" data-i18n="go_title">PARTIE TERMINÉE</h2>
+                                <div id="goNewBest" class="hidden text-amber-400 text-sm font-display mb-2 pop-in"><i class="fa-solid fa-trophy mr-1"></i><span data-i18n="go_newbest">Nouveau record!</span></div>
+
+                                <div class="flex gap-3 my-3">
+                                    <div class="rounded-2xl px-5 py-3 text-center backdrop-blur-md" style="background:rgba(24,24,27,.6); box-shadow:0 0 0 1px rgba(255,255,255,.08);">
+                                        <div class="text-[10px] font-bold uppercase tracking-widest text-zinc-400" data-i18n="go_score">Pointage</div>
+                                        <div id="goScore" class="font-display text-3xl text-white">0</div>
+                                    </div>
+                                    <div class="rounded-2xl px-5 py-3 text-center backdrop-blur-md" style="background:rgba(24,24,27,.6); box-shadow:0 0 0 1px rgba(255,255,255,.08);">
+                                        <div class="text-[10px] font-bold uppercase tracking-widest text-zinc-400" data-i18n="go_best">Record</div>
+                                        <div id="goBest" class="font-display text-3xl text-amber-400">0</div>
+                                    </div>
+                                </div>
+
+                                <!-- Ad-revive offer -->
+                                <div id="reviveBox" class="w-full max-w-[320px] rounded-2xl p-4 mt-2 backdrop-blur-md text-center"
+                                     style="background:linear-gradient(180deg,rgba(245,158,11,.16),rgba(232,25,44,.12)); box-shadow:0 0 0 1px rgba(245,158,11,.3);">
+                                    <div class="font-display text-xl text-amber-300" data-i18n="revive_title">Sauve ta séquence!</div>
+                                    <p id="reviveDesc" class="text-xs text-zinc-300 mt-1 mb-3 leading-snug" data-i18n="revive_desc">Regarde une courte pub et récupère tes 3 vies — ton pointage reste intact.</p>
+                                    <button id="btnRevive" class="btn pulse-cta w-full rounded-xl py-3 text-base font-display text-white flex items-center justify-center gap-2"
+                                            style="background:linear-gradient(180deg,#22c55e,#15803d); box-shadow:0 8px 22px rgba(34,197,94,.4);">
+                                        <i class="fa-solid fa-circle-play"></i><span data-i18n="revive_btn">Regarder la pub</span>
+                                    </button>
+                                </div>
+                                <div id="reviveUsed" class="hidden text-xs text-zinc-500 mt-2"><i class="fa-solid fa-ban mr-1"></i><span data-i18n="revive_used">Sauvetage déjà utilisé</span></div>
+
+                                <div class="flex gap-3 mt-4">
+                                    <button id="btnReplay" class="btn rounded-xl px-6 py-3 text-base font-display text-white" style="background:linear-gradient(180deg,#F59E0B,#E8192C); box-shadow:0 8px 22px rgba(232,25,44,.4);">
+                                        <i class="fa-solid fa-rotate-right mr-2"></i><span data-i18n="go_replay">Rejouer</span>
+                                    </button>
+                                    <button id="btnMenu2" class="btn rounded-xl px-6 py-3 text-base text-zinc-200" style="background:rgba(255,255,255,.1); box-shadow:0 0 0 1px rgba(255,255,255,.15);">
+                                        <i class="fa-solid fa-house mr-2"></i><span data-i18n="menu">Menu</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- ===================== SIMULATED VIDEO AD ===================== -->
+                            <div id="screen-ad" class="overlay z-40 hidden" style="background:#000; padding:0;">
+                                <!-- the spinning combo is drawn on the main canvas; this layer holds the ad chrome -->
+                                <div class="absolute top-3 left-3 flex items-center gap-2 px-3 py-1.5 rounded-lg" style="background:rgba(0,0,0,.5);">
+                                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                                    <span id="adLabel" class="text-[11px] font-bold tracking-widest uppercase text-zinc-200" data-i18n="ad_label">Publicité</span>
+                                </div>
+                                <div class="absolute top-3 right-3 flex items-center gap-2 px-3 py-1.5 rounded-lg" style="background:rgba(0,0,0,.5);">
+                                    <span id="adCountLabel" class="text-[11px] font-semibold text-zinc-300" data-i18n="ad_reward_in">Récompense dans</span>
+                                    <span id="adCount" class="font-display text-amber-400 text-lg">5</span><span class="text-zinc-400 text-xs">s</span>
+                                </div>
+
+                                <div class="flex-1"></div>
+                                <div class="text-center px-6 pointer-events-none">
+                                    <div id="adCombo" class="font-display text-3xl text-amber-400 neon-title" data-i18n="ad_combo">LE COMBO STEAMIE</div>
+                                    <div id="adTag" class="text-zinc-300 text-sm font-semibold mt-1" data-i18n="ad_tag">Steamies • Frites • Liqueur</div>
+                                    <div class="mt-2 inline-flex items-center gap-2 px-4 py-1.5 rounded-full" style="background:var(--bp-red);">
+                                        <i class="fa-solid fa-pepper-hot"></i><span class="font-display tracking-wide">BELLEPROS LAVAL</span>
+                                    </div>
+                                </div>
+                                <div class="flex-1"></div>
+
+                                <!-- ad progress -->
+                                <div class="w-full px-5 pb-4">
+                                    <div class="h-1.5 w-full rounded-full overflow-hidden" style="background:rgba(255,255,255,.15);">
+                                        <div id="adBar" class="h-full" style="width:0%; background:linear-gradient(90deg,#F59E0B,#FFD700);"></div>
+                                    </div>
+                                    <div id="adCantSkip" class="text-center text-[10px] text-zinc-500 mt-1.5 uppercase tracking-widest" data-i18n="ad_cant_skip">Pub non sautable</div>
+                                </div>
+                            </div>
+
+                            <!-- transient toast -->
+                            <div id="toast" class="absolute left-1/2 -translate-x-1/2 top-[120px] z-30 px-4 py-2 rounded-xl font-display text-lg opacity-0 transition-all pointer-events-none"
+                                 style="background:rgba(9,9,11,.8); box-shadow:0 0 0 1px rgba(245,158,11,.5);"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- cabinet bottom plate (desktop) -->
+            <div class="hidden md:flex items-center justify-between mt-3 px-3">
+                <span class="text-[11px] text-zinc-500 font-semibold"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i>2500, boul. Daniel-Johnson, Laval</span>
+                <span class="text-[11px] text-amber-400/60 font-bold tracking-[.25em] uppercase">Scan • Play • Win</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    'use strict';
+    (function () {
+        // ============================================================================
+        //  PLUIE DE POUTINE — Bellepros Laval
+        //  Single-file 2D catching game. Zero external image/audio assets.
+        // ============================================================================
+
+        // ---- Tunables / brand config -------------------------------------------------
+        const DESIGN_W = 414, DESIGN_H = 736;
+        const TARGET   = 100;                 // points needed for the physical coupon
+        const START_LIVES = 3;
+        const COUNTER_Y = 568;                // top surface of stainless counter (tray rail)
+        const CATCH_Y   = COUNTER_Y - 14;     // tray rim catch line
+        const MISS_Y    = COUNTER_Y + 46;     // below this an item is "missed"
+        const PLAY_MIN_X = 40, PLAY_MAX_X = DESIGN_W - 40;
+
+        const C = {
+            red:'#E8192C', redDk:'#7f1d1d', orange:'#FF6B35', amber:'#F59E0B', gold:'#FFD700',
+            yellow:'#FBBF24', brown:'#B45309', brownDk:'#7C3A09', cream:'#FFF6E6', curd:'#FFFBEA',
+            blue:'#7DD3FC', blueDk:'#38BDF8', white:'#FFFFFF', dark:'#14080A'
+        };
+
+        // ---- Item catalogue ----------------------------------------------------------
+        const ITEMS = {
+            fries:   { id:'fries',   base:5,  size:42, premium:false, p:C.yellow, p2:C.amber },
+            gravy:   { id:'gravy',   base:6,  size:38, premium:false, p:C.brown,  p2:C.brownDk },
+            curds:   { id:'curds',   base:8,  size:40, premium:false, p:'#FFF3C9',p2:C.white  },
+            steamie: { id:'steamie', base:15, size:50, premium:true,  p:C.red,    p2:C.amber  },
+            rain:    { id:'rain',    base:0,  size:32, premium:false, p:C.blue,   p2:C.blueDk, hazard:true }
+        };
+        const GOOD_WEIGHTS = [['fries',34],['gravy',26],['curds',22],['steamie',10]];
+
+        // ---- Localization (FR Quebec slang / EN crisp QSR) --------------------------
+        const I18N = {
+            fr: {
+                lang_btn:'EN',
+                title_html:'PLUIE<br>DE POUTINE', subtitle:'Rôtisserie • Poutine • Steamies',
+                tagline:'Attrape les ingrédients, évite la pluie et débloque un vrai rabais en magasin!',
+                play:'JOUER', best:'Record', menu:'Menu', restart:'Recommencer', resume:'Reprendre', pause_title:'PAUSE',
+                hud_score:'Pointage',
+                loc:'Bellepros Laval • 2500, boul. Daniel-Johnson', scan:'Scanne • Joue • Gagne',
+                l_fries:'Frites', l_gravy:'Sauce brune', l_curds:'Fromage squic-squic', l_steamie:'Steamie premium', l_rain:'Goutte de pluie',
+                reward_unlocked:'Récompense débloquée', coupon_title:'COUPON DÉBLOQUÉ!', coupon_congrats:'Bravo! Tu as atteint 100 points.',
+                coupon_offer:'DOUBLE FROMAGE GRATUIT', coupon_offer_sub:"à l'achat d'un combo régulier",
+                coupon_code_label:'Code coupon', coupon_scan:'Présente ce code au comptoir Bellepros Laval.',
+                coupon_valid:'Valide 7 jours • Limite 1 par client', coupon_continue:'Continuer à jouer',
+                go_title:'PARTIE TERMINÉE', go_score:'Pointage', go_best:'Record', go_newbest:'Nouveau record!',
+                revive_title:'Sauve ta séquence!', revive_desc:'Regarde une courte pub et récupère tes 3 vies — ton pointage reste intact.',
+                revive_btn:'Regarder la pub', revive_used:'Sauvetage déjà utilisé', go_replay:'Rejouer',
+                ad_label:'Publicité', ad_reward_in:'Récompense dans', ad_combo:'LE COMBO STEAMIE', ad_tag:'Steamies • Frites • Liqueur', ad_cant_skip:'Pub non sautable',
+                t_miss:'RATÉ!', t_soggy:'DÉTREMPÉ!', t_revived:'+3 VIES • C\'est reparti!', t_coupon_done:'Coupon réclamé ✓',
+                m2:'2x ÉPICÉ!', m3:'3x CHAUD!', m4:'4x EN FEU!', m5:'5x BELLEPROS!'
+            },
+            en: {
+                lang_btn:'FR',
+                title_html:'POUTINE<br>DROP', subtitle:'Rotisserie • Poutine • Steamies',
+                tagline:'Catch the ingredients, dodge the rain, and unlock a real in-store reward!',
+                play:'PLAY', best:'Best', menu:'Menu', restart:'Restart', resume:'Resume', pause_title:'PAUSED',
+                hud_score:'Score',
+                loc:'Bellepros Laval • 2500 Daniel-Johnson Blvd', scan:'Scan • Play • Win',
+                l_fries:'Fries', l_gravy:'Gravy', l_curds:'Cheese curds', l_steamie:'Premium steamie', l_rain:'Rain drop',
+                reward_unlocked:'Reward unlocked', coupon_title:'COUPON UNLOCKED!', coupon_congrats:'Nice! You reached 100 points.',
+                coupon_offer:'FREE DOUBLE CHEESE', coupon_offer_sub:'with any regular combo',
+                coupon_code_label:'Coupon code', coupon_scan:'Show this code at the Bellepros Laval counter.',
+                coupon_valid:'Valid 7 days • Limit 1 per customer', coupon_continue:'Keep playing',
+                go_title:'GAME OVER', go_score:'Score', go_best:'Best', go_newbest:'New best!',
+                revive_title:'Save my streak!', revive_desc:'Watch a short ad to restore your 3 lives — your score stays intact.',
+                revive_btn:'Watch ad', revive_used:'Save already used', go_replay:'Play again',
+                ad_label:'Advertisement', ad_reward_in:'Reward in', ad_combo:'THE STEAMIE COMBO', ad_tag:'Steamies • Fries • Soda', ad_cant_skip:'Ad cannot be skipped',
+                t_miss:'MISS!', t_soggy:'SOGGY!', t_revived:'+3 LIVES • Back in!', t_coupon_done:'Coupon claimed ✓',
+                m2:'2x SPICY!', m3:'3x HOT!', m4:'4x FIRE!', m5:'5x BELLEPROS!'
+            }
+        };
+        let lang = localStorage.getItem('bp_pc_lang') || 'fr';
+        const t = (k) => (I18N[lang] && I18N[lang][k] != null) ? I18N[lang][k] : k;
+
+        // ---- DOM refs ----------------------------------------------------------------
+        const $ = (id) => document.getElementById(id);
+        const canvas = $('game'), ctx = canvas.getContext('2d');
+        const screens = {
+            menu:$('screen-menu'), pause:$('screen-pause'), coupon:$('screen-coupon'),
+            gameover:$('screen-gameover'), ad:$('screen-ad')
+        };
+
+        // ============================================================================
+        //  WEB AUDIO SYNTHESIS ENGINE  (OscillatorNode + GainNode, no files)
+        // ============================================================================
+        const Audio = {
+            ctx:null, master:null, ready:false,
+            muted: localStorage.getItem('bp_pc_muted') === '1',
+            init() {
+                if (this.ready) return;
+                try {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    this.master = this.ctx.createGain();
+                    this.master.gain.value = this.muted ? 0 : 0.75;
+                    this.master.connect(this.ctx.destination);
+                    this.ready = true;
+                } catch (e) { /* audio unavailable */ }
+            },
+            resume(){ if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); },
+            setMuted(m){ this.muted = m; localStorage.setItem('bp_pc_muted', m ? '1':'0'); if (this.master) this.master.gain.value = m ? 0 : 0.75; },
+            // generic enveloped note with optional pitch glide
+            note(type, f0, f1, t0, dur, vol) {
+                if (!this.ready || this.muted) return;
+                const o = this.ctx.createOscillator(), g = this.ctx.createGain();
+                o.type = type;
+                o.frequency.setValueAtTime(f0, t0);
+                if (f1 && f1 !== f0) o.frequency.exponentialRampToValueAtTime(Math.max(1,f1), t0 + dur);
+                g.gain.setValueAtTime(0.0001, t0);
+                g.gain.exponentialRampToValueAtTime(vol, t0 + 0.008);
+                g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+                o.connect(g); g.connect(this.master);
+                o.start(t0); o.stop(t0 + dur + 0.02);
+            },
+            noise(t0, dur, vol, freq) {
+                if (!this.ready || this.muted) return;
+                const n = Math.floor(this.ctx.sampleRate * dur);
+                const buf = this.ctx.createBuffer(1, n, this.ctx.sampleRate);
+                const d = buf.getChannelData(0);
+                for (let i=0;i<n;i++) d[i] = (Math.random()*2-1) * vol;
+                const s = this.ctx.createBufferSource(); s.buffer = buf;
+                const f = this.ctx.createBiquadFilter(); f.type='bandpass'; f.frequency.value = freq||320;
+                s.connect(f); f.connect(this.master); s.start(t0);
+            },
+            play(name) {
+                if (!this.ready) return; this.resume();
+                const t0 = this.ctx.currentTime;
+                switch (name) {
+                    case 'catch': // standard: clean short ascending sweep
+                        this.note('triangle', 520, 760, t0, 0.10, 0.22);
+                        this.note('sine',     780, 980, t0+0.06, 0.10, 0.16);
+                        break;
+                    case 'premium': { // bright arpeggiated major chord (C E G C)
+                        const a = [523.25, 659.25, 783.99, 1046.5];
+                        a.forEach((f,i)=> this.note('triangle', f, null, t0 + i*0.06, 0.16, 0.20));
+                        this.note('sine', 1318.5, null, t0+0.24, 0.18, 0.12);
+                        break; }
+                    case 'hazard': // harsh descending sawtooth
+                        this.note('sawtooth', 240, 70, t0, 0.28, 0.26);
+                        this.noise(t0, 0.16, 0.10, 260);
+                        break;
+                    case 'miss': // soft descending — missed a good item
+                        this.note('sawtooth', 300, 150, t0, 0.14, 0.16);
+                        break;
+                    case 'reward': { // celebratory 4-note chime
+                        const m = [659.25, 830.6, 987.77, 1318.5];
+                        m.forEach((f,i)=> this.note('triangle', f, null, t0 + i*0.12, 0.28, 0.24));
+                        m.forEach((f,i)=> this.note('sine', f*2, null, t0 + i*0.12, 0.20, 0.08));
+                        break; }
+                    case 'click': this.note('square', 420, 520, t0, 0.05, 0.10); break;
+                    case 'over': this.note('sawtooth', 300, 80, t0, 0.5, 0.22); this.note('triangle', 200, 60, t0+0.08, 0.5, 0.16); break;
+                    case 'tick': this.note('square', 880, null, t0, 0.04, 0.10); break;
+                    case 'whoosh': this.noise(t0, 0.4, 0.06, 600); this.note('sine', 200, 600, t0, 0.4, 0.05); break;
+                }
+            }
+        };
+
+        // ============================================================================
+        //  SPRITE DRAWING  (canvas vector art — shared by game + menu legend)
+        //  Each fn draws an item centred at (x,y) sized to `s` in the current ctx.
+        // ============================================================================
+        const Sprite = {
+            fries(g,x,y,s){
+                g.save(); g.translate(x,y);
+                const w=s*0.7, h=s*0.85;
+                // fries poking out
+                g.save(); g.translate(0,-h*0.18);
+                const fryW=s*0.13;
+                for (let i=-2;i<=2;i++){
+                    const fh=h*(0.85 - Math.abs(i)*0.07);
+                    g.save(); g.translate(i*fryW*1.15, 0); g.rotate(i*0.06);
+                    const grd=g.createLinearGradient(0,-fh,0,0); grd.addColorStop(0,'#FDE68A'); grd.addColorStop(1,C.amber);
+                    g.fillStyle=grd; roundRect(g,-fryW/2,-fh,fryW,fh,2); g.fill();
+                    g.fillStyle='rgba(255,255,255,.35)'; g.fillRect(-fryW/2+1,-fh+2,1.5,fh*0.5);
+                    g.restore();
+                }
+                g.restore();
+                // red carton
+                g.fillStyle=C.red; g.beginPath();
+                g.moveTo(-w*0.62,-h*0.12); g.lineTo(w*0.62,-h*0.12); g.lineTo(w*0.46,h*0.5); g.lineTo(-w*0.46,h*0.5); g.closePath(); g.fill();
+                g.fillStyle='rgba(255,255,255,.92)'; g.fillRect(-w*0.34,h*0.02,w*0.68,h*0.16);
+                g.fillStyle=C.red; g.font=`900 ${s*0.16}px Outfit, sans-serif`; g.textAlign='center'; g.textBaseline='middle';
+                g.fillText('BP', 0, h*0.10);
+                g.restore();
+            },
+            gravy(g,x,y,s){
+                g.save(); g.translate(x,y);
+                const w=s*0.74, h=s*0.7;
+                // kraft cup
+                g.fillStyle='#C8915A'; g.beginPath();
+                g.moveTo(-w*0.5,-h*0.18); g.lineTo(w*0.5,-h*0.18); g.lineTo(w*0.36,h*0.5); g.lineTo(-w*0.36,h*0.5); g.closePath(); g.fill();
+                g.fillStyle='rgba(0,0,0,.12)'; g.beginPath(); g.moveTo(0,-h*0.18); g.lineTo(w*0.5,-h*0.18); g.lineTo(w*0.36,h*0.5); g.lineTo(0,h*0.5); g.closePath(); g.fill();
+                // brown gravy top
+                const grd=g.createLinearGradient(0,-h*0.3,0,-h*0.05); grd.addColorStop(0,'#A1631F'); grd.addColorStop(1,C.brownDk);
+                g.fillStyle=grd; g.beginPath(); g.ellipse(0,-h*0.18,w*0.5,h*0.14,0,0,Math.PI*2); g.fill();
+                g.fillStyle='rgba(255,255,255,.18)'; g.beginPath(); g.ellipse(-w*0.12,-h*0.21,w*0.16,h*0.05,0,0,Math.PI*2); g.fill();
+                g.restore();
+            },
+            curds(g,x,y,s){
+                g.save(); g.translate(x,y);
+                const blobs=[[-0.22,-0.1,0.30],[0.2,-0.16,0.26],[0.0,0.12,0.34],[0.26,0.16,0.24],[-0.26,0.18,0.22]];
+                blobs.forEach(b=>{
+                    const r=s*b[2];
+                    const grd=g.createRadialGradient(s*b[0]-r*0.3,s*b[1]-r*0.3,r*0.2, s*b[0],s*b[1],r);
+                    grd.addColorStop(0,'#FFFEFB'); grd.addColorStop(1,'#F4E6BE');
+                    g.fillStyle=grd; g.beginPath();
+                    // slightly irregular curd
+                    g.ellipse(s*b[0],s*b[1],r,r*0.86,b[0],0,Math.PI*2); g.fill();
+                    g.strokeStyle='rgba(180,150,90,.25)'; g.lineWidth=1; g.stroke();
+                });
+                g.restore();
+            },
+            steamie(g,x,y,s){
+                g.save(); g.translate(x,y);
+                const w=s*0.92, h=s*0.42;
+                // bun bottom
+                g.fillStyle='#E8B06A'; roundRect(g,-w/2,-h*0.1,w,h*0.7,h*0.35); g.fill();
+                // sausage
+                const grd=g.createLinearGradient(0,-h*0.5,0,h*0.1); grd.addColorStop(0,'#D6452F'); grd.addColorStop(1,'#A12B1B');
+                g.fillStyle=grd; roundRect(g,-w*0.46,-h*0.5,w*0.92,h*0.62,h*0.3); g.fill();
+                g.fillStyle='rgba(255,255,255,.18)'; roundRect(g,-w*0.4,-h*0.46,w*0.8,h*0.14,h*0.1); g.fill();
+                // mustard zigzag
+                g.strokeStyle=C.gold; g.lineWidth=Math.max(2,s*0.05); g.lineCap='round'; g.beginPath();
+                let mx=-w*0.4;
+                g.moveTo(mx,-h*0.22);
+                for (let i=0;i<5;i++){ mx+=w*0.2; g.lineTo(mx, (i%2?-h*0.34:-h*0.1)); }
+                g.stroke();
+                // chopped onions / relish dots
+                g.fillStyle='#9ED36A';
+                for (let i=0;i<5;i++){ g.beginPath(); g.arc(-w*0.32+i*w*0.16, -h*0.04, s*0.035, 0, Math.PI*2); g.fill(); }
+                // bun top
+                g.fillStyle='#EDBC7A'; roundRect(g,-w/2,h*0.18,w,h*0.42,h*0.3); g.fill();
+                g.restore();
+            },
+            rain(g,x,y,s){
+                g.save(); g.translate(x,y);
+                const grd=g.createLinearGradient(0,-s*0.5,0,s*0.5); grd.addColorStop(0,'#BAE6FD'); grd.addColorStop(1,C.blueDk);
+                g.fillStyle=grd; g.beginPath();
+                g.moveTo(0,-s*0.55);
+                g.bezierCurveTo(s*0.42,-s*0.05, s*0.36,s*0.5, 0,s*0.5);
+                g.bezierCurveTo(-s*0.36,s*0.5, -s*0.42,-s*0.05, 0,-s*0.55);
+                g.closePath(); g.fill();
+                g.fillStyle='rgba(255,255,255,.5)'; g.beginPath(); g.ellipse(-s*0.12,s*0.12,s*0.1,s*0.16,0,0,Math.PI*2); g.fill();
+                g.restore();
+            },
+            draw(id,g,x,y,s){ this[id](g,x,y,s); }
+        };
+        function roundRect(g,x,y,w,h,r){ r=Math.min(r,w/2,h/2); g.beginPath();
+            g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r);
+            g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
+
+        // ============================================================================
+        //  STATIC STOREFRONT FACADE  (rendered once to an offscreen canvas, then blit)
+        // ============================================================================
+        let facade = document.createElement('canvas');
+        function buildFacade() {
+            facade.width = DESIGN_W; facade.height = DESIGN_H;
+            const g = facade.getContext('2d');
+            g.clearRect(0,0,DESIGN_W,DESIGN_H);
+
+            // ---- night ambience behind the shop ----
+            const sky = g.createLinearGradient(0,0,0,DESIGN_H);
+            sky.addColorStop(0,'#1b1120'); sky.addColorStop(0.5,'#241018'); sky.addColorStop(1,'#0d0608');
+            g.fillStyle=sky; g.fillRect(0,0,DESIGN_W,DESIGN_H);
+            // warm glow halo from the shop
+            const halo = g.createRadialGradient(DESIGN_W/2,330,40, DESIGN_W/2,330,360);
+            halo.addColorStop(0,'rgba(245,158,11,.18)'); halo.addColorStop(1,'rgba(245,158,11,0)');
+            g.fillStyle=halo; g.fillRect(0,0,DESIGN_W,DESIGN_H);
+
+            // ---- brick facade ----
+            const brickTop=64, brickBot=COUNTER_Y;
+            g.fillStyle='#5b1f1c'; g.fillRect(0,brickTop,DESIGN_W,brickBot-brickTop);
+            const bw=46, bh=20;
+            for (let row=0, yy=brickTop; yy<brickBot; row++, yy+=bh){
+                const off = (row%2)? bw/2 : 0;
+                for (let xx=-bw; xx<DESIGN_W+bw; xx+=bw){
+                    const shade = 12 + ((row*7+xx)%5)*4;
+                    g.fillStyle = `rgb(${107+shade},${33+shade*0.5|0},${28+shade*0.4|0})`;
+                    g.fillRect(xx+off+1.2, yy+1.2, bw-2.4, bh-2.4);
+                    g.fillStyle='rgba(255,255,255,.04)'; g.fillRect(xx+off+1.2, yy+1.2, bw-2.4, 2);
+                }
+            }
+            // mortar darkening near edges
+            g.fillStyle='rgba(0,0,0,.18)'; g.fillRect(0,brickTop,DESIGN_W,brickBot-brickTop);
+            g.clearRect(0,0,0,0);
+
+            // ---- service window ----
+            const wx=26, wy=120, ww=DESIGN_W-52, wh=300;
+            // frame
+            g.fillStyle='#2b2018'; roundRect(g,wx-8,wy-8,ww+16,wh+16,14); g.fill();
+            g.fillStyle='#0c1418'; roundRect(g,wx,wy,ww,wh,8); g.fill();
+            // glass gradient + reflections
+            const glass=g.createLinearGradient(wx,wy,wx+ww,wy+wh);
+            glass.addColorStop(0,'rgba(70,110,130,.30)'); glass.addColorStop(0.4,'rgba(20,40,50,.20)');
+            glass.addColorStop(0.5,'rgba(120,170,190,.16)'); glass.addColorStop(1,'rgba(10,20,28,.30)');
+            g.fillStyle=glass; roundRect(g,wx,wy,ww,wh,8); g.fill();
+            g.save(); roundRect(g,wx,wy,ww,wh,8); g.clip();
+            g.strokeStyle='rgba(255,255,255,.10)'; g.lineWidth=22;
+            g.beginPath(); g.moveTo(wx-30,wy+40); g.lineTo(wx+120,wy-30); g.stroke();
+            g.beginPath(); g.moveTo(wx+40,wy+wh+10); g.lineTo(wx+200,wy-10); g.strokeStyle='rgba(255,255,255,.05)'; g.stroke();
+            g.restore();
+
+            // ---- menu board inside window ----
+            const mbx=wx+16, mby=wy+16, mbw=ww*0.52, mbh=wh-32;
+            g.fillStyle='#14110d'; roundRect(g,mbx,mby,mbw,mbh,6); g.fill();
+            g.strokeStyle='rgba(245,158,11,.35)'; g.lineWidth=2; roundRect(g,mbx+3,mby+3,mbw-6,mbh-6,5); g.stroke();
+            g.fillStyle=C.amber; g.font='900 15px Fredoka One, Outfit, sans-serif'; g.textAlign='left'; g.textBaseline='top';
+            g.fillText('MENU', mbx+12, mby+10);
+            const menu=[['Steamie','3.49'],['Poutine','8.99'],['Frites','4.49'],['Combo BP','12.99'],['Liqueur','2.49']];
+            g.font='800 12px Outfit, sans-serif';
+            menu.forEach((m,i)=>{
+                const yy=mby+38+i*((mbh-50)/menu.length);
+                g.fillStyle='#f5e6c8'; g.textAlign='left'; g.fillText(m[0], mbx+12, yy);
+                g.fillStyle=C.gold; g.textAlign='right'; g.fillText(m[1]+'$', mbx+mbw-12, yy);
+                g.strokeStyle='rgba(255,255,255,.06)'; g.lineWidth=1; g.beginPath(); g.moveTo(mbx+12,yy+15); g.lineTo(mbx+mbw-12,yy+15); g.stroke();
+            });
+
+            // ---- price burst stickers ----
+            function sticker(cx,cy,r,txt,sub){
+                g.save(); g.translate(cx,cy);
+                g.fillStyle=C.gold; g.beginPath();
+                for (let i=0;i<24;i++){ const a=i/24*Math.PI*2; const rr=i%2?r:r*0.78; g.lineTo(Math.cos(a)*rr,Math.sin(a)*rr); }
+                g.closePath(); g.fill();
+                g.fillStyle=C.red; g.font='900 13px Fredoka One, Outfit, sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+                g.fillText(txt,0,-3); g.font='800 8px Outfit, sans-serif'; g.fillStyle='#7f1d1d'; g.fillText(sub,0,9);
+                g.restore();
+            }
+            sticker(wx+ww-66, wy+70, 30, 'NEW', 'STEAMIE');
+            sticker(wx+ww-44, wy+wh-58, 26, '2/1', 'POUTINE');
+
+            // ---- striped scalloped awning ----
+            const ah=64, scallop=34, n=Math.ceil(DESIGN_W/scallop);
+            for (let i=0;i<n;i++){
+                g.fillStyle = (i%2)? C.red : '#f6efe2';
+                g.beginPath();
+                g.moveTo(i*scallop, 0); g.lineTo((i+1)*scallop, 0);
+                g.lineTo((i+1)*scallop, ah*0.6);
+                g.quadraticCurveTo((i+0.5)*scallop, ah*1.05, i*scallop, ah*0.6);
+                g.closePath(); g.fill();
+            }
+            g.fillStyle='rgba(0,0,0,.18)'; g.fillRect(0,0,DESIGN_W,8);
+            g.fillStyle='rgba(255,255,255,.10)'; g.fillRect(0,8,DESIGN_W,3);
+            // awning valance shadow on bricks
+            const ashadow=g.createLinearGradient(0,ah,0,ah+30); ashadow.addColorStop(0,'rgba(0,0,0,.35)'); ashadow.addColorStop(1,'rgba(0,0,0,0)');
+            g.fillStyle=ashadow; g.fillRect(0,ah,DESIGN_W,30);
+
+            // ---- stainless steel counter ----
+            const cy=COUNTER_Y;
+            const steel=g.createLinearGradient(0,cy,0,DESIGN_H);
+            steel.addColorStop(0,'#e7ebee'); steel.addColorStop(0.06,'#aeb6bd'); steel.addColorStop(0.12,'#cfd6db');
+            steel.addColorStop(0.2,'#8b939a'); steel.addColorStop(1,'#3c4248');
+            g.fillStyle=steel; g.fillRect(0,cy,DESIGN_W,DESIGN_H-cy);
+            // top rounded lip highlight
+            g.fillStyle='#f4f7f9'; g.fillRect(0,cy-3,DESIGN_W,4);
+            g.fillStyle='rgba(255,255,255,.6)'; g.fillRect(0,cy-3,DESIGN_W,1.5);
+            // brushed vertical streaks
+            g.globalAlpha=0.08;
+            for (let xx=0; xx<DESIGN_W; xx+=6){ g.fillStyle = (xx/6|0)%2?'#000':'#fff'; g.fillRect(xx, cy+10, 2, DESIGN_H-cy-10); }
+            g.globalAlpha=1;
+            // counter front decal
+            g.fillStyle='rgba(232,25,44,.92)'; roundRect(g, DESIGN_W/2-92, cy+58, 184, 40, 8); g.fill();
+            g.fillStyle='#fff'; g.font='900 22px Fredoka One, Outfit, sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+            g.fillText('BELLEPROS', DESIGN_W/2, cy+79);
+            g.fillStyle='rgba(0,0,0,.25)'; g.fillRect(0,DESIGN_H-26,DESIGN_W,26);
+        }
+
+        // ---- dynamic facade overlay (neon sign + string lights, animated) ----
+        function drawDynamicFacade(time){
+            const wx=26, wy=120, ww=DESIGN_W-52;
+            // string lights under awning
+            ctx.save();
+            ctx.strokeStyle='rgba(0,0,0,.4)'; ctx.lineWidth=1.5;
+            ctx.beginPath(); ctx.moveTo(6,70);
+            for (let x=6;x<=DESIGN_W;x+=14){ ctx.quadraticCurveTo(x+7, 86, x+14, 70); }
+            ctx.stroke();
+            for (let i=0, x=14; x<DESIGN_W; x+=28, i++){
+                const tw = 0.6 + 0.4*Math.sin(time*3 + i*1.3);
+                const cols=['#FFD700','#FF6B35','#E8192C','#fff7d6'];
+                const col=cols[i%cols.length];
+                ctx.fillStyle=col; ctx.shadowColor=col; ctx.shadowBlur=8*tw;
+                ctx.beginPath(); ctx.arc(x, 82, 3.2, 0, Math.PI*2); ctx.fill();
+            }
+            ctx.restore();
+
+            // neon OPEN / OUVERT sign inside the window
+            const sx=wx+ww*0.62, sy=wy+ww*0.06+40, sw=ww*0.34, sh=64;
+            const flick = (Math.sin(time*7)>-0.92) ? 1 : 0.45;        // occasional flicker
+            const pulse = 0.78 + 0.22*Math.sin(time*2.2);
+            ctx.save();
+            ctx.globalAlpha = flick;
+            // sign backing
+            ctx.fillStyle='rgba(8,12,16,.6)'; roundRect(ctx, sx, sy, sw, sh, 8); ctx.fill();
+            ctx.strokeStyle=`rgba(255,80,90,${0.5*pulse})`; ctx.lineWidth=2; roundRect(ctx, sx+2, sy+2, sw-4, sh-4, 6); ctx.stroke();
+            // text
+            ctx.textAlign='center'; ctx.textBaseline='middle';
+            ctx.shadowBlur=16*pulse;
+            ctx.shadowColor='#ff4d6d'; ctx.fillStyle='#ffd0d8';
+            ctx.font='900 22px Fredoka One, Outfit, sans-serif';
+            ctx.fillText('OUVERT', sx+sw/2, sy+sh*0.36);
+            ctx.shadowColor='#7dd3fc'; ctx.fillStyle='#dff3ff';
+            ctx.font='800 15px Fredoka One, Outfit, sans-serif';
+            ctx.fillText('• OPEN •', sx+sw/2, sy+sh*0.72);
+            ctx.restore();
+        }
+
+        // ============================================================================
+        //  PARTICLE + FLOATING-TEXT ENGINE
+        // ============================================================================
+        let particles = [], floaters = [], confetti = [];
+        function burst(x,y,color,count,opts){
+            opts = opts || {};
+            for (let i=0;i<count;i++){
+                const a = Math.random()*Math.PI*2, sp = (opts.minSpeed||40) + Math.random()*(opts.maxSpeed||220);
+                particles.push({
+                    x, y,
+                    vx: Math.cos(a)*sp, vy: Math.sin(a)*sp - (opts.lift||90),
+                    life: opts.life || (0.5 + Math.random()*0.5),
+                    max:  0, size: (opts.size||3) + Math.random()*(opts.sizeVar||4),
+                    color, shape: opts.shape || 'spark', spin: Math.random()*6, vr:(Math.random()-0.5)*10
+                });
+                particles[particles.length-1].max = particles[particles.length-1].life;
+            }
+        }
+        function floatText(x,y,txt,color,size){ floaters.push({x,y,txt,color,size:size||20,life:0.9,max:0.9,vy:-46}); }
+        function confettiBurst(){
+            const cols=[C.red,C.gold,C.amber,'#fff','#7dd3fc','#9ED36A'];
+            for (let i=0;i<120;i++){
+                confetti.push({ x: Math.random()*DESIGN_W, y:-20-Math.random()*200,
+                    vx:(Math.random()-0.5)*60, vy:60+Math.random()*120,
+                    size:4+Math.random()*5, color:cols[i%cols.length], spin:Math.random()*6, vr:(Math.random()-0.5)*12, life:2.6, max:2.6 });
+            }
+        }
+        function updateParticles(dt){
+            for (let i=particles.length-1;i>=0;i--){ const p=particles[i];
+                p.vy += 520*dt; p.x += p.vx*dt; p.y += p.vy*dt; p.spin += p.vr*dt; p.life -= dt;
+                if (p.life<=0) particles.splice(i,1);
+            }
+            for (let i=floaters.length-1;i>=0;i--){ const f=floaters[i]; f.y += f.vy*dt; f.vy*=0.92; f.life-=dt; if (f.life<=0) floaters.splice(i,1); }
+            for (let i=confetti.length-1;i>=0;i--){ const c=confetti[i]; c.vy+=140*dt; c.x+=c.vx*dt; c.y+=c.vy*dt; c.spin+=c.vr*dt; c.life-=dt; if (c.life<=0||c.y>DESIGN_H+30) confetti.splice(i,1); }
+        }
+        function drawParticles(){
+            particles.forEach(p=>{
+                const a = Math.max(0, p.life/p.max); const sz = p.size*a;
+                ctx.globalAlpha = a; ctx.fillStyle = p.color;
+                ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.spin);
+                if (p.shape==='star'){
+                    ctx.beginPath();
+                    for (let k=0;k<8;k++){ const ang=k/8*Math.PI*2; const rr=k%2?sz:sz*0.42; ctx.lineTo(Math.cos(ang)*rr,Math.sin(ang)*rr); }
+                    ctx.closePath(); ctx.fill();
+                } else if (p.shape==='drop'){
+                    ctx.beginPath(); ctx.ellipse(0,0,sz*0.7,sz,0,0,Math.PI*2); ctx.fill();
+                } else { ctx.beginPath(); ctx.arc(0,0,sz,0,Math.PI*2); ctx.fill(); }
+                ctx.restore();
+            });
+            ctx.globalAlpha=1;
+            floaters.forEach(f=>{
+                const a=Math.max(0,f.life/f.max); ctx.globalAlpha=a;
+                ctx.font=`900 ${f.size}px Fredoka One, Outfit, sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+                ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.55)'; ctx.strokeText(f.txt,f.x,f.y);
+                ctx.fillStyle=f.color; ctx.fillText(f.txt,f.x,f.y);
+            });
+            ctx.globalAlpha=1;
+        }
+        function drawConfetti(){
+            confetti.forEach(c=>{ ctx.globalAlpha=Math.min(1,c.life); ctx.save(); ctx.translate(c.x,c.y); ctx.rotate(c.spin);
+                ctx.fillStyle=c.color; ctx.fillRect(-c.size/2,-c.size/2,c.size,c.size*0.6); ctx.restore(); });
+            ctx.globalAlpha=1;
+        }
+
+        // ============================================================================
+        //  GAME STATE
+        // ============================================================================
+        const game = {
+            state:'menu',           // menu | playing | paused | coupon | gameover | ad
+            score:0, best: parseInt(localStorage.getItem('bp_pc_best')||'0',10),
+            lives:START_LIVES, combo:0, mult:1,
+            items:[], spawnT:0, elapsed:0,
+            tray:{ x:DESIGN_W/2, target:DESIGN_W/2, w:118 },
+            shake:0, flash:0, grace:0,
+            couponClaimed:false, usedRevive:false, couponCode:'',
+            ad:{ remaining:0, angle:0, lastTick:0 }
+        };
+
+        function difficulty(){
+            // ramps with elapsed time, eased
+            const e = game.elapsed;
+            return {
+                fall: 150 + Math.min(230, e*9),                 // px/s
+                spawn: Math.max(0.46, 0.95 - e*0.013),          // seconds between spawns
+                hazard: Math.min(0.30, 0.10 + e*0.006)          // hazard probability
+            };
+        }
+        function pickType(){
+            const d = difficulty();
+            if (Math.random() < d.hazard) return 'rain';
+            let total=0; GOOD_WEIGHTS.forEach(w=>total+=w[1]);
+            let r=Math.random()*total;
+            for (const w of GOOD_WEIGHTS){ if ((r-=w[1])<=0) return w[0]; }
+            return 'fries';
+        }
+        function spawnItem(){
+            const id = pickType(), def = ITEMS[id];
+            game.items.push({
+                id, def, x: PLAY_MIN_X + Math.random()*(PLAY_MAX_X-PLAY_MIN_X),
+                y: -40, vy: difficulty().fall * (def.premium?0.92:1) * (0.92+Math.random()*0.2),
+                size: def.size, rot:(Math.random()-0.5)*0.5, vr:(Math.random()-0.5)*1.4,
+                wob: Math.random()*Math.PI*2, caught:false
+            });
+        }
+
+        function setMult(){
+            const c=game.combo;
+            game.mult = c>=20?5 : c>=15?4 : c>=10?3 : c>=5?2 : 1;
+        }
+
+        function onCatchGood(it){
+            game.combo++; const prevMult=game.mult; setMult();
+            const pts = it.def.base * game.mult;
+            game.score += pts;
+            Audio.play(it.def.premium ? 'premium' : 'catch');
+            // particles in the item's colour
+            const shape = it.id==='curds'?'star' : 'spark';
+            burst(it.x, CATCH_Y, it.def.p, it.def.premium?26:16, {shape, size:it.def.premium?4:3, maxSpeed: it.def.premium?300:220});
+            if (it.def.p2) burst(it.x, CATCH_Y, it.def.p2, 8, {shape, size:3});
+            floatText(it.x, CATCH_Y-18, '+'+pts, it.def.premium?C.gold:'#fff', it.def.premium?26:20);
+            if (game.mult>prevMult){
+                const lbl = game.mult>=5?t('m5'): game.mult>=4?t('m4'): game.mult>=3?t('m3'): t('m2');
+                floatText(DESIGN_W/2, 250, lbl, C.amber, 28);
+                Audio.play('tick');
+            }
+            updateHud();
+            checkCoupon();
+        }
+        function onCatchHazard(it){
+            game.combo=0; setMult();
+            game.lives--; game.shake=0.55; game.flash=0.7;
+            Audio.play('hazard'); vibrate([90,40,90]);
+            burst(it.x, CATCH_Y, C.blue, 18, {shape:'drop', size:4, maxSpeed:200});
+            floatText(it.x, CATCH_Y-18, t('t_soggy'), C.blue, 20);
+            updateHud();
+            if (game.lives<=0) gameOver();
+        }
+        function onMissGood(){
+            if (game.combo>0){ game.combo=0; setMult(); Audio.play('miss'); updateHud(); }
+        }
+
+        function updatePlay(dt){
+            game.elapsed += dt;
+            if (game.grace>0) game.grace -= dt;
+            // spawn
+            game.spawnT -= dt;
+            if (game.spawnT<=0){ spawnItem(); game.spawnT = difficulty().spawn * (0.8+Math.random()*0.5); }
+            // tray follows target
+            game.tray.x += (game.tray.target - game.tray.x) * Math.min(1, dt*20);
+            game.tray.x = clamp(game.tray.x, game.tray.w/2+6, DESIGN_W-game.tray.w/2-6);
+            // items
+            for (let i=game.items.length-1;i>=0;i--){ const it=game.items[i];
+                it.y += it.vy*dt; it.rot += it.vr*dt; it.wob += dt*3;
+                it.x += Math.sin(it.wob)*it.def.size*0.16*dt; // gentle drift
+                if (!it.caught && it.y>=CATCH_Y && it.y<MISS_Y && Math.abs(it.x-game.tray.x) <= game.tray.w/2 + it.size*0.18){
+                    it.caught=true; game.items.splice(i,1);
+                    if (it.def.hazard){ if (game.grace<=0) onCatchHazard(it); }
+                    else onCatchGood(it);
+                    continue;
+                }
+                if (it.y > MISS_Y+20){ game.items.splice(i,1); if (!it.def.hazard) onMissGood(); }
+            }
+        }
+
+        // ============================================================================
+        //  TRAY drawing
+        // ============================================================================
+        function drawTray(){
+            const x=game.tray.x, w=game.tray.w, topY=CATCH_Y, h=46;
+            ctx.save();
+            if (game.grace>0 && Math.floor(game.grace*12)%2===0) ctx.globalAlpha=0.5;
+            // shadow on counter
+            ctx.fillStyle='rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(x, topY+h+6, w*0.55, 7, 0,0,Math.PI*2); ctx.fill();
+            // basket body (metal)
+            const grd=ctx.createLinearGradient(0,topY,0,topY+h); grd.addColorStop(0,'#f0f3f5'); grd.addColorStop(0.5,'#9aa2a8'); grd.addColorStop(1,'#5a6066');
+            ctx.fillStyle=grd; ctx.beginPath();
+            ctx.moveTo(x-w/2, topY); ctx.lineTo(x+w/2, topY);
+            ctx.lineTo(x+w/2-10, topY+h); ctx.lineTo(x-w/2+10, topY+h); ctx.closePath(); ctx.fill();
+            // rim
+            ctx.fillStyle='#eef2f4'; roundRect(ctx, x-w/2-3, topY-6, w+6, 9, 4); ctx.fill();
+            ctx.fillStyle='rgba(255,255,255,.7)'; ctx.fillRect(x-w/2-3, topY-6, w+6, 2);
+            // wire mesh lines
+            ctx.strokeStyle='rgba(40,46,52,.45)'; ctx.lineWidth=1.2;
+            for (let i=1;i<6;i++){ const xx=x-w/2+ i*(w/6); ctx.beginPath(); ctx.moveTo(xx, topY+2); ctx.lineTo(xx-2, topY+h-2); ctx.stroke(); }
+            for (let j=1;j<3;j++){ const yy=topY+j*(h/3); ctx.beginPath(); ctx.moveTo(x-w/2+5, yy); ctx.lineTo(x+w/2-5, yy); ctx.stroke(); }
+            // red label
+            ctx.fillStyle=C.red; roundRect(ctx, x-26, topY+12, 52, 18, 4); ctx.fill();
+            ctx.fillStyle='#fff'; ctx.font='900 11px Fredoka One, Outfit, sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+            ctx.fillText('BELLEPROS', x, topY+22);
+            ctx.restore();
+        }
+
+        function drawItem(it){
+            ctx.save(); ctx.translate(it.x, it.y); ctx.rotate(it.rot);
+            // soft glow for premium / hazard
+            if (it.def.premium){ ctx.shadowColor='rgba(245,158,11,.8)'; ctx.shadowBlur=16; }
+            else if (it.def.hazard){ ctx.shadowColor='rgba(125,211,252,.7)'; ctx.shadowBlur=10; }
+            Sprite.draw(it.id, ctx, 0, 0, it.size);
+            ctx.restore();
+        }
+
+        // ============================================================================
+        //  SIMULATED VIDEO AD (spinning combo) — drawn on the main canvas
+        // ============================================================================
+        function renderAd(time){
+            ctx.fillStyle='#080608'; ctx.fillRect(0,0,DESIGN_W,DESIGN_H);
+            // radial spotlight
+            const r=ctx.createRadialGradient(DESIGN_W/2,DESIGN_H*0.42,30,DESIGN_W/2,DESIGN_H*0.42,300);
+            r.addColorStop(0,'rgba(245,158,11,.22)'); r.addColorStop(1,'rgba(245,158,11,0)');
+            ctx.fillStyle=r; ctx.fillRect(0,0,DESIGN_W,DESIGN_H);
+            // rotating rays
+            ctx.save(); ctx.translate(DESIGN_W/2, DESIGN_H*0.42); ctx.rotate(time*0.6);
+            for (let i=0;i<12;i++){ ctx.rotate(Math.PI*2/12); ctx.fillStyle='rgba(255,215,0,.05)';
+                ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(40,-300); ctx.lineTo(-40,-300); ctx.closePath(); ctx.fill(); }
+            ctx.restore();
+            // spinning combo: steamie + fries + drink orbiting
+            const cx=DESIGN_W/2, cy=DESIGN_H*0.42, bob=Math.sin(time*2)*8;
+            ctx.save(); ctx.translate(cx, cy+bob); ctx.scale(1.7,1.7); ctx.rotate(Math.sin(time*0.8)*0.18);
+            Sprite.steamie(ctx,0,0,70); ctx.restore();
+            const orbit=[['fries',0],['gravy',Math.PI*0.66],['curds',Math.PI*1.33]];
+            orbit.forEach(o=>{ const a=time*1.4 + o[1]; const ox=cx+Math.cos(a)*92, oy=cy+bob+Math.sin(a)*54;
+                ctx.save(); ctx.translate(ox,oy); ctx.scale(0.95,0.95); ctx.rotate(a); Sprite.draw(o[0],ctx,0,0,40); ctx.restore(); });
+            // sparkles
+            for (let i=0;i<6;i++){ const a=time*2+i; const sx=cx+Math.cos(a*1.3)*120, sy=cy+Math.sin(a)*120;
+                ctx.globalAlpha=0.4+0.4*Math.sin(time*5+i); ctx.fillStyle='#fff';
+                ctx.beginPath(); ctx.arc(sx,sy,2.2,0,Math.PI*2); ctx.fill(); }
+            ctx.globalAlpha=1;
+        }
+
+        // ============================================================================
+        //  RENDER
+        // ============================================================================
+        let timeSec=0;
+        function render(dt){
+            timeSec += dt;
+            ctx.clearRect(0,0,DESIGN_W,DESIGN_H);
+
+            if (game.state==='ad'){ renderAd(timeSec); return; }
+
+            ctx.save();
+            // screen shake
+            if (game.shake>0){ const s=game.shake; ctx.translate((Math.random()*2-1)*s*9,(Math.random()*2-1)*s*9); }
+            // facade
+            ctx.drawImage(facade,0,0,DESIGN_W,DESIGN_H);
+            drawDynamicFacade(timeSec);
+            // entities
+            game.items.forEach(drawItem);
+            drawTray();
+            drawParticles();
+            drawConfetti();
+            ctx.restore();
+
+            // damage flash (full-screen, not shaken)
+            if (game.flash>0){ ctx.fillStyle=`rgba(239,68,68,${game.flash*0.45})`; ctx.fillRect(0,0,DESIGN_W,DESIGN_H); }
+
+            // decay timers
+            if (game.shake>0) game.shake=Math.max(0,game.shake-dt*1.8);
+            if (game.flash>0) game.flash=Math.max(0,game.flash-dt*1.8);
+        }
+
+        // ============================================================================
+        //  MAIN LOOP
+        // ============================================================================
+        let lastT=performance.now();
+        function loop(now){
+            let dt=(now-lastT)/1000; lastT=now; if (dt>0.05) dt=0.05;
+            if (game.state==='playing') updatePlay(dt);
+            else if (game.state==='ad') updateAd(dt);
+            updateParticles(dt);
+            render(dt);
+            requestAnimationFrame(loop);
+        }
+
+        // ============================================================================
+        //  COUPON + QR
+        // ============================================================================
+        function genCouponCode(){
+            const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s='';
+            for (let i=0;i<6;i++) s+=A[Math.floor(Math.random()*A.length)];
+            return 'BP-LVL-'+s;
+        }
+        // deterministic mock QR from a string (pure JS grid algorithm)
+        function strHash(s){ let h=2166136261>>>0; for (let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } return h>>>0; }
+        function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+        function drawQR(cv, text){
+            const N=29, Q=3, total=N+2*Q;
+            const px=cv.width, u=px/total, g=cv.getContext('2d');
+            g.clearRect(0,0,px,px); g.fillStyle='#ffffff'; g.fillRect(0,0,px,px);
+            const m = Array.from({length:N},()=>new Array(N).fill(false));
+            const res = Array.from({length:N},()=>new Array(N).fill(false));
+            // finder pattern + separator reservation
+            function finder(r,c){
+                for (let i=-1;i<=7;i++) for (let j=-1;j<=7;j++){ const rr=r+i, cc=c+j; if(rr<0||cc<0||rr>=N||cc>=N) continue; res[rr][cc]=true; }
+                for (let i=0;i<7;i++) for (let j=0;j<7;j++){
+                    const edge = (i===0||i===6||j===0||j===6);
+                    const inner = (i>=2&&i<=4&&j>=2&&j<=4);
+                    m[r+i][c+j] = edge||inner;
+                }
+            }
+            finder(0,0); finder(0,N-7); finder(N-7,0);
+            // timing patterns
+            for (let i=8;i<N-8;i++){ m[6][i]=(i%2===0); m[i][6]=(i%2===0); res[6][i]=true; res[i][6]=true; }
+            // a center alignment block (visual authenticity)
+            const ac=Math.floor(N/2)-2;
+            for (let i=0;i<5;i++) for (let j=0;j<5;j++){ const edge=(i===0||i===4||j===0||j===4); const ctr=(i===2&&j===2);
+                m[ac+i][ac+j]=edge||ctr; res[ac+i][ac+j]=true; }
+            // fill data deterministically
+            const rnd = mulberry32(strHash(text));
+            for (let r=0;r<N;r++) for (let c=0;c<N;c++){ if(!res[r][c]) m[r][c]= rnd()<0.48; }
+            // render modules
+            g.fillStyle='#111827';
+            for (let r=0;r<N;r++) for (let c=0;c<N;c++){ if(m[r][c]){ g.fillRect(Math.round((Q+c)*u), Math.round((Q+r)*u), Math.ceil(u), Math.ceil(u)); } }
+            // brand emblem in centre
+            const bs=u*5, bx=px/2-bs/2, by=px/2-bs/2;
+            g.fillStyle='#ffffff'; g.fillRect(bx-2,by-2,bs+4,bs+4);
+            g.fillStyle=C.red; roundRect(g,bx,by,bs,bs,4); g.fill();
+            g.fillStyle='#fff'; g.font=`900 ${bs*0.5}px Fredoka One, Outfit, sans-serif`; g.textAlign='center'; g.textBaseline='middle';
+            g.fillText('BP', px/2, by+bs/2);
+        }
+
+        function checkCoupon(){
+            if (!game.couponClaimed && game.score>=TARGET){
+                game.couponClaimed = true;
+                game.couponCode = genCouponCode();
+                game.state='coupon';
+                Audio.play('reward'); vibrate([60,40,60,40,120]);
+                confettiBurst();
+                $('couponCode').textContent = game.couponCode;
+                drawQR($('qr'), game.couponCode);
+                showScreen('coupon');
+            }
+        }
+
+        // ============================================================================
+        //  STATE TRANSITIONS
+        // ============================================================================
+        function showScreen(name){
+            Object.keys(screens).forEach(k=> screens[k].classList.toggle('hidden', k!==name));
+            $('hud').classList.toggle('hidden', !(name==='play'));
+        }
+        function setHudVisible(v){ $('hud').classList.toggle('hidden', !v); }
+
+        function startGame(){
+            Audio.init(); Audio.resume(); Audio.play('click');
+            game.score=0; game.lives=START_LIVES; game.combo=0; game.mult=1;
+            game.items=[]; game.spawnT=0.4; game.elapsed=0;
+            game.tray.x=game.tray.target=DESIGN_W/2;
+            game.shake=0; game.flash=0; game.grace=0.6;
+            game.couponClaimed=false; game.usedRevive=false; game.couponCode='';
+            particles=[]; floaters=[]; confetti=[];
+            game.state='playing';
+            buildHearts(); updateHud();
+            hideAllScreens(); setHudVisible(true);
+        }
+        function hideAllScreens(){ Object.keys(screens).forEach(k=> screens[k].classList.add('hidden')); }
+
+        function pauseGame(){ if (game.state!=='playing') return; game.state='paused'; Audio.play('click'); showScreen('pause'); setHudVisible(true); }
+        function resumeGame(){ if (game.state!=='paused') return; game.state='playing'; Audio.play('click'); lastT=performance.now(); hideAllScreens(); setHudVisible(true); }
+
+        function continueAfterCoupon(){
+            Audio.play('click'); game.state='playing'; lastT=performance.now();
+            hideAllScreens(); setHudVisible(true);
+            showToast(t('t_coupon_done'));
+        }
+
+        function gameOver(){
+            game.state='gameover'; Audio.play('over'); vibrate([200,60,200]);
+            const isBest = game.score>game.best;
+            if (isBest){ game.best=game.score; localStorage.setItem('bp_pc_best', String(game.best)); }
+            $('goScore').textContent=game.score; $('goBest').textContent=game.best;
+            $('goNewBest').classList.toggle('hidden', !isBest);
+            // revive only once per run
+            $('reviveBox').classList.toggle('hidden', game.usedRevive);
+            $('reviveUsed').classList.toggle('hidden', !game.usedRevive);
+            showScreen('gameover'); setHudVisible(false);
+        }
+        function toMenu(){ Audio.play('click'); game.state='menu'; game.items=[]; particles=[]; floaters=[]; confetti=[];
+            $('menuBest').textContent=game.best; showScreen('menu'); setHudVisible(false); }
+
+        // ---- Ad-revive flow ----
+        function startAd(){
+            Audio.play('whoosh');
+            game.usedRevive=true;
+            game.state='ad'; game.ad.remaining=5; game.ad.lastTick=6;
+            hideAllScreens(); screens.ad.classList.remove('hidden'); setHudVisible(false);
+            $('adBar').style.width='0%'; $('adCount').textContent='5';
+        }
+        function updateAd(dt){
+            game.ad.remaining -= dt;
+            const rem=Math.max(0, game.ad.remaining);
+            const shown=Math.ceil(rem);
+            $('adCount').textContent=String(shown);
+            $('adBar').style.width = ((5-rem)/5*100).toFixed(1)+'%';
+            if (shown < game.ad.lastTick){ game.ad.lastTick=shown; if (shown>0) Audio.play('tick'); }
+            if (game.ad.remaining<=0) finishRevive();
+        }
+        function finishRevive(){
+            game.lives=START_LIVES; game.items=[]; game.combo=0; game.mult=1;
+            game.shake=0; game.flash=0; game.grace=1.2;
+            game.state='playing'; lastT=performance.now();
+            buildHearts(); updateHud(); hideAllScreens(); setHudVisible(true);
+            Audio.play('reward'); confettiBurst();
+            showToast(t('t_revived'));
+        }
+
+        // ============================================================================
+        //  HUD
+        // ============================================================================
+        function buildHearts(){
+            const box=$('hudLives'); box.innerHTML='';
+            for (let i=0;i<START_LIVES;i++){ const s=document.createElement('i'); s.className='fa-solid fa-heart heart'; s.dataset.idx=i;
+                s.style.fontSize='16px'; box.appendChild(s); }
+        }
+        function updateHud(){
+            $('hudScore').textContent=game.score;
+            const pct=Math.min(100, game.score/TARGET*100);
+            $('hudProgress').style.width=pct+'%';
+            $('hudGoal').textContent = game.couponClaimed ? (t('t_coupon_done')) : (game.score+' / '+TARGET);
+            // hearts
+            document.querySelectorAll('#hudLives .heart').forEach((h,i)=>{ h.style.color = i<game.lives ? '#ef4444' : 'rgba(255,255,255,.22)'; });
+            // combo chip
+            const chip=$('hudCombo');
+            if (game.mult>1){ chip.style.opacity='1'; chip.firstElementChild.textContent='x'+game.mult; }
+            else chip.style.opacity='0';
+        }
+        let toastT=null;
+        function showToast(msg){ const el=$('toast'); el.textContent=msg; el.style.opacity='1'; el.style.transform='translate(-50%,0)';
+            clearTimeout(toastT); toastT=setTimeout(()=>{ el.style.opacity='0'; }, 1500); }
+
+        // ============================================================================
+        //  LOCALIZATION APPLY
+        // ============================================================================
+        function applyLang(){
+            document.documentElement.lang = lang;
+            document.querySelectorAll('[data-i18n]').forEach(el=>{ const k=el.dataset.i18n; if (I18N[lang][k]!=null) el.textContent=I18N[lang][k]; });
+            $('title').innerHTML = t('title_html');
+            $('subtitle').textContent = t('subtitle');
+            $('tagline').textContent = t('tagline');
+            $('locLine').textContent = t('loc');
+            $('scanLine').textContent = t('scan');
+            $('btnLangTxt').textContent = t('lang_btn');
+            $('btnLangTxt2').textContent = t('lang_btn');
+            $('menuBest').textContent = game.best;
+            $('hudScoreLabel').textContent = t('hud_score');
+            buildLegend();
+            updateHud();
+        }
+        function toggleLang(){ lang = (lang==='fr')?'en':'fr'; localStorage.setItem('bp_pc_lang', lang); Audio.play('click'); applyLang(); }
+
+        function buildLegend(){
+            const box=$('legend'); box.innerHTML='';
+            const items=[['fries','l_fries'],['gravy','l_gravy'],['curds','l_curds'],['steamie','l_steamie'],['rain','l_rain']];
+            items.forEach(([id,key])=>{
+                const cell=document.createElement('div'); cell.className='flex flex-col items-center gap-1';
+                const cv=document.createElement('canvas'); cv.width=88; cv.height=88; cv.style.width='44px'; cv.style.height='44px';
+                const g=cv.getContext('2d'); g.scale(2,2);
+                if (id==='steamie'){ g.save(); g.translate(22,22); Sprite.draw(id,g,0,0,40); g.restore(); }
+                else { Sprite.draw(id,g,22,22,id==='rain'?30:36); }
+                const lab=document.createElement('div'); lab.className='text-[8.5px] leading-tight text-center font-semibold';
+                lab.style.color = id==='rain' ? '#7dd3fc' : (id==='steamie'?C.gold:'#e4e4e7');
+                lab.textContent=t(key);
+                cell.appendChild(cv); cell.appendChild(lab); box.appendChild(cell);
+            });
+        }
+
+        // ============================================================================
+        //  INPUT
+        // ============================================================================
+        const stage=$('stage');
+        function pointerX(clientX){ const r=canvas.getBoundingClientRect(); return clamp((clientX-r.left)/r.width*DESIGN_W, 0, DESIGN_W); }
+        let dragging=false;
+        function onDown(e){ if (game.state!=='playing') return; dragging=true; game.tray.target=pointerX((e.touches?e.touches[0]:e).clientX); e.preventDefault(); }
+        function onMove(e){ if (!dragging||game.state!=='playing') return; game.tray.target=pointerX((e.touches?e.touches[0]:e).clientX); e.preventDefault(); }
+        function onUp(){ dragging=false; }
+        stage.addEventListener('mousedown',onDown); window.addEventListener('mousemove',onMove); window.addEventListener('mouseup',onUp);
+        stage.addEventListener('touchstart',onDown,{passive:false}); stage.addEventListener('touchmove',onMove,{passive:false}); window.addEventListener('touchend',onUp);
+        // also let a tap-anywhere move directly (nice on mobile)
+        document.addEventListener('keydown',(e)=>{
+            if (game.state==='playing'){
+                if (e.key==='ArrowLeft'){ game.tray.target=clamp(game.tray.target-46, 0, DESIGN_W); }
+                else if (e.key==='ArrowRight'){ game.tray.target=clamp(game.tray.target+46, 0, DESIGN_W); }
+                else if (e.key===' '||e.key==='p'||e.key==='P') pauseGame();
+            } else if (game.state==='paused' && (e.key===' '||e.key==='p'||e.key==='P')) resumeGame();
+            else if (game.state==='menu' && e.key==='Enter') startGame();
+        });
+
+        // buttons
+        $('btnPlay').addEventListener('click', startGame);
+        $('btnPause').addEventListener('click', pauseGame);
+        $('btnResume').addEventListener('click', resumeGame);
+        $('btnRestart').addEventListener('click', startGame);
+        $('btnReplay').addEventListener('click', startGame);
+        $('btnMenu1').addEventListener('click', toMenu);
+        $('btnMenu2').addEventListener('click', toMenu);
+        $('btnCouponContinue').addEventListener('click', continueAfterCoupon);
+        $('btnRevive').addEventListener('click', startAd);
+        $('btnLang').addEventListener('click', toggleLang);
+        $('btnLang2').addEventListener('click', toggleLang);
+        function doMute(){ Audio.init(); Audio.setMuted(!Audio.muted); Audio.play('click'); syncMute(); }
+        function syncMute(){ const cls = Audio.muted ? 'fa-solid fa-volume-xmark' : 'fa-solid fa-volume-high';
+            $('muteIcon').className=cls+' text-amber-300'; $('muteIcon2').className=cls+' text-amber-300'; }
+        $('btnMute').addEventListener('click', doMute);
+        $('btnMute2').addEventListener('click', doMute);
+
+        // auto-pause when tab hidden
+        document.addEventListener('visibilitychange',()=>{ if (document.hidden && game.state==='playing') pauseGame(); });
+
+        // ============================================================================
+        //  HELPERS + RESPONSIVE SCALING
+        // ============================================================================
+        function clamp(v,a,b){ return v<a?a:v>b?b:v; }
+        function vibrate(p){ try{ if (navigator.vibrate) navigator.vibrate(p); }catch(e){} }
+
+        function setupCanvas(){
+            const dpr=Math.min(window.devicePixelRatio||1, 2);
+            canvas.width=Math.round(DESIGN_W*dpr); canvas.height=Math.round(DESIGN_H*dpr);
+            canvas.style.width=DESIGN_W+'px'; canvas.style.height=DESIGN_H+'px';
+            ctx.setTransform(dpr,0,0,dpr,0,0);
+            ctx.imageSmoothingEnabled=true;
+        }
+        function resize(){
+            const isMobile = window.matchMedia('(max-width: 767px)').matches;
+            // available area: full viewport on mobile; leave room for cabinet chrome on desktop
+            const availW = window.innerWidth - (isMobile? 8 : 64);
+            const availH = window.innerHeight - (isMobile? 8 : 150);
+            let s = Math.min(availW/DESIGN_W, availH/DESIGN_H);
+            s = clamp(s, 0.4, 1.7);
+            $('scaler').style.transform = 'scale('+s+')';
+            // keep #fit sized so the cabinet hugs the scaled screen
+            $('fit').style.width = (DESIGN_W*s)+'px';
+            $('fit').style.height = (DESIGN_H*s)+'px';
+        }
+        window.addEventListener('resize', resize);
+        window.addEventListener('orientationchange', ()=>setTimeout(resize,120));
+
+        // ============================================================================
+        //  BOOT
+        // ============================================================================
+        function boot(){
+            setupCanvas();
+            buildFacade();
+            buildHearts();
+            applyLang();
+            syncMute();
+            resize();
+            showScreen('menu'); setHudVisible(false);
+            $('menuBest').textContent=game.best;
+            requestAnimationFrame(loop);
+        }
+        // fonts may still be loading — rebuild facade once they arrive so text is crisp
+        if (document.fonts && document.fonts.ready){ document.fonts.ready.then(()=>{ buildFacade(); buildLegend(); }); }
+        boot();
+    })();
+    </script>
+</body>
+</html>

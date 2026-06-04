@@ -35,8 +35,8 @@
 
         /* Stage: fixed logical design size, uniformly scaled to fit any screen via #scaler */
         #scaler { transform-origin:center center; will-change:transform; }
-        #stage  { position:relative; width:414px; height:736px; }
-        #game   { position:absolute; inset:0; width:414px; height:736px; display:block; border-radius:22px; }
+        #stage  { position:relative; width:414px; height:736px; touch-action:none; }
+        #game   { position:absolute; inset:0; width:414px; height:736px; display:block; border-radius:22px; touch-action:none; }
 
         .overlay { position:absolute; inset:0; display:flex; flex-direction:column;
                    align-items:center; justify-content:center; padding:20px; border-radius:22px; }

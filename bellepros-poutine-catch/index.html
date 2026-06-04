@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Outfit:wght@400;600;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Icons are rendered self-contained (emoji fallback in CSS) so the game never depends on an icon-font CDN. -->
 
     <style>
         /* ---- Critical CSS: keeps the game laid out & playable even if the Tailwind CDN is unreachable ---- */
@@ -35,12 +35,12 @@
 
         /* Stage: fixed logical design size, uniformly scaled to fit any screen via #scaler */
         #scaler { transform-origin:center center; will-change:transform; }
-        #stage  { position:relative; width:414px; height:736px; }
-        #game   { position:absolute; inset:0; width:414px; height:736px; display:block; border-radius:22px; }
+        #stage  { position:relative; width:414px; height:736px; touch-action:none; }
+        #game   { position:absolute; inset:0; width:414px; height:736px; display:block; border-radius:22px; touch-action:none; }
 
         .overlay { position:absolute; inset:0; display:flex; flex-direction:column;
                    align-items:center; justify-content:center; padding:20px; border-radius:22px; }
-        .hidden  { display:none !important; }
+        /* .hidden is (re)declared after the display utilities below so it always wins */
 
         /* Arcade-cabinet neon frame (desktop flourish) */
         .cabinet-glow { box-shadow:0 0 0 3px rgba(232,25,44,.55), 0 0 36px 6px rgba(232,25,44,.35),
@@ -83,6 +83,73 @@
         input[type=range]{ accent-color: var(--bp-amber); }
         .no-scroll { overscroll-behavior:none; }
         ::-webkit-scrollbar{ width:0; height:0; }
+
+        /* ==========================================================================
+           SELF-CONTAINED UTILITY LAYER
+           Implements every utility class the markup uses, with Tailwind's values, so
+           the UI is fully styled & playable even when the Tailwind CDN is blocked or
+           offline. If Tailwind does load, it produces equivalent results.
+           ========================================================================== */
+        .flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.inline-block{display:inline-block}.block{display:block}
+        .flex-col{flex-direction:column}.flex-1{flex:1 1 0%}.grid-cols-5{grid-template-columns:repeat(5,minmax(0,1fr))}
+        .items-center{align-items:center}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-baseline{align-items:baseline}
+        .justify-center{justify-content:center}.justify-between{justify-content:space-between}.self-center{align-self:center}
+        .relative{position:relative}.absolute{position:absolute}
+        .overflow-hidden{overflow:hidden}.pointer-events-none{pointer-events:none}.select-none{user-select:none}
+        .text-center{text-align:center}.uppercase{text-transform:uppercase}.break-all{word-break:break-all}.min-w-0{min-width:0}
+        .w-full{width:100%}.h-full{height:100%}.w-2{width:.5rem}.h-2{height:.5rem}.w-9{width:2.25rem}.h-9{height:2.25rem}.h-1\.5{height:.375rem}
+        .min-w-\[124px\]{min-width:124px}.max-w-\[320px\]{max-width:320px}.max-w-\[330px\]{max-width:330px}
+        .top-0{top:0}.left-0{left:0}.right-0{right:0}.top-3{top:.75rem}.right-3{right:.75rem}.left-3{left:.75rem}
+        .left-1\/2{left:50%}.top-\[120px\]{top:120px}.-translate-x-1\/2{transform:translateX(-50%)}.z-30{z-index:30}.z-40{z-index:40}
+        .gap-1{gap:.25rem}.gap-1\.5{gap:.375rem}.gap-2{gap:.5rem}.gap-3{gap:.75rem}
+        .p-1\.5{padding:.375rem}.p-2{padding:.5rem}.p-3{padding:.75rem}.p-4{padding:1rem}
+        .px-2\.5{padding-left:.625rem;padding-right:.625rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.px-7{padding-left:1.75rem;padding-right:1.75rem}.px-8{padding-left:2rem;padding-right:2rem}.px-10{padding-left:2.5rem;padding-right:2.5rem}
+        .py-1{padding-top:.25rem;padding-bottom:.25rem}.py-1\.5{padding-top:.375rem;padding-bottom:.375rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-2\.5{padding-top:.625rem;padding-bottom:.625rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-3\.5{padding-top:.875rem;padding-bottom:.875rem}.py-4{padding-top:1rem;padding-bottom:1rem}
+        .pt-3{padding-top:.75rem}.pt-4{padding-top:1rem}.pb-1{padding-bottom:.25rem}.pb-3{padding-bottom:.75rem}.pb-4{padding-bottom:1rem}
+        .mb-1{margin-bottom:.25rem}.mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:.75rem}.mb-6{margin-bottom:1.5rem}
+        .mt-0\.5{margin-top:.125rem}.mt-1{margin-top:.25rem}.mt-1\.5{margin-top:.375rem}.mt-2{margin-top:.5rem}.mt-3{margin-top:.75rem}.mt-4{margin-top:1rem}.mt-5{margin-top:1.25rem}.mt-6{margin-top:1.5rem}
+        .my-3{margin-top:.75rem;margin-bottom:.75rem}.mx-4{margin-left:1rem;margin-right:1rem}.mr-1{margin-right:.25rem}.mr-2{margin-right:.5rem}
+        .rounded-lg{border-radius:.5rem}.rounded-xl{border-radius:.75rem}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.rounded-\[24px\]{border-radius:24px}.rounded-\[34px\]{border-radius:34px}
+        .text-xs{font-size:.75rem;line-height:1rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}
+        .text-\[8\.5px\]{font-size:8.5px}.text-\[10px\]{font-size:10px}.text-\[10\.5px\]{font-size:10.5px}.text-\[11px\]{font-size:11px}.text-\[12px\]{font-size:12px}.text-\[13px\]{font-size:13px}.text-\[44px\]{font-size:44px}
+        .font-semibold{font-weight:600}.font-bold{font-weight:700}.font-black{font-weight:900}
+        .leading-none{line-height:1}.leading-tight{line-height:1.25}.leading-snug{line-height:1.375}.leading-\[0\.95\]{line-height:.95}
+        .tracking-wide{letter-spacing:.025em}.tracking-widest{letter-spacing:.1em}.tracking-\[\.2em\]{letter-spacing:.2em}.tracking-\[\.25em\]{letter-spacing:.25em}.tracking-\[\.3em\]{letter-spacing:.3em}
+        .text-white{color:#fff}.text-white\/70{color:rgba(255,255,255,.7)}
+        .text-zinc-200{color:#e4e4e7}.text-zinc-300{color:#d4d4d8}.text-zinc-300\/80{color:rgba(212,212,216,.8)}.text-zinc-400{color:#a1a1aa}.text-zinc-500{color:#71717a}.text-zinc-600{color:#52525b}
+        .text-amber-300{color:#fcd34d}.text-amber-300\/80{color:rgba(252,211,77,.8)}.text-amber-400{color:#fbbf24}.text-amber-400\/60{color:rgba(251,191,36,.6)}.text-amber-400\/70{color:rgba(251,191,36,.7)}.text-amber-400\/80{color:rgba(251,191,36,.8)}
+        .text-red-500{color:#ef4444}.text-red-700{color:#b91c1c}.bg-red-500{background-color:#ef4444}.bg-zinc-950{background-color:#09090b}
+        .backdrop-blur-md{backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+        .opacity-0{opacity:0}.opacity-90{opacity:.9}
+        .transition-all{transition:all .15s ease}.transition-opacity{transition:opacity .15s ease}.duration-200{transition-duration:.2s}
+        /* hidden declared AFTER display utilities so it always wins when present */
+        .hidden{display:none}
+        @media(min-width:768px){
+            .md\:flex{display:flex}
+            .md\:p-4{padding:1rem}
+            .md\:cabinet-glow{box-shadow:0 0 0 3px rgba(232,25,44,.55),0 0 36px 6px rgba(232,25,44,.35),0 0 90px 18px rgba(245,158,11,.18),inset 0 0 60px rgba(0,0,0,.6)}
+        }
+
+        /* ---- Self-contained icon fallback (emoji) — used in place of an icon-font CDN ---- */
+        .fa-solid,.fa-regular,.fa-brands{font-style:normal;font-weight:400;display:inline-block;line-height:1;
+            font-family:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji","Segoe UI Symbol",sans-serif}
+        .fa-pepper-hot::before{content:"\1F336"}      /* 🌶 */
+        .fa-language::before{content:"\1F310"}        /* 🌐 */
+        .fa-volume-high::before{content:"\1F50A"}     /* 🔊 */
+        .fa-volume-xmark::before{content:"\1F507"}    /* 🔇 */
+        .fa-trophy::before{content:"\1F3C6"}          /* 🏆 */
+        .fa-location-dot::before{content:"\1F4CD"}    /* 📍 */
+        .fa-ban::before{content:"\1F6AB"}             /* 🚫 */
+        /* monochrome glyphs (inherit text colour) */
+        .fa-play::before,.fa-circle-play::before,.fa-pause::before,.fa-forward::before,
+        .fa-rotate-right::before,.fa-house::before,.fa-heart::before{
+            font-family:'Outfit',system-ui,sans-serif}
+        .fa-play::before,.fa-circle-play::before{content:"\25B6"}   /* ▶ */
+        .fa-pause::before{content:"\275A\275A"}                       /* ❚❚ */
+        .fa-forward::before{content:"\00BB"}                          /* » */
+        .fa-rotate-right::before{content:"\21BB"}                     /* ↻ */
+        .fa-house::before{content:"\2302"}                            /* ⌂ */
+        .fa-heart::before{content:"\2665"}                            /* ♥ */
     </style>
 </head>
 <body class="bg-zinc-950 text-white no-scroll">

@@ -133,7 +133,7 @@
         /* ---- Self-contained icon fallback (emoji) — used in place of an icon-font CDN ---- */
         .fa-solid,.fa-regular,.fa-brands{font-style:normal;font-weight:400;display:inline-block;line-height:1;
             font-family:"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji","Segoe UI Symbol",sans-serif}
-        .fa-pepper-hot::before{content:"\1F336"}      /* 🌶 */
+        .fa-fleur::before{content:"\269C";font-family:'Outfit',system-ui,sans-serif}  /* ⚜ fleur-de-lis (tintable) */
         .fa-language::before{content:"\1F310"}        /* 🌐 */
         .fa-volume-high::before{content:"\1F50A"}     /* 🔊 */
         .fa-volume-xmark::before{content:"\1F507"}    /* 🔇 */
@@ -163,7 +163,7 @@
                  style="background:linear-gradient(180deg,#1c1917,#0c0a09); box-shadow:0 0 0 2px rgba(232,25,44,.5), 0 0 26px rgba(232,25,44,.35);">
                 <span class="inline-flex items-center justify-center w-9 h-9 rounded-full"
                       style="background:var(--bp-red); box-shadow:0 0 14px rgba(232,25,44,.7);">
-                    <i class="fa-solid fa-pepper-hot text-white text-lg"></i>
+                    <i class="fa-solid fa-fleur text-white text-lg"></i>
                 </span>
                 <span class="font-display text-2xl tracking-wide"
                       style="color:#fff; text-shadow:0 0 12px rgba(232,25,44,.7);">BELLEPROS</span>
@@ -248,12 +248,12 @@
                                 <div class="text-center float-soft">
                                     <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-3"
                                          style="background:var(--bp-red); box-shadow:0 6px 22px rgba(232,25,44,.45);">
-                                        <i class="fa-solid fa-pepper-hot text-white"></i>
+                                        <i class="fa-solid fa-fleur text-white"></i>
                                         <span class="font-display text-lg tracking-wide">BELLEPROS</span>
                                         <span class="text-white/70 text-xs font-bold tracking-[.25em] uppercase">Laval</span>
                                     </div>
                                     <h1 id="title" class="neon-title text-[44px] leading-[0.95] text-amber-400">PLUIE<br>DE POUTINE</h1>
-                                    <p id="subtitle" class="mt-2 text-zinc-300 text-sm font-semibold tracking-wide">Rôtisserie • Poutine • Steamies</p>
+                                    <p id="subtitle" class="mt-2 text-zinc-300 text-sm font-semibold tracking-wide">Cantine • Poutine • Tradition québécoise</p>
                                 </div>
 
                                 <!-- how-to legend -->
@@ -285,7 +285,7 @@
 
                             <!-- ===================== PAUSE SCREEN ===================== -->
                             <div id="screen-pause" class="overlay z-30 hidden" style="background:rgba(9,9,11,.78); backdrop-filter:blur(6px);">
-                                <i class="fa-solid fa-pepper-hot text-amber-400 text-3xl mb-2"></i>
+                                <i class="fa-solid fa-fleur text-amber-400 text-3xl mb-2"></i>
                                 <h2 id="pauseTitle" class="neon-title text-4xl text-amber-400 mb-6" data-i18n="pause_title">PAUSE</h2>
                                 <button id="btnResume" class="btn pulse-cta rounded-2xl px-8 py-3.5 text-xl font-display text-white mb-3 flex items-center gap-2"
                                         style="background:linear-gradient(180deg,#F59E0B,#E8192C); box-shadow:0 8px 24px rgba(232,25,44,.45);">
@@ -313,7 +313,7 @@
                                     <div class="ticket-notch rounded-2xl overflow-hidden" style="background:#FFF6E6; color:#1c1917; box-shadow:0 18px 40px rgba(0,0,0,.55);">
                                         <div class="px-4 pt-4 pb-3 text-center" style="background:linear-gradient(180deg,#E8192C,#b91c1c); color:#fff;">
                                             <div class="flex items-center justify-center gap-2 text-[11px] font-bold tracking-[.2em] uppercase opacity-90">
-                                                <i class="fa-solid fa-pepper-hot"></i> Bellepros Laval
+                                                <i class="fa-solid fa-fleur"></i> Bellepros Laval
                                             </div>
                                             <div id="couponOffer" class="font-display text-2xl mt-1 leading-tight" data-i18n="coupon_offer">DOUBLE FROMAGE GRATUIT</div>
                                             <div id="couponOfferSub" class="text-[12px] font-semibold opacity-90" data-i18n="coupon_offer_sub">à l'achat d'un combo régulier</div>
@@ -380,7 +380,7 @@
                             </div>
 
                             <!-- ===================== SIMULATED VIDEO AD ===================== -->
-                            <div id="screen-ad" class="overlay z-40 hidden" style="background:#000; padding:0;">
+                            <div id="screen-ad" class="overlay z-40 hidden" style="background:transparent; padding:0;">
                                 <!-- the spinning combo is drawn on the main canvas; this layer holds the ad chrome -->
                                 <div class="absolute top-3 left-3 flex items-center gap-2 px-3 py-1.5 rounded-lg" style="background:rgba(0,0,0,.5);">
                                     <span class="w-2 h-2 rounded-full bg-red-500"></span>
@@ -393,10 +393,10 @@
 
                                 <div class="flex-1"></div>
                                 <div class="text-center px-6 pointer-events-none">
-                                    <div id="adCombo" class="font-display text-3xl text-amber-400 neon-title" data-i18n="ad_combo">LE COMBO STEAMIE</div>
-                                    <div id="adTag" class="text-zinc-300 text-sm font-semibold mt-1" data-i18n="ad_tag">Steamies • Frites • Liqueur</div>
+                                    <div id="adCombo" class="font-display text-3xl text-amber-400 neon-title" data-i18n="ad_combo">LA POUTINE CLASSIQUE</div>
+                                    <div id="adTag" class="text-zinc-300 text-sm font-semibold mt-1" data-i18n="ad_tag">Frites • Fromage squic-squic • Sauce brune</div>
                                     <div class="mt-2 inline-flex items-center gap-2 px-4 py-1.5 rounded-full" style="background:var(--bp-red);">
-                                        <i class="fa-solid fa-pepper-hot"></i><span class="font-display tracking-wide">BELLEPROS LAVAL</span>
+                                        <i class="fa-solid fa-fleur"></i><span class="font-display tracking-wide">BELLEPROS LAVAL</span>
                                     </div>
                                 </div>
                                 <div class="flex-1"></div>
@@ -454,21 +454,21 @@
             fries:   { id:'fries',   base:5,  size:42, premium:false, p:C.yellow, p2:C.amber },
             gravy:   { id:'gravy',   base:6,  size:38, premium:false, p:C.brown,  p2:C.brownDk },
             curds:   { id:'curds',   base:8,  size:40, premium:false, p:'#FFF3C9',p2:C.white  },
-            steamie: { id:'steamie', base:15, size:50, premium:true,  p:C.red,    p2:C.amber  },
+            poutine: { id:'poutine', base:15, size:52, premium:true,  p:C.gold,   p2:'#FFF3C9' },
             rain:    { id:'rain',    base:0,  size:32, premium:false, p:C.blue,   p2:C.blueDk, hazard:true }
         };
-        const GOOD_WEIGHTS = [['fries',34],['gravy',26],['curds',22],['steamie',10]];
+        const GOOD_WEIGHTS = [['fries',34],['gravy',26],['curds',22],['poutine',10]];
 
         // ---- Localization (FR Quebec slang / EN crisp QSR) --------------------------
         const I18N = {
             fr: {
                 lang_btn:'EN',
-                title_html:'PLUIE<br>DE POUTINE', subtitle:'Rôtisserie • Poutine • Steamies',
+                title_html:'PLUIE<br>DE POUTINE', subtitle:'Cantine • Poutine • Tradition québécoise',
                 tagline:'Attrape les ingrédients, évite la pluie et débloque un vrai rabais en magasin!',
                 play:'JOUER', best:'Record', menu:'Menu', restart:'Recommencer', resume:'Reprendre', pause_title:'PAUSE',
                 hud_score:'Pointage',
                 loc:'Bellepros Laval • 2500, boul. Daniel-Johnson', scan:'Scanne • Joue • Gagne',
-                l_fries:'Frites', l_gravy:'Sauce brune', l_curds:'Fromage squic-squic', l_steamie:'Steamie premium', l_rain:'Goutte de pluie',
+                l_fries:'Frites', l_gravy:'Sauce brune', l_curds:'Fromage squic-squic', l_poutine:'Poutine maison', l_rain:'Goutte de pluie',
                 reward_unlocked:'Récompense débloquée', coupon_title:'COUPON DÉBLOQUÉ!', coupon_congrats:'Bravo! Tu as atteint 100 points.',
                 coupon_offer:'DOUBLE FROMAGE GRATUIT', coupon_offer_sub:"à l'achat d'un combo régulier",
                 coupon_code_label:'Code coupon', coupon_scan:'Présente ce code au comptoir Bellepros Laval.',
@@ -476,18 +476,18 @@
                 go_title:'PARTIE TERMINÉE', go_score:'Pointage', go_best:'Record', go_newbest:'Nouveau record!',
                 revive_title:'Sauve ta séquence!', revive_desc:'Regarde une courte pub et récupère tes 3 vies — ton pointage reste intact.',
                 revive_btn:'Regarder la pub', revive_used:'Sauvetage déjà utilisé', go_replay:'Rejouer',
-                ad_label:'Publicité', ad_reward_in:'Récompense dans', ad_combo:'LE COMBO STEAMIE', ad_tag:'Steamies • Frites • Liqueur', ad_cant_skip:'Pub non sautable',
+                ad_label:'Publicité', ad_reward_in:'Récompense dans', ad_combo:'LA POUTINE CLASSIQUE', ad_tag:'Frites • Fromage squic-squic • Sauce brune', ad_cant_skip:'Pub non sautable',
                 t_miss:'RATÉ!', t_soggy:'DÉTREMPÉ!', t_revived:'+3 VIES • C\'est reparti!', t_coupon_done:'Coupon réclamé ✓',
                 m2:'2x ÉPICÉ!', m3:'3x CHAUD!', m4:'4x EN FEU!', m5:'5x BELLEPROS!'
             },
             en: {
                 lang_btn:'FR',
-                title_html:'POUTINE<br>DROP', subtitle:'Rotisserie • Poutine • Steamies',
+                title_html:'POUTINE<br>DROP', subtitle:'Diner • Poutine • Québec tradition',
                 tagline:'Catch the ingredients, dodge the rain, and unlock a real in-store reward!',
                 play:'PLAY', best:'Best', menu:'Menu', restart:'Restart', resume:'Resume', pause_title:'PAUSED',
                 hud_score:'Score',
                 loc:'Bellepros Laval • 2500 Daniel-Johnson Blvd', scan:'Scan • Play • Win',
-                l_fries:'Fries', l_gravy:'Gravy', l_curds:'Cheese curds', l_steamie:'Premium steamie', l_rain:'Rain drop',
+                l_fries:'Fries', l_gravy:'Gravy', l_curds:'Cheese curds', l_poutine:'House poutine', l_rain:'Rain drop',
                 reward_unlocked:'Reward unlocked', coupon_title:'COUPON UNLOCKED!', coupon_congrats:'Nice! You reached 100 points.',
                 coupon_offer:'FREE DOUBLE CHEESE', coupon_offer_sub:'with any regular combo',
                 coupon_code_label:'Coupon code', coupon_scan:'Show this code at the Bellepros Laval counter.',
@@ -495,7 +495,7 @@
                 go_title:'GAME OVER', go_score:'Score', go_best:'Best', go_newbest:'New best!',
                 revive_title:'Save my streak!', revive_desc:'Watch a short ad to restore your 3 lives — your score stays intact.',
                 revive_btn:'Watch ad', revive_used:'Save already used', go_replay:'Play again',
-                ad_label:'Advertisement', ad_reward_in:'Reward in', ad_combo:'THE STEAMIE COMBO', ad_tag:'Steamies • Fries • Soda', ad_cant_skip:'Ad cannot be skipped',
+                ad_label:'Advertisement', ad_reward_in:'Reward in', ad_combo:'THE CLASSIC POUTINE', ad_tag:'Fries • Cheese curds • Gravy', ad_cant_skip:'Ad cannot be skipped',
                 t_miss:'MISS!', t_soggy:'SOGGY!', t_revived:'+3 LIVES • Back in!', t_coupon_done:'Coupon claimed ✓',
                 m2:'2x SPICY!', m3:'3x HOT!', m4:'4x FIRE!', m5:'5x BELLEPROS!'
             }
@@ -592,89 +592,127 @@
         const Sprite = {
             fries(g,x,y,s){
                 g.save(); g.translate(x,y);
-                const w=s*0.7, h=s*0.85;
-                // fries poking out
-                g.save(); g.translate(0,-h*0.18);
-                const fryW=s*0.13;
-                for (let i=-2;i<=2;i++){
-                    const fh=h*(0.85 - Math.abs(i)*0.07);
-                    g.save(); g.translate(i*fryW*1.15, 0); g.rotate(i*0.06);
-                    const grd=g.createLinearGradient(0,-fh,0,0); grd.addColorStop(0,'#FDE68A'); grd.addColorStop(1,C.amber);
-                    g.fillStyle=grd; roundRect(g,-fryW/2,-fh,fryW,fh,2); g.fill();
-                    g.fillStyle='rgba(255,255,255,.35)'; g.fillRect(-fryW/2+1,-fh+2,1.5,fh*0.5);
+                const w=s*0.72, h=s*0.9;
+                // golden fries poking out (varied, shaded)
+                g.save(); g.translate(0,-h*0.16);
+                const cols=['#FFE08A','#FFD24D','#F4B731','#FFCC57','#EBA92B','#FFD867','#F0AE2E'];
+                const n=7;
+                for (let i=0;i<n;i++){
+                    const t=(i/(n-1))-0.5;
+                    const fh=h*(0.98-Math.abs(t)*0.55)*(0.9+((i*7)%3)*0.06);
+                    const fw=s*0.12;
+                    g.save(); g.translate(t*w*0.8, 0); g.rotate(t*0.55);
+                    const gr=g.createLinearGradient(0,-fh,0,0); gr.addColorStop(0,'#FFF1B5'); gr.addColorStop(0.5,cols[i%cols.length]); gr.addColorStop(1,'#E2951F');
+                    g.fillStyle=gr; roundRect(g,-fw/2,-fh,fw,fh,fw*0.4); g.fill();
+                    g.fillStyle='rgba(255,255,255,.45)'; g.fillRect(-fw/2+1,-fh+fw*0.4,1.3,fh*0.55);
+                    g.fillStyle='rgba(120,70,20,.22)'; g.fillRect(fw/2-1.6,-fh+fw*0.4,1.1,fh*0.5);
                     g.restore();
                 }
                 g.restore();
-                // red carton
-                g.fillStyle=C.red; g.beginPath();
-                g.moveTo(-w*0.62,-h*0.12); g.lineTo(w*0.62,-h*0.12); g.lineTo(w*0.46,h*0.5); g.lineTo(-w*0.46,h*0.5); g.closePath(); g.fill();
-                g.fillStyle='rgba(255,255,255,.92)'; g.fillRect(-w*0.34,h*0.02,w*0.68,h*0.16);
-                g.fillStyle=C.red; g.font=`900 ${s*0.16}px Outfit, sans-serif`; g.textAlign='center'; g.textBaseline='middle';
-                g.fillText('BP', 0, h*0.10);
+                // red carton with gradient + fold
+                const cg=g.createLinearGradient(0,-h*0.12,0,h*0.52); cg.addColorStop(0,'#F23A2E'); cg.addColorStop(1,'#BC1C1C');
+                g.fillStyle=cg; g.beginPath();
+                g.moveTo(-w*0.6,-h*0.12); g.lineTo(w*0.6,-h*0.12); g.lineTo(w*0.46,h*0.52); g.lineTo(-w*0.46,h*0.52); g.closePath(); g.fill();
+                g.fillStyle='rgba(255,255,255,.12)'; g.beginPath(); g.moveTo(-w*0.6,-h*0.12); g.lineTo(-w*0.02,-h*0.12); g.lineTo(-w*0.02,h*0.52); g.lineTo(-w*0.46,h*0.52); g.closePath(); g.fill();
+                g.fillStyle='rgba(0,0,0,.10)'; g.fillRect(-w*0.02,-h*0.12,1.2,h*0.64);
+                // white band + fleur-de-lis
+                g.fillStyle='#FFF6E6'; roundRect(g,-w*0.34,h*0.05,w*0.68,h*0.2,3); g.fill();
+                fleur(g,0,h*0.15,s*0.085,'#C01E1E');
                 g.restore();
             },
             gravy(g,x,y,s){
                 g.save(); g.translate(x,y);
-                const w=s*0.74, h=s*0.7;
-                // kraft cup
-                g.fillStyle='#C8915A'; g.beginPath();
-                g.moveTo(-w*0.5,-h*0.18); g.lineTo(w*0.5,-h*0.18); g.lineTo(w*0.36,h*0.5); g.lineTo(-w*0.36,h*0.5); g.closePath(); g.fill();
-                g.fillStyle='rgba(0,0,0,.12)'; g.beginPath(); g.moveTo(0,-h*0.18); g.lineTo(w*0.5,-h*0.18); g.lineTo(w*0.36,h*0.5); g.lineTo(0,h*0.5); g.closePath(); g.fill();
-                // brown gravy top
-                const grd=g.createLinearGradient(0,-h*0.3,0,-h*0.05); grd.addColorStop(0,'#A1631F'); grd.addColorStop(1,C.brownDk);
-                g.fillStyle=grd; g.beginPath(); g.ellipse(0,-h*0.18,w*0.5,h*0.14,0,0,Math.PI*2); g.fill();
-                g.fillStyle='rgba(255,255,255,.18)'; g.beginPath(); g.ellipse(-w*0.12,-h*0.21,w*0.16,h*0.05,0,0,Math.PI*2); g.fill();
+                const w=s*0.8, h=s*0.62;
+                // kraft cup w/ shading
+                const cg=g.createLinearGradient(-w/2,0,w/2,0); cg.addColorStop(0,'#9A5E2C'); cg.addColorStop(0.5,'#C8915A'); cg.addColorStop(1,'#8E5226');
+                g.fillStyle=cg; g.beginPath(); g.moveTo(-w*0.5,-h*0.16); g.lineTo(w*0.5,-h*0.16); g.lineTo(w*0.36,h*0.52); g.lineTo(-w*0.36,h*0.52); g.closePath(); g.fill();
+                g.fillStyle='rgba(255,255,255,.1)'; g.fillRect(-w*0.5,-h*0.16,w*0.14,h*0.68);
+                // glossy brown gravy surface
+                const gr=g.createRadialGradient(-w*0.1,-h*0.22,2, 0,-h*0.16,w*0.54); gr.addColorStop(0,'#A1631F'); gr.addColorStop(0.65,'#6E3D11'); gr.addColorStop(1,'#4A280A');
+                g.fillStyle=gr; g.beginPath(); g.ellipse(0,-h*0.16,w*0.5,h*0.17,0,0,Math.PI*2); g.fill();
+                g.fillStyle='rgba(255,221,150,.4)'; g.beginPath(); g.ellipse(-w*0.13,-h*0.21,w*0.16,h*0.05,-0.3,0,Math.PI*2); g.fill();
+                g.strokeStyle='rgba(0,0,0,.18)'; g.lineWidth=1.3; g.beginPath(); g.ellipse(0,-h*0.16,w*0.5,h*0.17,0,0,Math.PI*2); g.stroke();
+                // steam wisps
+                g.strokeStyle='rgba(255,255,255,.2)'; g.lineWidth=Math.max(1.3,s*0.032); g.lineCap='round';
+                for (let i=-1;i<=1;i++){ const sx=i*w*0.17; g.beginPath(); g.moveTo(sx,-h*0.28); g.quadraticCurveTo(sx+s*0.1,-h*0.5,sx-s*0.03,-h*0.66); g.quadraticCurveTo(sx-s*0.1,-h*0.82,sx+s*0.03,-h*0.96); g.stroke(); }
                 g.restore();
             },
             curds(g,x,y,s){
                 g.save(); g.translate(x,y);
-                const blobs=[[-0.22,-0.1,0.30],[0.2,-0.16,0.26],[0.0,0.12,0.34],[0.26,0.16,0.24],[-0.26,0.18,0.22]];
+                g.fillStyle='rgba(0,0,0,.12)'; g.beginPath(); g.ellipse(0,s*0.34,s*0.42,s*0.12,0,0,Math.PI*2); g.fill();
+                const blobs=[[-0.24,-0.06,0.30],[0.22,-0.14,0.27],[0.02,0.14,0.34],[0.28,0.18,0.22],[-0.26,0.2,0.22],[0.0,-0.24,0.2]];
                 blobs.forEach(b=>{
                     const r=s*b[2];
-                    const grd=g.createRadialGradient(s*b[0]-r*0.3,s*b[1]-r*0.3,r*0.2, s*b[0],s*b[1],r);
-                    grd.addColorStop(0,'#FFFEFB'); grd.addColorStop(1,'#F4E6BE');
-                    g.fillStyle=grd; g.beginPath();
-                    // slightly irregular curd
-                    g.ellipse(s*b[0],s*b[1],r,r*0.86,b[0],0,Math.PI*2); g.fill();
-                    g.strokeStyle='rgba(180,150,90,.25)'; g.lineWidth=1; g.stroke();
+                    const gr=g.createRadialGradient(s*b[0]-r*0.35,s*b[1]-r*0.4,r*0.1, s*b[0],s*b[1],r*1.05);
+                    gr.addColorStop(0,'#FFFFFF'); gr.addColorStop(0.6,'#FFF8E6'); gr.addColorStop(1,'#E9D29A');
+                    g.fillStyle=gr; g.beginPath(); g.ellipse(s*b[0],s*b[1],r,r*0.84,b[0],0,Math.PI*2); g.fill();
+                    g.strokeStyle='rgba(190,160,95,.3)'; g.lineWidth=1; g.stroke();
+                    g.fillStyle='rgba(255,255,255,.7)'; g.beginPath(); g.ellipse(s*b[0]-r*0.3,s*b[1]-r*0.34,r*0.18,r*0.12,-0.4,0,Math.PI*2); g.fill();
                 });
                 g.restore();
             },
-            steamie(g,x,y,s){
+            // PREMIUM: a real Québécois poutine — fries + brown gravy + cheese curds in a red tray
+            poutine(g,x,y,s){
                 g.save(); g.translate(x,y);
-                const w=s*0.92, h=s*0.42;
-                // bun bottom
-                g.fillStyle='#E8B06A'; roundRect(g,-w/2,-h*0.1,w,h*0.7,h*0.35); g.fill();
-                // sausage
-                const grd=g.createLinearGradient(0,-h*0.5,0,h*0.1); grd.addColorStop(0,'#D6452F'); grd.addColorStop(1,'#A12B1B');
-                g.fillStyle=grd; roundRect(g,-w*0.46,-h*0.5,w*0.92,h*0.62,h*0.3); g.fill();
-                g.fillStyle='rgba(255,255,255,.18)'; roundRect(g,-w*0.4,-h*0.46,w*0.8,h*0.14,h*0.1); g.fill();
-                // mustard zigzag
-                g.strokeStyle=C.gold; g.lineWidth=Math.max(2,s*0.05); g.lineCap='round'; g.beginPath();
-                let mx=-w*0.4;
-                g.moveTo(mx,-h*0.22);
-                for (let i=0;i<5;i++){ mx+=w*0.2; g.lineTo(mx, (i%2?-h*0.34:-h*0.1)); }
-                g.stroke();
-                // chopped onions / relish dots
-                g.fillStyle='#9ED36A';
-                for (let i=0;i<5;i++){ g.beginPath(); g.arc(-w*0.32+i*w*0.16, -h*0.04, s*0.035, 0, Math.PI*2); g.fill(); }
-                // bun top
-                g.fillStyle='#EDBC7A'; roundRect(g,-w/2,h*0.18,w,h*0.42,h*0.3); g.fill();
+                const w=s*1.02, h=s*0.72;
+                g.fillStyle='rgba(0,0,0,.18)'; g.beginPath(); g.ellipse(0,h*0.46,w*0.5,h*0.12,0,0,Math.PI*2); g.fill();
+                // red cardboard boat
+                const tb=g.createLinearGradient(0,-h*0.12,0,h*0.45); tb.addColorStop(0,'#E2241F'); tb.addColorStop(1,'#A11616');
+                g.fillStyle=tb; g.beginPath();
+                g.moveTo(-w*0.5,-h*0.12); g.quadraticCurveTo(0,-h*0.27,w*0.5,-h*0.12);
+                g.lineTo(w*0.4,h*0.42); g.quadraticCurveTo(0,h*0.57,-w*0.4,h*0.42); g.closePath(); g.fill();
+                g.fillStyle='rgba(0,0,0,.18)'; g.beginPath(); g.ellipse(0,-h*0.1,w*0.46,h*0.1,0,0,Math.PI*2); g.fill();
+                // criss-cross fries
+                const fcols=['#FFD66B','#F4B731','#FFC95A','#E9A52B'];
+                for (let i=0;i<12;i++){
+                    const a=((i*37)%180)*Math.PI/180-0.4;
+                    const px=(((i*53)%100)/100-0.5)*w*0.66, py=-h*0.04+(((i*29)%100)/100-0.5)*h*0.3;
+                    g.save(); g.translate(px,py); g.rotate(a);
+                    g.fillStyle=fcols[i%4]; roundRect(g,-w*0.04,-s*0.045,w*0.34,s*0.09,2); g.fill();
+                    g.fillStyle='rgba(255,255,255,.25)'; g.fillRect(-w*0.03,-s*0.035,w*0.3,1.2);
+                    g.restore();
+                }
+                // gravy patches
+                g.fillStyle='#6E3D11';
+                [[-.18,.06,.2],[.16,.12,.18],[.0,.18,.16],[.26,-.02,.12]].forEach(p=>{ g.beginPath(); g.ellipse(p[0]*w,p[1]*h,p[2]*w,p[2]*h*0.8,0,0,Math.PI*2); g.fill(); });
+                g.fillStyle='rgba(165,95,32,.55)'; [[-.13,.02,.09],[.11,.09,.07]].forEach(p=>{ g.beginPath(); g.ellipse(p[0]*w,p[1]*h,p[2]*w,p[2]*h,0,0,Math.PI*2); g.fill(); });
+                // cheese curds on top
+                [[-.2,-.04,.12],[-.02,.04,.13],[.16,-.02,.11],[.06,.15,.12],[-.12,.13,.1],[.25,.1,.09]].forEach(c=>{
+                    const r=c[2]*w; const gr=g.createRadialGradient(c[0]*w-r*0.3,c[1]*h-r*0.3,1, c[0]*w,c[1]*h,r);
+                    gr.addColorStop(0,'#FFFFFF'); gr.addColorStop(1,'#F0E0B0');
+                    g.fillStyle=gr; g.beginPath(); g.ellipse(c[0]*w,c[1]*h,r,r*0.85,0,0,Math.PI*2); g.fill();
+                    g.fillStyle='rgba(255,255,255,.6)'; g.beginPath(); g.ellipse(c[0]*w-r*0.3,c[1]*h-r*0.3,r*0.2,r*0.14,0,0,Math.PI*2); g.fill();
+                });
+                // steam
+                g.strokeStyle='rgba(255,255,255,.22)'; g.lineWidth=Math.max(1.5,s*0.03); g.lineCap='round';
+                for (let i=-1;i<=1;i++){ const sx=i*w*0.22; g.beginPath(); g.moveTo(sx,-h*0.22); g.quadraticCurveTo(sx+s*0.1,-h*0.45,sx-s*0.03,-h*0.62); g.quadraticCurveTo(sx-s*0.1,-h*0.78,sx+s*0.03,-h*0.92); g.stroke(); }
                 g.restore();
             },
             rain(g,x,y,s){
                 g.save(); g.translate(x,y);
-                const grd=g.createLinearGradient(0,-s*0.5,0,s*0.5); grd.addColorStop(0,'#BAE6FD'); grd.addColorStop(1,C.blueDk);
-                g.fillStyle=grd; g.beginPath();
-                g.moveTo(0,-s*0.55);
-                g.bezierCurveTo(s*0.42,-s*0.05, s*0.36,s*0.5, 0,s*0.5);
-                g.bezierCurveTo(-s*0.36,s*0.5, -s*0.42,-s*0.05, 0,-s*0.55);
+                const gr=g.createLinearGradient(0,-s*0.5,0,s*0.55); gr.addColorStop(0,'#CFEFFF'); gr.addColorStop(0.5,'#7DD3FC'); gr.addColorStop(1,'#2FA8E0');
+                g.fillStyle=gr; g.beginPath();
+                g.moveTo(0,-s*0.58);
+                g.bezierCurveTo(s*0.44,-s*0.04, s*0.36,s*0.52, 0,s*0.52);
+                g.bezierCurveTo(-s*0.36,s*0.52, -s*0.44,-s*0.04, 0,-s*0.58);
                 g.closePath(); g.fill();
-                g.fillStyle='rgba(255,255,255,.5)'; g.beginPath(); g.ellipse(-s*0.12,s*0.12,s*0.1,s*0.16,0,0,Math.PI*2); g.fill();
+                g.strokeStyle='rgba(255,255,255,.5)'; g.lineWidth=1.2; g.stroke();
+                g.fillStyle='rgba(255,255,255,.78)'; g.beginPath(); g.ellipse(-s*0.13,s*0.1,s*0.09,s*0.16,0,0,Math.PI*2); g.fill();
+                g.fillStyle='rgba(255,255,255,.4)'; g.beginPath(); g.arc(s*0.1,-s*0.06,s*0.05,0,Math.PI*2); g.fill();
                 g.restore();
             },
             draw(id,g,x,y,s){ this[id](g,x,y,s); }
         };
+        // Fleur-de-lis — Québécois identity motif (reused on food, awning, signage)
+        function fleur(g,cx,cy,sz,color){
+            g.save(); g.translate(cx,cy); g.fillStyle=color;
+            g.beginPath(); g.moveTo(0,-sz); g.bezierCurveTo(sz*0.55,-sz*0.5, sz*0.34,sz*0.22, 0,sz*0.36);
+            g.bezierCurveTo(-sz*0.34,sz*0.22, -sz*0.55,-sz*0.5, 0,-sz); g.fill();
+            g.beginPath(); g.moveTo(0,-sz*0.08); g.bezierCurveTo(sz*0.95,-sz*0.32, sz*0.82,sz*0.45, 0,sz*0.26); g.fill();
+            g.beginPath(); g.moveTo(0,-sz*0.08); g.bezierCurveTo(-sz*0.95,-sz*0.32, -sz*0.82,sz*0.45, 0,sz*0.26); g.fill();
+            g.fillRect(-sz*0.52,sz*0.28,sz*1.04,sz*0.16);
+            g.restore();
+        }
         function roundRect(g,x,y,w,h,r){ r=Math.min(r,w/2,h/2); g.beginPath();
             g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r);
             g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
@@ -734,9 +772,9 @@
             const mbx=wx+16, mby=wy+16, mbw=ww*0.52, mbh=wh-32;
             g.fillStyle='#14110d'; roundRect(g,mbx,mby,mbw,mbh,6); g.fill();
             g.strokeStyle='rgba(245,158,11,.35)'; g.lineWidth=2; roundRect(g,mbx+3,mby+3,mbw-6,mbh-6,5); g.stroke();
-            g.fillStyle=C.amber; g.font='900 15px Fredoka One, Outfit, sans-serif'; g.textAlign='left'; g.textBaseline='top';
-            g.fillText('MENU', mbx+12, mby+10);
-            const menu=[['Steamie','3.49'],['Poutine','8.99'],['Frites','4.49'],['Combo BP','12.99'],['Liqueur','2.49']];
+            g.fillStyle=C.amber; g.font='900 13px Fredoka One, Outfit, sans-serif'; g.textAlign='left'; g.textBaseline='top';
+            g.fillText('CASSE-CROÛTE', mbx+12, mby+10);
+            const menu=[['Poutine','8.49'],['Italienne','9.49'],['Galvaude','10.99'],['Frites','4.49'],['Fromage','3.99']];
             g.font='800 12px Outfit, sans-serif';
             menu.forEach((m,i)=>{
                 const yy=mby+38+i*((mbh-50)/menu.length);
@@ -755,7 +793,7 @@
                 g.fillText(txt,0,-3); g.font='800 8px Outfit, sans-serif'; g.fillStyle='#7f1d1d'; g.fillText(sub,0,9);
                 g.restore();
             }
-            sticker(wx+ww-66, wy+70, 30, 'NEW', 'STEAMIE');
+            sticker(wx+ww-66, wy+70, 30, '100%', 'QUÉBEC');
             sticker(wx+ww-44, wy+wh-58, 26, '2/1', 'POUTINE');
 
             // ---- striped scalloped awning ----
@@ -768,6 +806,8 @@
                 g.quadraticCurveTo((i+0.5)*scallop, ah*1.05, i*scallop, ah*0.6);
                 g.closePath(); g.fill();
             }
+            // fleur-de-lis on the cream stripes — Québécois awning
+            for (let i=0;i<n;i++){ if (i%2===0) fleur(g,(i+0.5)*scallop, ah*0.36, 7.5, 'rgba(200,28,40,.9)'); }
             g.fillStyle='rgba(0,0,0,.18)'; g.fillRect(0,0,DESIGN_W,8);
             g.fillStyle='rgba(255,255,255,.10)'; g.fillRect(0,8,DESIGN_W,3);
             // awning valance shadow on bricks
@@ -787,10 +827,17 @@
             g.globalAlpha=0.08;
             for (let xx=0; xx<DESIGN_W; xx+=6){ g.fillStyle = (xx/6|0)%2?'#000':'#fff'; g.fillRect(xx, cy+10, 2, DESIGN_H-cy-10); }
             g.globalAlpha=1;
-            // counter front decal
-            g.fillStyle='rgba(232,25,44,.92)'; roundRect(g, DESIGN_W/2-92, cy+58, 184, 40, 8); g.fill();
+            // counter front decal — brand plate with Québécois subtitle + fleurs
+            const plW=228, plH=52, plX=DESIGN_W/2-plW/2, plY=cy+50;
+            const pg=g.createLinearGradient(0,plY,0,plY+plH); pg.addColorStop(0,'#E8192C'); pg.addColorStop(1,'#A8121F');
+            g.fillStyle=pg; roundRect(g, plX, plY, plW, plH, 9); g.fill();
+            g.strokeStyle='rgba(255,255,255,.22)'; g.lineWidth=1.5; roundRect(g, plX+2.5, plY+2.5, plW-5, plH-5, 7); g.stroke();
             g.fillStyle='#fff'; g.font='900 22px Fredoka One, Outfit, sans-serif'; g.textAlign='center'; g.textBaseline='middle';
-            g.fillText('BELLEPROS', DESIGN_W/2, cy+79);
+            g.fillText('BELLEPROS', DESIGN_W/2, plY+19);
+            g.fillStyle='rgba(255,255,255,.9)'; g.font='800 9px Outfit, sans-serif';
+            g.fillText('• CANTINE QUÉBÉCOISE •', DESIGN_W/2, plY+37);
+            fleur(g, plX+18, plY+plH/2, 9, 'rgba(255,255,255,.92)');
+            fleur(g, plX+plW-18, plY+plH/2, 9, 'rgba(255,255,255,.92)');
             g.fillStyle='rgba(0,0,0,.25)'; g.fillRect(0,DESIGN_H-26,DESIGN_W,26);
         }
 
@@ -1048,10 +1095,10 @@
             for (let i=0;i<12;i++){ ctx.rotate(Math.PI*2/12); ctx.fillStyle='rgba(255,215,0,.05)';
                 ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(40,-300); ctx.lineTo(-40,-300); ctx.closePath(); ctx.fill(); }
             ctx.restore();
-            // spinning combo: steamie + fries + drink orbiting
+            // spinning combo: poutine + sides orbiting
             const cx=DESIGN_W/2, cy=DESIGN_H*0.42, bob=Math.sin(time*2)*8;
             ctx.save(); ctx.translate(cx, cy+bob); ctx.scale(1.7,1.7); ctx.rotate(Math.sin(time*0.8)*0.18);
-            Sprite.steamie(ctx,0,0,70); ctx.restore();
+            Sprite.poutine(ctx,0,0,70); ctx.restore();
             const orbit=[['fries',0],['gravy',Math.PI*0.66],['curds',Math.PI*1.33]];
             orbit.forEach(o=>{ const a=time*1.4 + o[1]; const ox=cx+Math.cos(a)*92, oy=cy+bob+Math.sin(a)*54;
                 ctx.save(); ctx.translate(ox,oy); ctx.scale(0.95,0.95); ctx.rotate(a); Sprite.draw(o[0],ctx,0,0,40); ctx.restore(); });
@@ -1284,15 +1331,15 @@
 
         function buildLegend(){
             const box=$('legend'); box.innerHTML='';
-            const items=[['fries','l_fries'],['gravy','l_gravy'],['curds','l_curds'],['steamie','l_steamie'],['rain','l_rain']];
+            const items=[['fries','l_fries'],['gravy','l_gravy'],['curds','l_curds'],['poutine','l_poutine'],['rain','l_rain']];
             items.forEach(([id,key])=>{
                 const cell=document.createElement('div'); cell.className='flex flex-col items-center gap-1';
                 const cv=document.createElement('canvas'); cv.width=88; cv.height=88; cv.style.width='44px'; cv.style.height='44px';
                 const g=cv.getContext('2d'); g.scale(2,2);
-                if (id==='steamie'){ g.save(); g.translate(22,22); Sprite.draw(id,g,0,0,40); g.restore(); }
+                if (id==='poutine'){ g.save(); g.translate(22,22); Sprite.draw(id,g,0,0,40); g.restore(); }
                 else { Sprite.draw(id,g,22,22,id==='rain'?30:36); }
                 const lab=document.createElement('div'); lab.className='text-[8.5px] leading-tight text-center font-semibold';
-                lab.style.color = id==='rain' ? '#7dd3fc' : (id==='steamie'?C.gold:'#e4e4e7');
+                lab.style.color = id==='rain' ? '#7dd3fc' : (id==='poutine'?C.gold:'#e4e4e7');
                 lab.textContent=t(key);
                 cell.appendChild(cv); cell.appendChild(lab); box.appendChild(cell);
             });

@@ -477,7 +477,7 @@
                 revive_title:'Sauve ta séquence!', revive_desc:'Regarde une courte pub et récupère tes 3 vies — ton pointage reste intact.',
                 revive_btn:'Regarder la pub', revive_used:'Sauvetage déjà utilisé', go_replay:'Rejouer',
                 ad_label:'Publicité', ad_reward_in:'Récompense dans', ad_combo:'LA POUTINE CLASSIQUE', ad_tag:'Frites • Fromage squic-squic • Sauce brune', ad_cant_skip:'Pub non sautable',
-                t_miss:'RATÉ!', t_soggy:'DÉTREMPÉ!', t_revived:'+3 VIES • C\'est reparti!', t_coupon_done:'Coupon réclamé ✓',
+                t_miss:'RATÉ!', t_soggy:'DÉTREMPÉ!', t_perfect:'PARFAIT!', t_revived:'+3 VIES • C\'est reparti!', t_coupon_done:'Coupon réclamé ✓',
                 m2:'2x ÉPICÉ!', m3:'3x CHAUD!', m4:'4x EN FEU!', m5:'5x BELLEPROS!'
             },
             en: {
@@ -496,7 +496,7 @@
                 revive_title:'Save my streak!', revive_desc:'Watch a short ad to restore your 3 lives — your score stays intact.',
                 revive_btn:'Watch ad', revive_used:'Save already used', go_replay:'Play again',
                 ad_label:'Advertisement', ad_reward_in:'Reward in', ad_combo:'THE CLASSIC POUTINE', ad_tag:'Fries • Cheese curds • Gravy', ad_cant_skip:'Ad cannot be skipped',
-                t_miss:'MISS!', t_soggy:'SOGGY!', t_revived:'+3 LIVES • Back in!', t_coupon_done:'Coupon claimed ✓',
+                t_miss:'MISS!', t_soggy:'SOGGY!', t_perfect:'PERFECT!', t_revived:'+3 LIVES • Back in!', t_coupon_done:'Coupon claimed ✓',
                 m2:'2x SPICY!', m3:'3x HOT!', m4:'4x FIRE!', m5:'5x BELLEPROS!'
             }
         };
@@ -883,7 +883,7 @@
         // ============================================================================
         //  PARTICLE + FLOATING-TEXT ENGINE
         // ============================================================================
-        let particles = [], floaters = [], confetti = [];
+        let particles = [], floaters = [], confetti = [], rings = [], snow = [];
         function burst(x,y,color,count,opts){
             opts = opts || {};
             for (let i=0;i<count;i++){
@@ -907,6 +907,16 @@
                     size:4+Math.random()*5, color:cols[i%cols.length], spin:Math.random()*6, vr:(Math.random()-0.5)*12, life:2.6, max:2.6 });
             }
         }
+        // expanding impact ring (catch feedback)
+        function ring(x,y,color,maxR,width){ rings.push({x,y,r:maxR*0.25,maxR,life:0.42,max:0.42,color,width:width||3}); }
+        // Québec-winter snow drifting in the storefront (ambient, all states)
+        function ensureSnow(){ if (snow.length) return;
+            for (let i=0;i<58;i++){ const d=Math.random(); snow.push({ x:Math.random()*DESIGN_W, y:Math.random()*DESIGN_H,
+                r:0.8+d*2.2, sp:11+d*30, drift:0.4+Math.random()*0.8, ph:Math.random()*6.28, a:0.16+d*0.4 }); } }
+        function updateSnow(dt){ ensureSnow(); for (const f of snow){ f.y+=f.sp*dt; f.ph+=dt*f.drift; f.x+=Math.sin(f.ph)*9*dt;
+            if (f.y>DESIGN_H+4){ f.y=-4; f.x=Math.random()*DESIGN_W; } } }
+        function drawSnow(){ ctx.fillStyle='#eaf6ff'; for (const f of snow){ ctx.globalAlpha=f.a; ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill(); } ctx.globalAlpha=1; }
+
         function updateParticles(dt){
             for (let i=particles.length-1;i>=0;i--){ const p=particles[i];
                 p.vy += 520*dt; p.x += p.vx*dt; p.y += p.vy*dt; p.spin += p.vr*dt; p.life -= dt;
@@ -914,8 +924,12 @@
             }
             for (let i=floaters.length-1;i>=0;i--){ const f=floaters[i]; f.y += f.vy*dt; f.vy*=0.92; f.life-=dt; if (f.life<=0) floaters.splice(i,1); }
             for (let i=confetti.length-1;i>=0;i--){ const c=confetti[i]; c.vy+=140*dt; c.x+=c.vx*dt; c.y+=c.vy*dt; c.spin+=c.vr*dt; c.life-=dt; if (c.life<=0||c.y>DESIGN_H+30) confetti.splice(i,1); }
+            for (let i=rings.length-1;i>=0;i--){ const r=rings[i]; r.r += (r.maxR-r.r)*Math.min(1,dt*9); r.life-=dt; if (r.life<=0) rings.splice(i,1); }
+            updateSnow(dt);
         }
         function drawParticles(){
+            rings.forEach(r=>{ const a=Math.max(0,r.life/r.max); ctx.globalAlpha=a; ctx.strokeStyle=r.color; ctx.lineWidth=Math.max(1,r.width*a); ctx.beginPath(); ctx.arc(r.x,r.y,r.r,0,Math.PI*2); ctx.stroke(); });
+            ctx.globalAlpha=1;
             particles.forEach(p=>{
                 const a = Math.max(0, p.life/p.max); const sz = p.size*a;
                 ctx.globalAlpha = a; ctx.fillStyle = p.color;
@@ -953,7 +967,7 @@
             lives:START_LIVES, combo:0, mult:1,
             items:[], spawnT:0, elapsed:0,
             tray:{ x:DESIGN_W/2, target:DESIGN_W/2, w:118 },
-            shake:0, flash:0, grace:0,
+            shake:0, flash:0, grace:0, traySquash:0,
             couponClaimed:false, usedRevive:false, couponCode:'',
             ad:{ remaining:0, angle:0, lastTick:0 }
         };
@@ -995,11 +1009,14 @@
             const pts = it.def.base * game.mult;
             game.score += pts;
             Audio.play(it.def.premium ? 'premium' : 'catch');
-            // particles in the item's colour
+            // particles + impact ring + tray bounce
             const shape = it.id==='curds'?'star' : 'spark';
-            burst(it.x, CATCH_Y, it.def.p, it.def.premium?26:16, {shape, size:it.def.premium?4:3, maxSpeed: it.def.premium?300:220});
-            if (it.def.p2) burst(it.x, CATCH_Y, it.def.p2, 8, {shape, size:3});
+            burst(it.x, CATCH_Y, it.def.p, it.def.premium?36:18, {shape, size:it.def.premium?4:3, maxSpeed: it.def.premium?340:230});
+            if (it.def.p2) burst(it.x, CATCH_Y, it.def.p2, it.def.premium?14:8, {shape, size:3});
+            ring(it.x, CATCH_Y, it.def.premium?'rgba(255,214,80,.95)':'rgba(255,255,255,.85)', it.def.premium?64:44, it.def.premium?4:3);
+            game.traySquash = 1;
             floatText(it.x, CATCH_Y-18, '+'+pts, it.def.premium?C.gold:'#fff', it.def.premium?26:20);
+            if (it.def.premium) floatText(it.x, CATCH_Y-42, t('t_perfect'), C.gold, 20);
             if (game.mult>prevMult){
                 const lbl = game.mult>=5?t('m5'): game.mult>=4?t('m4'): game.mult>=3?t('m3'): t('m2');
                 floatText(DESIGN_W/2, 250, lbl, C.amber, 28);
@@ -1012,7 +1029,8 @@
             game.combo=0; setMult();
             game.lives--; game.shake=0.55; game.flash=0.7;
             Audio.play('hazard'); vibrate([90,40,90]);
-            burst(it.x, CATCH_Y, C.blue, 18, {shape:'drop', size:4, maxSpeed:200});
+            burst(it.x, CATCH_Y, C.blue, 22, {shape:'drop', size:4, maxSpeed:220});
+            ring(it.x, CATCH_Y, 'rgba(125,211,252,.9)', 48, 3);
             floatText(it.x, CATCH_Y-18, t('t_soggy'), C.blue, 20);
             updateHud();
             if (game.lives<=0) gameOver();
@@ -1024,6 +1042,7 @@
         function updatePlay(dt){
             game.elapsed += dt;
             if (game.grace>0) game.grace -= dt;
+            if (game.traySquash>0) game.traySquash = Math.max(0, game.traySquash - dt*4.5);
             // spawn
             game.spawnT -= dt;
             if (game.spawnT<=0){ spawnItem(); game.spawnT = difficulty().spawn * (0.8+Math.random()*0.5); }
@@ -1050,6 +1069,8 @@
         function drawTray(){
             const x=game.tray.x, w=game.tray.w, topY=CATCH_Y, h=46;
             ctx.save();
+            const ts=game.traySquash||0;
+            if (ts>0){ ctx.translate(x,topY+h); ctx.scale(1+0.14*ts,1-0.14*ts); ctx.translate(-x,-(topY+h)); }
             if (game.grace>0 && Math.floor(game.grace*12)%2===0) ctx.globalAlpha=0.5;
             // shadow on counter
             ctx.fillStyle='rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(x, topY+h+6, w*0.55, 7, 0,0,Math.PI*2); ctx.fill();
@@ -1061,6 +1082,7 @@
             // rim
             ctx.fillStyle='#eef2f4'; roundRect(ctx, x-w/2-3, topY-6, w+6, 9, 4); ctx.fill();
             ctx.fillStyle='rgba(255,255,255,.7)'; ctx.fillRect(x-w/2-3, topY-6, w+6, 2);
+            if (ts>0){ ctx.save(); ctx.shadowColor='rgba(255,210,110,.9)'; ctx.shadowBlur=14*ts; ctx.fillStyle=`rgba(255,214,120,${0.5*ts})`; roundRect(ctx, x-w/2-3, topY-7, w+6, 4, 3); ctx.fill(); ctx.restore(); }
             // wire mesh lines
             ctx.strokeStyle='rgba(40,46,52,.45)'; ctx.lineWidth=1.2;
             for (let i=1;i<6;i++){ const xx=x-w/2+ i*(w/6); ctx.beginPath(); ctx.moveTo(xx, topY+2); ctx.lineTo(xx-2, topY+h-2); ctx.stroke(); }
@@ -1073,9 +1095,18 @@
         }
 
         function drawItem(it){
-            ctx.save(); ctx.translate(it.x, it.y); ctx.rotate(it.rot);
+            ctx.save(); ctx.translate(it.x, it.y);
+            // premium poutine: glowing comet trail (world-aligned, before rotation)
+            if (it.def.premium){
+                ctx.save();
+                const tg=ctx.createLinearGradient(0,-it.size*1.7,0,it.size*0.2);
+                tg.addColorStop(0,'rgba(255,205,90,0)'); tg.addColorStop(1,'rgba(255,205,90,.42)');
+                ctx.fillStyle=tg; ctx.beginPath(); ctx.ellipse(0,-it.size*0.6,it.size*0.4,it.size*1.0,0,0,Math.PI*2); ctx.fill();
+                ctx.restore();
+            }
+            ctx.rotate(it.rot);
             // soft glow for premium / hazard
-            if (it.def.premium){ ctx.shadowColor='rgba(245,158,11,.8)'; ctx.shadowBlur=16; }
+            if (it.def.premium){ ctx.shadowColor='rgba(245,158,11,.85)'; ctx.shadowBlur=18; }
             else if (it.def.hazard){ ctx.shadowColor='rgba(125,211,252,.7)'; ctx.shadowBlur=10; }
             Sprite.draw(it.id, ctx, 0, 0, it.size);
             ctx.restore();
@@ -1125,6 +1156,7 @@
             // facade
             ctx.drawImage(facade,0,0,DESIGN_W,DESIGN_H);
             drawDynamicFacade(timeSec);
+            drawSnow();
             // entities
             game.items.forEach(drawItem);
             drawTray();
@@ -1134,6 +1166,13 @@
 
             // damage flash (full-screen, not shaken)
             if (game.flash>0){ ctx.fillStyle=`rgba(239,68,68,${game.flash*0.45})`; ctx.fillRect(0,0,DESIGN_W,DESIGN_H); }
+            // combo "heat" vignette — warms the edges as the streak climbs
+            if (game.state==='playing' && game.mult>=3){
+                const heat=(game.mult>=5?0.34:game.mult>=4?0.24:0.16)*(0.82+0.18*Math.sin(timeSec*6));
+                const hv=ctx.createRadialGradient(DESIGN_W/2,DESIGN_H*0.62,DESIGN_H*0.22, DESIGN_W/2,DESIGN_H*0.62,DESIGN_H*0.72);
+                hv.addColorStop(0,'rgba(0,0,0,0)'); hv.addColorStop(1,`rgba(236,86,22,${heat})`);
+                ctx.fillStyle=hv; ctx.fillRect(0,0,DESIGN_W,DESIGN_H);
+            }
 
             // decay timers
             if (game.shake>0) game.shake=Math.max(0,game.shake-dt*1.8);

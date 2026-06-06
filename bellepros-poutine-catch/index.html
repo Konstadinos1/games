@@ -140,6 +140,7 @@
         .fa-trophy::before{content:"\1F3C6"}          /* 🏆 */
         .fa-location-dot::before{content:"\1F4CD"}    /* 📍 */
         .fa-ban::before{content:"\1F6AB"}             /* 🚫 */
+        .fa-share::before{content:"\1F517"}           /* 🔗 */
         /* monochrome glyphs (inherit text colour) */
         .fa-play::before,.fa-circle-play::before,.fa-pause::before,.fa-forward::before,
         .fa-rotate-right::before,.fa-house::before,.fa-heart::before{
@@ -277,6 +278,10 @@
                                     <i class="fa-solid fa-trophy text-amber-400 mr-1"></i>
                                     <span data-i18n="best">Record</span>: <span id="menuBest">0</span>
                                 </div>
+                                <div id="streakLine" class="hidden mt-2 flex items-center gap-2 text-xs font-semibold">
+                                    <span class="text-zinc-300">🔥 <span data-i18n="streak_days">Série</span>: <span id="streakDays" class="text-amber-300">1</span></span>
+                                    <span id="streakBonus" class="hidden rounded-full px-2 py-0.5 text-[10px] text-emerald-200" style="background:rgba(34,197,94,.2); box-shadow:0 0 0 1px rgba(34,197,94,.4)"><span data-i18n="daily_bonus">+1 vie aujourd'hui!</span></span>
+                                </div>
 
                                 <div class="flex-1"></div>
 
@@ -337,6 +342,9 @@
                                         </div>
                                         <div class="dashed-sep mx-4"></div>
                                         <div id="couponValid" class="px-4 py-2 text-center text-[10.5px] font-semibold text-zinc-500" data-i18n="coupon_valid">Valide 7 jours • Limite 1 par client</div>
+                                        <div id="couponStamp" class="hidden" style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none;">
+                                            <div style="transform:rotate(-13deg); border:3px solid #16a34a; color:#16a34a; border-radius:8px; padding:3px 14px; font-family:'Fredoka One',Outfit,sans-serif; font-size:24px; background:rgba(255,255,255,.72);"><span data-i18n="redeemed_stamp">ÉCHANGÉ</span> ✓</div>
+                                        </div>
                                     </div>
 
                                     <div class="flex gap-2 mt-4">
@@ -348,6 +356,10 @@
                                                 style="background:rgba(255,255,255,.12); box-shadow:0 0 0 1px rgba(255,255,255,.18);">
                                             <i class="fa-solid fa-forward"></i><span data-i18n="coupon_continue">Continuer</span>
                                         </button>
+                                    </div>
+                                    <div class="flex items-center justify-between mt-2.5 px-1">
+                                        <button id="btnStaffRedeem" class="btn text-[10px] text-zinc-400 underline" style="min-height:0; background:none; box-shadow:none; padding:4px;"><span data-i18n="staff_redeem">Personnel : marquer échangé</span></button>
+                                        <button id="btnShareCoupon" class="btn text-[11px] text-amber-300 font-bold flex items-center gap-1" style="min-height:0; background:none; box-shadow:none; padding:4px;"><i class="fa-solid fa-share"></i><span data-i18n="share_coupon">Partager</span></button>
                                     </div>
                                 </div>
                             </div>
@@ -380,7 +392,12 @@
                                 </div>
                                 <div id="reviveUsed" class="hidden text-xs text-zinc-500 mt-2"><i class="fa-solid fa-ban mr-1"></i><span data-i18n="revive_used">Sauvetage déjà utilisé</span></div>
 
-                                <div class="flex gap-3 mt-4">
+                                <button id="btnShareScore" class="btn w-full max-w-[320px] rounded-xl py-2.5 text-sm font-display text-white mt-3 flex items-center justify-center gap-2"
+                                        style="background:linear-gradient(180deg,#3b82f6,#1d4ed8); box-shadow:0 6px 18px rgba(59,130,246,.4);">
+                                    <i class="fa-solid fa-share"></i><span data-i18n="share_score">Partager mon score</span>
+                                </button>
+
+                                <div class="flex gap-3 mt-3">
                                     <button id="btnReplay" class="btn rounded-xl px-6 py-3 text-base font-display text-white" style="background:linear-gradient(180deg,#F59E0B,#E8192C); box-shadow:0 8px 22px rgba(232,25,44,.4);">
                                         <i class="fa-solid fa-rotate-right mr-2"></i><span data-i18n="go_replay">Rejouer</span>
                                     </button>
@@ -499,6 +516,11 @@
                 revive_btn:'Regarder la pub', revive_used:'Sauvetage déjà utilisé', go_replay:'Rejouer',
                 ad_label:'Publicité', ad_reward_in:'Récompense dans', ad_combo:'LA POUTINE CLASSIQUE', ad_tag:'Frites • Fromage squic-squic • Sauce brune', ad_cant_skip:'Pub non sautable',
                 t_miss:'RATÉ!', t_soggy:'DÉTREMPÉ!', t_perfect:'PARFAIT!', t_revived:'+3 VIES • C\'est reparti!', t_coupon_done:'Coupon réclamé ✓',
+                share_score:'Partager mon score', share_coupon:'Partager', link_copied:'Lien copié!',
+                share_text_score:"J'ai fait {n} points à Pluie de Poutine 🍟 Bats-moi et gagne de la bouffe gratuite chez Bellepros, 5600 Robert-Bourassa, Laval!",
+                share_text_coupon:"J'ai gagné {offer} chez Bellepros Laval 🎉 Joue à Pluie de Poutine et gagne la tienne!",
+                streak_days:'Série', daily_bonus:'+1 vie aujourd\'hui!', daily_bonus_toast:'Bonus quotidien : +1 vie ❤',
+                staff_redeem:'Personnel : marquer échangé', redeemed_stamp:'ÉCHANGÉ', already_redeemed:'Déjà échangé ✓',
                 m2:'2x ÉPICÉ!', m3:'3x CHAUD!', m4:'4x EN FEU!', m5:'5x BELLEPROS!'
             },
             en: {
@@ -519,6 +541,11 @@
                 revive_btn:'Watch ad', revive_used:'Save already used', go_replay:'Play again',
                 ad_label:'Advertisement', ad_reward_in:'Reward in', ad_combo:'THE CLASSIC POUTINE', ad_tag:'Fries • Cheese curds • Gravy', ad_cant_skip:'Ad cannot be skipped',
                 t_miss:'MISS!', t_soggy:'SOGGY!', t_perfect:'PERFECT!', t_revived:'+3 LIVES • Back in!', t_coupon_done:'Coupon claimed ✓',
+                share_score:'Share my score', share_coupon:'Share', link_copied:'Link copied!',
+                share_text_score:'I scored {n} in Poutine Drop 🍟 Beat me and win free food at Bellepros, 5600 Robert-Bourassa, Laval!',
+                share_text_coupon:'I won {offer} at Bellepros Laval 🎉 Play Poutine Drop and win yours!',
+                streak_days:'Streak', daily_bonus:'+1 life today!', daily_bonus_toast:'Daily bonus: +1 life ❤',
+                staff_redeem:'Staff: mark redeemed', redeemed_stamp:'REDEEMED', already_redeemed:'Already redeemed ✓',
                 m2:'2x SPICY!', m3:'3x HOT!', m4:'4x FIRE!', m5:'5x BELLEPROS!'
             }
         };
@@ -986,13 +1013,35 @@
         const game = {
             state:'menu',           // menu | playing | paused | coupon | gameover | ad
             score:0, best: parseInt(localStorage.getItem('bp_pc_best')||'0',10),
-            lives:START_LIVES, combo:0, mult:1,
+            lives:START_LIVES, maxLives:START_LIVES, combo:0, mult:1,
             items:[], spawnT:0, elapsed:0,
             tray:{ x:DESIGN_W/2, target:DESIGN_W/2, w:118 },
             shake:0, flash:0, grace:0, traySquash:0,
             rewardsClaimed:0, couponTier:null, usedRevive:false, couponCode:'',
             ad:{ remaining:0, angle:0, lastTick:0 }
         };
+
+        // ---- Daily streak (rewards returning the next day) ----
+        const Daily = {
+            streak:0, last:'', bonusDay:'',
+            today(){ return new Date().toISOString().slice(0,10); },
+            yesterday(){ return new Date(Date.now()-864e5).toISOString().slice(0,10); },
+            load(){ this.streak=parseInt(localStorage.getItem('bp_pc_streak')||'0',10)||0; this.last=localStorage.getItem('bp_pc_lastday')||''; this.bonusDay=localStorage.getItem('bp_pc_bonusday')||''; },
+            refresh(){ const t=this.today(); if (this.last!==t){ this.streak=(this.last===this.yesterday())?this.streak+1:1; this.last=t; localStorage.setItem('bp_pc_streak',String(this.streak)); localStorage.setItem('bp_pc_lastday',t); } if(!this.streak) this.streak=1; },
+            bonusAvailable(){ return this.streak>=2 && this.bonusDay!==this.today(); },
+            consumeBonus(){ this.bonusDay=this.today(); localStorage.setItem('bp_pc_bonusday',this.bonusDay); }
+        };
+        // ---- coupon redeemed registry (simulated staff validation, anti-reuse) ----
+        function loadRedeemed(){ try { return new Set(JSON.parse(localStorage.getItem('bp_pc_redeemed')||'[]')); } catch(e){ return new Set(); } }
+        function isRedeemed(code){ return !!code && loadRedeemed().has(code); }
+        function markRedeemed(code){ if(!code) return; const s=loadRedeemed(); s.add(code); localStorage.setItem('bp_pc_redeemed', JSON.stringify([...s])); }
+        // ---- share (native share sheet → clipboard fallback) ----
+        function shareText(text){
+            const url = (typeof location!=='undefined' && location.href) ? location.href : '';
+            try { if (navigator.share){ navigator.share({ title:'Pluie de Poutine — Bellepros', text, url }).catch(()=>{}); return; } } catch(e){}
+            try { if (navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText((text+' '+url).trim()).then(()=>showToast(t('link_copied'))).catch(()=>showToast(t('link_copied'))); return; } } catch(e){}
+            showToast(t('link_copied'));
+        }
 
         function difficulty(){
             // ramps with elapsed time, eased
@@ -1282,6 +1331,9 @@
             $('couponCongrats').textContent = t('coupon_congrats').replace('{n}', tier.at);
             $('couponCode').textContent = game.couponCode;
             drawQR($('qr'), game.couponCode);
+            const done = isRedeemed(game.couponCode);
+            $('couponStamp').classList.toggle('hidden', !done);
+            $('btnStaffRedeem').classList.toggle('hidden', done);
         }
 
         // ============================================================================
@@ -1295,7 +1347,10 @@
 
         function startGame(){
             Audio.init(); Audio.resume(); Audio.play('click');
-            game.score=0; game.lives=START_LIVES; game.combo=0; game.mult=1;
+            game.maxLives = START_LIVES + (Daily.bonusAvailable() ? 1 : 0);
+            const gotDailyBonus = game.maxLives > START_LIVES;
+            if (gotDailyBonus) Daily.consumeBonus();
+            game.score=0; game.lives=game.maxLives; game.combo=0; game.mult=1;
             game.items=[]; game.spawnT=0.4; game.elapsed=0;
             game.tray.x=game.tray.target=DESIGN_W/2;
             game.shake=0; game.flash=0; game.grace=0.6;
@@ -1304,6 +1359,8 @@
             game.state='playing';
             buildHearts(); updateHud();
             hideAllScreens(); setHudVisible(true);
+            if (gotDailyBonus) showToast(t('daily_bonus_toast'));
+            updateStreakUI();
         }
         function hideAllScreens(){ Object.keys(screens).forEach(k=> screens[k].classList.add('hidden')); }
 
@@ -1328,7 +1385,7 @@
             showScreen('gameover'); setHudVisible(false);
         }
         function toMenu(){ Audio.play('click'); game.state='menu'; game.items=[]; particles=[]; floaters=[]; confetti=[];
-            $('menuBest').textContent=game.best; showScreen('menu'); setHudVisible(false); }
+            $('menuBest').textContent=game.best; updateStreakUI(); showScreen('menu'); setHudVisible(false); }
 
         // ---- Ad-revive flow ----
         function startAd(){
@@ -1348,7 +1405,7 @@
             if (game.ad.remaining<=0) finishRevive();
         }
         function finishRevive(){
-            game.lives=START_LIVES; game.items=[]; game.combo=0; game.mult=1;
+            game.lives=game.maxLives; game.items=[]; game.combo=0; game.mult=1;
             game.shake=0; game.flash=0; game.grace=1.2;
             game.state='playing'; lastT=performance.now();
             buildHearts(); updateHud(); hideAllScreens(); setHudVisible(true);
@@ -1361,8 +1418,15 @@
         // ============================================================================
         function buildHearts(){
             const box=$('hudLives'); box.innerHTML='';
-            for (let i=0;i<START_LIVES;i++){ const s=document.createElement('i'); s.className='fa-solid fa-heart heart'; s.dataset.idx=i;
+            const n=game.maxLives||START_LIVES;
+            for (let i=0;i<n;i++){ const s=document.createElement('i'); s.className='fa-solid fa-heart heart'; s.dataset.idx=i;
                 s.style.fontSize='16px'; box.appendChild(s); }
+        }
+        function updateStreakUI(){
+            const el=$('streakLine'); if(!el) return;
+            el.classList.toggle('hidden', !(Daily.streak>=1));
+            const d=$('streakDays'); if(d) d.textContent=Daily.streak;
+            const b=$('streakBonus'); if(b) b.classList.toggle('hidden', !Daily.bonusAvailable());
         }
         function updateHud(){
             $('hudScore').textContent=game.score;
@@ -1405,6 +1469,7 @@
             $('hudScoreLabel').textContent = t('hud_score');
             buildLegend();
             buildRewards();
+            updateStreakUI();
             if (game.state==='coupon' && game.couponTier) renderCoupon(game.couponTier);
             updateHud();
         }
@@ -1470,6 +1535,11 @@
         $('btnMenu2').addEventListener('click', toMenu);
         $('btnCouponContinue').addEventListener('click', continueAfterCoupon);
         $('btnRevive').addEventListener('click', startAd);
+        // share (invite friends → more players → more traffic)
+        $('btnShareScore').addEventListener('click', ()=>{ Audio.play('click'); shareText(t('share_text_score').replace('{n}', game.score)); });
+        $('btnShareCoupon').addEventListener('click', ()=>{ Audio.play('click'); const tier=game.couponTier; const offer = tier ? (lang==='fr'?tier.fr:tier.en).title : ''; shareText(t('share_text_coupon').replace('{offer}', offer)); });
+        // simulated staff redemption (anti-reuse)
+        $('btnStaffRedeem').addEventListener('click', ()=>{ markRedeemed(game.couponCode); $('couponStamp').classList.remove('hidden'); $('btnStaffRedeem').classList.add('hidden'); Audio.play('tick'); showToast(t('already_redeemed')); });
         $('btnLang').addEventListener('click', toggleLang);
         $('btnLang2').addEventListener('click', toggleLang);
         function doMute(){ Audio.init(); Audio.setMuted(!Audio.muted); Audio.play('click'); syncMute(); }
@@ -1517,6 +1587,7 @@
             buildFacade();
             buildHearts();
             $('btnDirections').href = MAPS_URL;   // exclusive-location directions
+            Daily.load(); Daily.refresh();        // daily streak (return-visit reward)
             applyLang();
             syncMute();
             resize();

@@ -259,8 +259,12 @@
                                 <!-- how-to legend -->
                                 <div class="mt-5 w-full max-w-[330px] rounded-2xl p-3 backdrop-blur-md"
                                      style="background:rgba(24,24,27,.6); box-shadow:0 0 0 1px rgba(255,255,255,.08);">
-                                    <p id="tagline" class="text-center text-[13px] text-zinc-300 leading-snug mb-3">Attrape les ingrédients, évite la pluie et débloque un vrai rabais en magasin!</p>
+                                    <p id="tagline" class="text-center text-[13px] text-zinc-300 leading-snug mb-3">Attrape, évite la pluie et gagne de la VRAIE bouffe gratuite à échanger en magasin!</p>
                                     <div id="legend" class="grid grid-cols-5 gap-1.5"></div>
+                                    <div class="my-2" style="border-top:1px dashed rgba(255,255,255,.14)"></div>
+                                    <p class="text-center text-[10px] font-bold uppercase tracking-widest text-amber-300/80 mb-1.5"><i class="fa-solid fa-trophy mr-1"></i><span data-i18n="rewards_title">Récompenses à gagner</span></p>
+                                    <div id="rewardsRow" class="grid grid-cols-3 gap-1.5"></div>
+                                    <p class="text-center text-[9px] text-zinc-400 mt-1.5"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i><span id="redeemLine"><span data-i18n="redeem_at">Échangeable seulement à ce Bellepros</span> · 5600 Robert-Bourassa</span></p>
                                 </div>
 
                                 <!-- play button -->
@@ -278,8 +282,9 @@
 
                                 <!-- storefront footer -->
                                 <div class="text-center pb-1">
-                                    <p id="locLine" class="text-[11px] text-zinc-400 font-semibold">Bellepros Laval • 2500, boul. Daniel-Johnson</p>
-                                    <p id="scanLine" class="text-[10px] text-amber-400/70 font-bold tracking-[.25em] uppercase mt-0.5">Scanne • Joue • Gagne</p>
+                                    <p id="locLine" class="text-[11px] text-zinc-300 font-semibold"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i><span id="locText">Bellepros • 5600, boul. Robert-Bourassa, Laval</span></p>
+                                    <p id="hoursLine" class="text-[10px] text-zinc-500 font-semibold mt-0.5">Ouvert tous les jours · 11h–23h</p>
+                                    <p id="scanLine" class="text-[10px] text-amber-400/70 font-bold tracking-[.25em] uppercase mt-0.5">Scanne • Joue • Mange</p>
                                 </div>
                             </div>
 
@@ -306,7 +311,7 @@
                                         <div class="inline-block px-4 py-1 rounded-full text-xs font-black tracking-[.25em] uppercase mb-2"
                                              style="background:var(--bp-red);"><span data-i18n="reward_unlocked">Récompense débloquée</span></div>
                                         <h2 id="couponTitle" class="neon-title text-3xl text-amber-400" data-i18n="coupon_title">COUPON DÉBLOQUÉ!</h2>
-                                        <p id="couponCongrats" class="text-zinc-300 text-xs mt-1" data-i18n="coupon_congrats">Bravo! Tu as atteint 100 points.</p>
+                                        <p id="couponCongrats" class="text-zinc-300 text-xs mt-1">Bravo! Tu as atteint 100 points.</p>
                                     </div>
 
                                     <!-- The physical ticket -->
@@ -315,8 +320,8 @@
                                             <div class="flex items-center justify-center gap-2 text-[11px] font-bold tracking-[.2em] uppercase opacity-90">
                                                 <i class="fa-solid fa-fleur"></i> Bellepros Laval
                                             </div>
-                                            <div id="couponOffer" class="font-display text-2xl mt-1 leading-tight" data-i18n="coupon_offer">DOUBLE FROMAGE GRATUIT</div>
-                                            <div id="couponOfferSub" class="text-[12px] font-semibold opacity-90" data-i18n="coupon_offer_sub">à l'achat d'un combo régulier</div>
+                                            <div id="couponOffer" class="font-display text-2xl mt-1 leading-tight">DOUBLE FROMAGE GRATUIT</div>
+                                            <div id="couponOfferSub" class="text-[12px] font-semibold opacity-90">à l'achat d'un combo régulier</div>
                                         </div>
 
                                         <div class="flex items-center gap-3 px-4 py-3">
@@ -334,10 +339,16 @@
                                         <div id="couponValid" class="px-4 py-2 text-center text-[10.5px] font-semibold text-zinc-500" data-i18n="coupon_valid">Valide 7 jours • Limite 1 par client</div>
                                     </div>
 
-                                    <button id="btnCouponContinue" class="btn pulse-cta mt-4 w-full rounded-2xl py-3.5 text-lg font-display text-white flex items-center justify-center gap-2"
-                                            style="background:linear-gradient(180deg,#F59E0B,#E8192C); box-shadow:0 8px 24px rgba(232,25,44,.45);">
-                                        <i class="fa-solid fa-forward"></i><span data-i18n="coupon_continue">Continuer à jouer</span>
-                                    </button>
+                                    <div class="flex gap-2 mt-4">
+                                        <a id="btnDirections" href="#" target="_blank" rel="noopener" class="btn pulse-cta flex-1 rounded-2xl py-3.5 text-base font-display text-white flex items-center justify-center gap-2"
+                                           style="background:linear-gradient(180deg,#22c55e,#15803d); box-shadow:0 8px 22px rgba(34,197,94,.4); text-decoration:none;">
+                                            <i class="fa-solid fa-location-dot"></i><span data-i18n="directions">M'y rendre</span>
+                                        </a>
+                                        <button id="btnCouponContinue" class="btn flex-1 rounded-2xl py-3.5 text-base font-display text-white flex items-center justify-center gap-2"
+                                                style="background:rgba(255,255,255,.12); box-shadow:0 0 0 1px rgba(255,255,255,.18);">
+                                            <i class="fa-solid fa-forward"></i><span data-i18n="coupon_continue">Continuer</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -420,7 +431,7 @@
 
             <!-- cabinet bottom plate (desktop) -->
             <div class="hidden md:flex items-center justify-between mt-3 px-3">
-                <span class="text-[11px] text-zinc-500 font-semibold"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i>2500, boul. Daniel-Johnson, Laval</span>
+                <span class="text-[11px] text-zinc-500 font-semibold"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i>5600, boul. Robert-Bourassa, Laval</span>
                 <span class="text-[11px] text-amber-400/60 font-bold tracking-[.25em] uppercase">Scan • Play • Win</span>
             </div>
         </div>
@@ -436,7 +447,16 @@
 
         // ---- Tunables / brand config -------------------------------------------------
         const DESIGN_W = 414, DESIGN_H = 736;
-        const TARGET   = 100;                 // points needed for the physical coupon
+        const TARGET   = 100;                 // points for the first reward tier
+        // Single, EXCLUSIVE location — every reward is redeemable here only
+        const LOCATION = '5600, boul. Robert-Bourassa, Laval';
+        const MAPS_URL = 'https://www.google.com/maps/search/?api=1&query=Bellepros%205600%20Robert-Bourassa%20Laval';
+        // Escalating in-store rewards → reasons to keep playing AND to visit/buy
+        const REWARD_TIERS = [
+            { at:100, fr:{title:'DOUBLE FROMAGE GRATUIT',    sub:"à l'achat d'un combo", short:'Double fromage'}, en:{title:'FREE DOUBLE CHEESE', sub:'with any combo', short:'Double cheese'} },
+            { at:250, fr:{title:'POUTINE CLASSIQUE GRATUITE',sub:"à l'achat d'un combo", short:'Poutine'},        en:{title:'FREE CLASSIC POUTINE',sub:'with any combo', short:'Poutine'} },
+            { at:500, fr:{title:'COMBO POUTINE GRATUIT',     sub:'poutine + liqueur',    short:'Combo'},          en:{title:'FREE POUTINE COMBO', sub:'poutine + soft drink', short:'Combo'} },
+        ];
         const START_LIVES = 3;
         const COUNTER_Y = 568;                // top surface of stainless counter (tray rail)
         const CATCH_Y   = COUNTER_Y - 14;     // tray rim catch line
@@ -464,15 +484,16 @@
             fr: {
                 lang_btn:'EN',
                 title_html:'PLUIE<br>DE POUTINE', subtitle:'Cantine • Poutine • Tradition québécoise',
-                tagline:'Attrape les ingrédients, évite la pluie et débloque un vrai rabais en magasin!',
+                tagline:'Attrape, évite la pluie et gagne de la VRAIE bouffe gratuite à échanger en magasin!',
                 play:'JOUER', best:'Record', menu:'Menu', restart:'Recommencer', resume:'Reprendre', pause_title:'PAUSE',
                 hud_score:'Pointage',
-                loc:'Bellepros Laval • 2500, boul. Daniel-Johnson', scan:'Scanne • Joue • Gagne',
+                loc:'Bellepros • 5600, boul. Robert-Bourassa, Laval', hours:'Ouvert tous les jours · 11h–23h', scan:'Scanne • Joue • Mange',
+                directions:"M'y rendre", rewards_title:'Récompenses à gagner', redeem_at:'Échangeable seulement à ce Bellepros',
                 l_fries:'Frites', l_gravy:'Sauce brune', l_curds:'Fromage squic-squic', l_poutine:'Poutine maison', l_rain:'Goutte de pluie',
-                reward_unlocked:'Récompense débloquée', coupon_title:'COUPON DÉBLOQUÉ!', coupon_congrats:'Bravo! Tu as atteint 100 points.',
+                reward_unlocked:'Récompense débloquée', coupon_title:'COUPON DÉBLOQUÉ!', coupon_congrats:'Bravo! Tu as atteint {n} points.',
                 coupon_offer:'DOUBLE FROMAGE GRATUIT', coupon_offer_sub:"à l'achat d'un combo régulier",
-                coupon_code_label:'Code coupon', coupon_scan:'Présente ce code au comptoir Bellepros Laval.',
-                coupon_valid:'Valide 7 jours • Limite 1 par client', coupon_continue:'Continuer à jouer',
+                coupon_code_label:'Code coupon', coupon_scan:'Présente ce code au Bellepros · 5600, boul. Robert-Bourassa, Laval.',
+                coupon_valid:"Aujourd'hui seulement • 1 par client • Ce comptoir seulement", coupon_continue:'Continuer',
                 go_title:'PARTIE TERMINÉE', go_score:'Pointage', go_best:'Record', go_newbest:'Nouveau record!',
                 revive_title:'Sauve ta séquence!', revive_desc:'Regarde une courte pub et récupère tes 3 vies — ton pointage reste intact.',
                 revive_btn:'Regarder la pub', revive_used:'Sauvetage déjà utilisé', go_replay:'Rejouer',
@@ -483,15 +504,16 @@
             en: {
                 lang_btn:'FR',
                 title_html:'POUTINE<br>DROP', subtitle:'Diner • Poutine • Québec tradition',
-                tagline:'Catch the ingredients, dodge the rain, and unlock a real in-store reward!',
+                tagline:'Catch, dodge the rain, and win REAL free food to redeem in-store!',
                 play:'PLAY', best:'Best', menu:'Menu', restart:'Restart', resume:'Resume', pause_title:'PAUSED',
                 hud_score:'Score',
-                loc:'Bellepros Laval • 2500 Daniel-Johnson Blvd', scan:'Scan • Play • Win',
+                loc:'Bellepros • 5600 Robert-Bourassa Blvd, Laval', hours:'Open daily · 11am–11pm', scan:'Scan • Play • Eat',
+                directions:'Get directions', rewards_title:'Rewards to win', redeem_at:'Redeem only at this Bellepros',
                 l_fries:'Fries', l_gravy:'Gravy', l_curds:'Cheese curds', l_poutine:'House poutine', l_rain:'Rain drop',
-                reward_unlocked:'Reward unlocked', coupon_title:'COUPON UNLOCKED!', coupon_congrats:'Nice! You reached 100 points.',
+                reward_unlocked:'Reward unlocked', coupon_title:'COUPON UNLOCKED!', coupon_congrats:'Nice! You reached {n} points.',
                 coupon_offer:'FREE DOUBLE CHEESE', coupon_offer_sub:'with any regular combo',
-                coupon_code_label:'Coupon code', coupon_scan:'Show this code at the Bellepros Laval counter.',
-                coupon_valid:'Valid 7 days • Limit 1 per customer', coupon_continue:'Keep playing',
+                coupon_code_label:'Coupon code', coupon_scan:'Show this code at Bellepros · 5600 Robert-Bourassa Blvd, Laval.',
+                coupon_valid:'Today only • 1 per customer • This location only', coupon_continue:'Continue',
                 go_title:'GAME OVER', go_score:'Score', go_best:'Best', go_newbest:'New best!',
                 revive_title:'Save my streak!', revive_desc:'Watch a short ad to restore your 3 lives — your score stays intact.',
                 revive_btn:'Watch ad', revive_used:'Save already used', go_replay:'Play again',
@@ -968,7 +990,7 @@
             items:[], spawnT:0, elapsed:0,
             tray:{ x:DESIGN_W/2, target:DESIGN_W/2, w:118 },
             shake:0, flash:0, grace:0, traySquash:0,
-            couponClaimed:false, usedRevive:false, couponCode:'',
+            rewardsClaimed:0, couponTier:null, usedRevive:false, couponCode:'',
             ad:{ remaining:0, angle:0, lastTick:0 }
         };
 
@@ -1023,7 +1045,7 @@
                 Audio.play('tick');
             }
             updateHud();
-            checkCoupon();
+            checkRewards();
         }
         function onCatchHazard(it){
             game.combo=0; setMult();
@@ -1239,17 +1261,27 @@
             g.fillText('BP', px/2, by+bs/2);
         }
 
-        function checkCoupon(){
-            if (!game.couponClaimed && game.score>=TARGET){
-                game.couponClaimed = true;
+        function checkRewards(){
+            const tier = REWARD_TIERS[game.rewardsClaimed];
+            if (tier && game.score >= tier.at){
+                game.rewardsClaimed++;
+                game.couponTier = tier;
                 game.couponCode = genCouponCode();
                 game.state='coupon';
                 Audio.play('reward'); vibrate([60,40,60,40,120]);
                 confettiBurst();
-                $('couponCode').textContent = game.couponCode;
-                drawQR($('qr'), game.couponCode);
+                renderCoupon(tier);
                 showScreen('coupon');
             }
+        }
+        // fill the coupon ticket for a given reward tier (also used on language switch)
+        function renderCoupon(tier){
+            const L = (lang==='fr') ? tier.fr : tier.en;
+            $('couponOffer').textContent = L.title;
+            $('couponOfferSub').textContent = L.sub;
+            $('couponCongrats').textContent = t('coupon_congrats').replace('{n}', tier.at);
+            $('couponCode').textContent = game.couponCode;
+            drawQR($('qr'), game.couponCode);
         }
 
         // ============================================================================
@@ -1267,7 +1299,7 @@
             game.items=[]; game.spawnT=0.4; game.elapsed=0;
             game.tray.x=game.tray.target=DESIGN_W/2;
             game.shake=0; game.flash=0; game.grace=0.6;
-            game.couponClaimed=false; game.usedRevive=false; game.couponCode='';
+            game.rewardsClaimed=0; game.couponTier=null; game.usedRevive=false; game.couponCode='';
             particles=[]; floaters=[]; confetti=[];
             game.state='playing';
             buildHearts(); updateHud();
@@ -1334,9 +1366,16 @@
         }
         function updateHud(){
             $('hudScore').textContent=game.score;
-            const pct=Math.min(100, game.score/TARGET*100);
-            $('hudProgress').style.width=pct+'%';
-            $('hudGoal').textContent = game.couponClaimed ? (t('t_coupon_done')) : (game.score+' / '+TARGET);
+            const next = REWARD_TIERS[game.rewardsClaimed];
+            if (next){
+                const prev = game.rewardsClaimed>0 ? REWARD_TIERS[game.rewardsClaimed-1].at : 0;
+                const pct = Math.min(100, Math.max(0, (game.score-prev)/(next.at-prev)*100));
+                $('hudProgress').style.width = pct+'%';
+                $('hudGoal').textContent = game.score+' / '+next.at;
+            } else {
+                $('hudProgress').style.width = '100%';
+                $('hudGoal').textContent = '★ '+game.score;
+            }
             // hearts
             document.querySelectorAll('#hudLives .heart').forEach((h,i)=>{ h.style.color = i<game.lives ? '#ef4444' : 'rgba(255,255,255,.22)'; });
             // combo chip
@@ -1357,16 +1396,32 @@
             $('title').innerHTML = t('title_html');
             $('subtitle').textContent = t('subtitle');
             $('tagline').textContent = t('tagline');
-            $('locLine').textContent = t('loc');
+            $('locText').textContent = t('loc');
+            $('hoursLine').textContent = t('hours');
             $('scanLine').textContent = t('scan');
             $('btnLangTxt').textContent = t('lang_btn');
             $('btnLangTxt2').textContent = t('lang_btn');
             $('menuBest').textContent = game.best;
             $('hudScoreLabel').textContent = t('hud_score');
             buildLegend();
+            buildRewards();
+            if (game.state==='coupon' && game.couponTier) renderCoupon(game.couponTier);
             updateHud();
         }
         function toggleLang(){ lang = (lang==='fr')?'en':'fr'; localStorage.setItem('bp_pc_lang', lang); Audio.play('click'); applyLang(); }
+        // menu preview of the escalating in-store rewards (drives buy/visit intent)
+        function buildRewards(){
+            const box=$('rewardsRow'); if(!box) return; box.innerHTML='';
+            REWARD_TIERS.forEach(tr=>{
+                const L=(lang==='fr')?tr.fr:tr.en;
+                const cell=document.createElement('div');
+                cell.className='rounded-lg px-1 py-1.5 text-center';
+                cell.style.cssText='background:rgba(232,25,44,.14); box-shadow:0 0 0 1px rgba(245,158,11,.28)';
+                const num=document.createElement('div'); num.className='font-display text-amber-300 text-sm leading-none'; num.textContent=tr.at;
+                const nm=document.createElement('div'); nm.className='text-[8.5px] text-zinc-200 leading-tight mt-0.5'; nm.textContent=L.short;
+                cell.appendChild(num); cell.appendChild(nm); box.appendChild(cell);
+            });
+        }
 
         function buildLegend(){
             const box=$('legend'); box.innerHTML='';
@@ -1461,6 +1516,7 @@
             setupCanvas();
             buildFacade();
             buildHearts();
+            $('btnDirections').href = MAPS_URL;   // exclusive-location directions
             applyLang();
             syncMute();
             resize();

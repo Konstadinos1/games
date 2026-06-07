@@ -40,13 +40,14 @@ class HUD {
 
   draw(ctx, state, t) {
     const W = CONFIG.CANVAS_WIDTH;
-    const { score, streak, multiplier, lives, chickens, isPiriZone, distance, coins } = state;
+    const { score, streak, multiplier, lives, chickens, isPiriZone, distance, coins, activePowerUps } = state;
 
     this._drawTopBar(ctx, W, score, coins, isPiriZone, t);
     this._drawLives(ctx, W, lives);
     this._drawStreak(ctx, W, streak, multiplier, t);
     this._drawDistance(ctx, W, distance);
 
+    if (activePowerUps) this._drawPowerUpIndicators(ctx, W, activePowerUps, t);
     if (isPiriZone) this._drawPiriZoneBanner(ctx, W, t);
     if (this._streakLabelTimer > 0) this._drawStreakLabel(ctx, W, t);
     if (this._levelUpTimer > 0) this._drawLevelUp(ctx, W, t);
@@ -212,6 +213,51 @@ class HUD {
     const alpha = (this._comboFlash / 300) * 0.12;
     ctx.fillStyle = `rgba(255,215,0,${alpha})`;
     ctx.fillRect(0, 0, W, CONFIG.CANVAS_HEIGHT);
+  }
+
+  _drawPowerUpIndicators(ctx, W, powerUps, t) {
+    const active = Object.entries(powerUps).filter(([, v]) => v > 0);
+    if (active.length === 0) return;
+
+    const R = 15;
+    const baseY = 130;
+    let x = R + 16;
+
+    active.forEach(([type, timer]) => {
+      const cfg = POWERUP_TYPES[type];
+      const { colorRgb, emoji, duration } = cfg;
+      const progress = timer / duration;
+      const almostDone = timer < 2500;
+      if (almostDone && Math.floor(t / 250) % 2 === 0) { x += R * 2 + 10; return; }
+
+      // Dark background
+      ctx.fillStyle = 'rgba(0,0,0,0.72)';
+      ctx.beginPath();
+      ctx.arc(x, baseY, R, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Progress arc
+      ctx.strokeStyle = `rgba(${colorRgb},0.9)`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(x, baseY, R - 1, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * progress);
+      ctx.stroke();
+
+      // Faded track ring
+      ctx.strokeStyle = `rgba(${colorRgb},0.2)`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, baseY, R - 1, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Emoji
+      ctx.font = '13px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(emoji, x, baseY);
+
+      x += R * 2 + 8;
+    });
   }
 
   // Mini score popup above chicken catch position

@@ -154,6 +154,22 @@ class AudioSystem {
         this._note('triangle', 784, t,       0.1, 0.4);
         this._note('triangle', 1175, t + 0.1, 0.15, 0.3);
         break;
+
+      case 'powerup': {
+        // Ascending whoosh chime
+        const pu = [440, 554, 659, 880, 1109];
+        pu.forEach((f, i) => this._note('sine', f, t + i * 0.05, 0.14, 0.3));
+        this._note('triangle', 1760, t + 0.28, 0.25, 0.4);
+        break;
+      }
+
+      case 'shield_break':
+        // Clang + burst
+        this._note('square', 220, t,       0.06, 0.3);
+        this._note('square', 330, t + 0.04, 0.06, 0.25);
+        this._noise(t, 0.12, 0.08);
+        this._note('triangle', 880, t + 0.06, 0.15, 0.35);
+        break;
     }
   }
 

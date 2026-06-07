@@ -99,6 +99,24 @@ class Particle {
         this.size = Utils.randomBetween(20, 32);
         this.maxLife = Utils.randomBetween(1.0, 2.0);
         break;
+      case 'powerup_collect':
+        this.text = null;
+        this.vx = Utils.randomBetween(-6, 6);
+        this.vy = Utils.randomBetween(-9, -3);
+        this.gravity = 0.18;
+        this.size = Utils.randomBetween(5, 13);
+        this.color = `rgba(255,255,255,`;
+        this.maxLife = Utils.randomBetween(0.6, 1.1);
+        break;
+      case 'shield_break':
+        this.text = null;
+        this.vx = Utils.randomBetween(-7, 7);
+        this.vy = Utils.randomBetween(-8, -2);
+        this.gravity = 0.2;
+        this.size = Utils.randomBetween(4, 11);
+        this.color = `rgba(39,174,96,`;
+        this.maxLife = Utils.randomBetween(0.5, 0.9);
+        break;
     }
     this.life = this.maxLife;
   }
@@ -163,6 +181,18 @@ class ParticleSystem {
 
   draw(ctx) {
     this.particles.forEach(p => p.draw(ctx));
+  }
+
+  // Spawn a floating score/text pop with custom content
+  popText(x, y, text, color = '#FFF', size = 20) {
+    const p = new Particle(x, y, 'catch_common');
+    p.text = text;
+    p.color = color;
+    p.size = size;
+    p.vy = -2.8;
+    p.maxLife = 1.3;
+    p.life = 1.3;
+    this.particles.push(p);
   }
 
   clear() {

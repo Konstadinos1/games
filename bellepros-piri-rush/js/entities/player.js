@@ -17,6 +17,7 @@ class Player {
     this._hitShake = 0;
     this._celebrateTimer = 0;
     this._jumpCount = 0; // double jump support
+    this._jumpBufferTimer = 0; // buffers a jump press while airborne
     this.onGround = true;
   }
 
@@ -35,14 +36,19 @@ class Player {
       this.state = 'jumping';
       this.onGround = false;
       this._jumpCount = 1;
+      this._jumpBufferTimer = 0;
       Audio.play('jump');
       this.game.spawnParticles(this.x, this.y + CONFIG.PLAYER.HEIGHT / 2, 'dust', 4);
     } else if (this._jumpCount === 1) {
       // Double jump
       this.vy = CONFIG.PLAYER.JUMP_FORCE * 0.8;
       this._jumpCount = 2;
+      this._jumpBufferTimer = 0;
       Audio.play('jump');
       this.game.spawnParticles(this.x, this.y, 'star', 6);
+    } else {
+      // Buffer this jump — execute it on next landing
+      this._jumpBufferTimer = 130;
     }
   }
 
@@ -55,6 +61,21 @@ class Player {
 
   hit() {
     if (this.isInvincible) return false;
+
+    // Shield absorbs the hit — no life lost, no streak reset
+    if (this.game.activePowerUps && this.game.activePowerUps.SHIELD > 0) {
+      this.game.activePowerUps.SHIELD = 0;
+      this.isInvincible = true;
+      this._invincibleTimer = 1500;
+      this._hitShake = 200;
+      this.game._shakeTimer = 300;
+      Audio.play('shield_break');
+      Utils.vibrate([30]);
+      this.game.spawnParticles(this.x, this.y, 'shield_break', 14);
+      Screens.showToast('🛡️ Shield absorbed the hit!', 1600, 'piri');
+      return false;
+    }
+
     this.lives--;
     this.isInvincible = true;
     this._invincibleTimer = CONFIG.PLAYER.INVINCIBLE_DURATION;
@@ -90,7 +111,15 @@ class Player {
       this.onGround = true;
       this._jumpCount = 0;
       if (this.state === 'jumping') this.state = 'running';
+      // Execute buffered jump
+      if (this._jumpBufferTimer > 0) {
+        this._jumpBufferTimer = 0;
+        this.jump();
+      }
     }
+
+    // Tick buffer timer
+    if (this._jumpBufferTimer > 0) this._jumpBufferTimer -= dt;
 
     // Slide timer
     if (this.state === 'sliding') {
@@ -241,7 +270,19 @@ class Player {
 
     ctx.restore();
 
-    // Debug hitbox (comment out in production)
-    // const hb = this.getHitbox(); ctx.strokeStyle='red'; ctx.strokeRect(hb.x - this.x, hb.y - this.y, hb.w, hb.h);
+    // Shield visual
+    if (this.game.activePowerUps && this.game.activePowerUps.SHIELD > 0) {
+      const shieldAlpha = 0.45 + 0.3 * Math.sin(t * 0.012);
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.strokeStyle = `rgba(39,174,96,${shieldAlpha})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.ellipse(0, -40, 32, 56, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = `rgba(39,174,96,${shieldAlpha * 0.18})`;
+      ctx.fill();
+      ctx.restore();
+    }
   }
 }

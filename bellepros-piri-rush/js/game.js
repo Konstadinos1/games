@@ -51,6 +51,15 @@ class Game {
     this._canRevive = true;
     this._reviveOffered = false;
 
+    // Power-ups
+    this.powerUps = [];
+    this.activePowerUps = { MAGNET: 0, SHIELD: 0, COIN_FEVER: 0, SLOW_MO: 0 };
+    this._powerUpTimer = 0;
+    this._nextPowerUpIn = Utils.randomBetween(CONFIG.SPAWN.POWERUP_MIN, CONFIG.SPAWN.POWERUP_MAX);
+
+    // Screen shake
+    this._shakeTimer = 0;
+
     this._resize();
     this._bindInput();
     window.addEventListener('resize', () => this._resize());
@@ -159,6 +168,12 @@ class Game {
     this._chickenTimer = 0;
     this._obstacleTimer = 0;
 
+    this.powerUps = [];
+    this.activePowerUps = { MAGNET: 0, SHIELD: 0, COIN_FEVER: 0, SLOW_MO: 0 };
+    this._powerUpTimer = 0;
+    this._nextPowerUpIn = Utils.randomBetween(CONFIG.SPAWN.POWERUP_MIN, CONFIG.SPAWN.POWERUP_MAX);
+    this._shakeTimer = 0;
+
     this.player = new Player(this);
     this.player.setCharacter(Progression.getActiveChar());
     this.particles.clear();
@@ -260,6 +275,7 @@ class Game {
 
   _update(dt) {
     this.time += dt;
+    if (this._shakeTimer > 0) this._shakeTimer -= dt;
 
     if (this.state === GAME_STATE.BOOT || this.state === GAME_STATE.MENU ||
         this.state === GAME_STATE.GAME_OVER) {
@@ -291,22 +307,37 @@ class Game {
       }
     }
 
+    // Tick active power-up timers
+    for (const key of Object.keys(this.activePowerUps)) {
+      if (this.activePowerUps[key] > 0) {
+        this.activePowerUps[key] -= dt;
+        if (this.activePowerUps[key] <= 0) {
+          this.activePowerUps[key] = 0;
+          const expiredCfg = POWERUP_TYPES[key];
+          Screens.showToast(`${expiredCfg.emoji} ${expiredCfg.label} ended`, 1400);
+        }
+      }
+    }
+
+    // Effective speed (halved by SLOW_MO)
+    const effSpeed = this.activePowerUps.SLOW_MO > 0 ? this.gameSpeed * 0.5 : this.gameSpeed;
+
     // Background
-    this.background.update(dt, this.gameSpeed, this.isPiriZone);
+    this.background.update(dt, effSpeed, this.isPiriZone);
 
     // Player
     this.player.update(dt);
 
-    // Spawn
+    // Spawn chickens
     this._chickenTimer += dt;
     if (this._chickenTimer >= this._nextChickenIn) {
       this.chickens.push(Chicken.spawnRandom(this));
       this._chickenTimer = 0;
       this._nextChickenIn = Utils.randomBetween(CONFIG.SPAWN.CHICKEN_MIN, CONFIG.SPAWN.CHICKEN_MAX);
-      // Speed modifier on spawn rate
       this._nextChickenIn /= Math.max(1, this.gameSpeed / CONFIG.SPEED.INITIAL * 0.7);
     }
 
+    // Spawn obstacles
     this._obstacleTimer += dt;
     if (this._obstacleTimer >= this._nextObstacleIn) {
       this.obstacles.push(Obstacle.spawnRandom(this));
@@ -315,9 +346,34 @@ class Game {
       this._nextObstacleIn /= Math.max(1, this.gameSpeed / CONFIG.SPEED.INITIAL * 0.8);
     }
 
+    // Spawn power-ups
+    this._powerUpTimer += dt;
+    if (this._powerUpTimer >= this._nextPowerUpIn) {
+      this.powerUps.push(PowerUp.spawnRandom());
+      this._powerUpTimer = 0;
+      this._nextPowerUpIn = Utils.randomBetween(CONFIG.SPAWN.POWERUP_MIN, CONFIG.SPAWN.POWERUP_MAX);
+    }
+
     // Update entities
-    this.chickens.forEach(c => c.update(dt, this.gameSpeed));
-    this.obstacles.forEach(o => o.update(dt, this.gameSpeed));
+    this.chickens.forEach(c => c.update(dt, effSpeed));
+    this.obstacles.forEach(o => o.update(dt, effSpeed));
+    this.powerUps.forEach(p => p.update(dt, effSpeed));
+
+    // Magnet: pull nearby food toward player
+    if (this.activePowerUps.MAGNET > 0) {
+      const range = 165;
+      this.chickens.forEach(c => {
+        if (c.caught) return;
+        const dx = this.player.x - c.x;
+        const dy = this.player.y - c.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < range && dist > 2) {
+          const pull = Math.min(7, (range - dist) / 18);
+          c.x += (dx / dist) * pull * (dt / 16);
+          c.y += (dy / dist) * pull * (dt / 16);
+        }
+      });
+    }
 
     // Collision detection
     this._checkCollisions();
@@ -325,6 +381,7 @@ class Game {
     // Cull
     this.chickens  = this.chickens.filter(c => c.active);
     this.obstacles = this.obstacles.filter(o => o.active);
+    this.powerUps  = this.powerUps.filter(p => p.active);
 
     // Particles
     this.particles.update(dt);
@@ -337,6 +394,23 @@ class Game {
     if (this.player.lives <= 0) {
       this.endRun('out_of_lives');
     }
+  }
+
+  _collectPowerUp(pu) {
+    pu.active = false;
+    const cfg = POWERUP_TYPES[pu.type];
+    this.activePowerUps[pu.type] = cfg.duration;
+    Audio.play('powerup');
+    Utils.vibrate([20, 10, 40]);
+    this.particles.spawn(pu.x, pu.y, 'powerup_collect', 18);
+    this.particles.spawn(pu.x, pu.y, 'star', 6);
+    const msgs = {
+      MAGNET:     '🧲 Food Magnet! Auto-collect nearby food',
+      SHIELD:     '🛡️ Piri Shield! Next hit absorbed',
+      COIN_FEVER: '🪙 Coin Fever! 3x Piri Coins',
+      SLOW_MO:    '🌶️ Slow Burn! Half speed activated',
+    };
+    Screens.showToast(msgs[pu.type], 2500, 'piri');
   }
 
   _checkCollisions() {
@@ -355,6 +429,12 @@ class Game {
         }
         c.active = false;
       }
+    });
+
+    // Power-up collisions
+    this.powerUps.forEach(pu => {
+      if (!pu.active) return;
+      if (Utils.rectOverlap(playerHB, pu.getHitbox())) this._collectPowerUp(pu);
     });
 
     // Obstacle collisions
@@ -382,6 +462,7 @@ class Game {
         this.multiplier = 1;
         this.hud.showStreakLabel('');
         o.active = false;
+        this._shakeTimer = 480;
         Analytics.obstacleHit(o.type);
       }
     });
@@ -405,12 +486,19 @@ class Game {
     const pts = chicken.cfg.score * totalMultiplier;
     this.score += pts;
 
-    const coinAmt = chicken.cfg.coins * (this.isPiriZone ? 2 : 1);
+    const coinFeverMult = this.activePowerUps.COIN_FEVER > 0 ? 3 : 1;
+    const coinAmt = chicken.cfg.coins * (this.isPiriZone ? 2 : 1) * coinFeverMult;
     this.coinsEarned += coinAmt;
 
-    // Particles
-    const popType = `catch_${chicken.type.toLowerCase()}`;
-    this.particles.spawn(chicken.x, chicken.y - 20, popType, 1);
+    // Score popup showing actual earned points
+    const popColors = { COMMON: '#FFF', RARE: '#FFD700', EPIC: '#FF8C35', LEGENDARY: '#C39BD3' };
+    const badges    = { COMMON: '', RARE: ' ✨', EPIC: ' 🔥', LEGENDARY: ' 👑' };
+    const ptsTxt = totalMultiplier > 1
+      ? `+${Utils.formatNumber(pts)}${badges[chicken.type]} ×${totalMultiplier}`
+      : `+${Utils.formatNumber(pts)}${badges[chicken.type]}`;
+    this.particles.popText(chicken.x, chicken.y - 20, ptsTxt, popColors[chicken.type],
+      chicken.type === 'LEGENDARY' ? 22 : chicken.type === 'COMMON' ? 17 : 19);
+
     this.particles.spawn(chicken.x, chicken.y, 'coin', 3);
     if (chicken.type === 'LEGENDARY') this.particles.spawn(chicken.x, chicken.y, 'star', 8);
     if (chicken.type === 'EPIC') this.particles.spawn(chicken.x, chicken.y, 'star', 5);
@@ -444,12 +532,21 @@ class Game {
     const H = CONFIG.CANVAS_HEIGHT;
 
     ctx.clearRect(0, 0, W, H);
+
+    ctx.save();
+    // Screen shake
+    if (this._shakeTimer > 0) {
+      const intensity = (this._shakeTimer / 480) * 9;
+      ctx.translate((Math.random() - 0.5) * intensity, (Math.random() - 0.5) * intensity);
+    }
+
     this.background.draw(ctx, this.isPiriZone);
 
     if (this.state === GAME_STATE.PLAYING || this.state === GAME_STATE.PAUSED ||
         this.state === GAME_STATE.GAME_OVER) {
 
       this.obstacles.forEach(o => o.draw(ctx, this.time));
+      this.powerUps.forEach(p => p.draw(ctx, this.time));
       this.chickens.forEach(c => c.draw(ctx, this.time));
       this.player.draw(ctx, this.time);
       this.particles.draw(ctx);
@@ -459,12 +556,14 @@ class Game {
           score: this.score, streak: this.streak, multiplier: this.multiplier,
           lives: this.player.lives, chickens: this.chickensTotal,
           isPiriZone: this.isPiriZone, distance: this.distance,
-          coins: this.coinsEarned,
+          coins: this.coinsEarned, activePowerUps: this.activePowerUps,
         }, this.time);
       }
     }
 
-    // Boot splash
+    ctx.restore();
+
+    // Boot splash (outside shake so it's stable)
     if (this.state === GAME_STATE.BOOT) {
       this._drawBootSplash(ctx, W, H);
     }

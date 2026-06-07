@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Jeux Bellepros — Laval</title>
+<meta name="description" content="Mini-jeux Bellepros : joue, gagne des récompenses et viens les chercher au 5600 boul. Robert-Bourassa, Laval." />
+<meta name="theme-color" content="#E8192C" />
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #fff;
+    background:
+      radial-gradient(120% 80% at 50% -10%, rgba(232,25,44,.45), transparent 60%),
+      radial-gradient(100% 70% at 50% 110%, rgba(245,158,11,.30), transparent 60%),
+      #0b0b0f;
+    min-height: 100%;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 40px 18px 28px; gap: 6px;
+  }
+  .hero { text-align: center; margin-bottom: 14px; }
+  .badge {
+    display: inline-block; font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    font-weight: 800; color: #fff; background: linear-gradient(180deg,#F59E0B,#E8192C);
+    padding: 5px 12px; border-radius: 999px; box-shadow: 0 6px 18px rgba(232,25,44,.4);
+  }
+  h1 {
+    font-size: clamp(30px, 9vw, 48px); margin: 14px 0 4px; line-height: 1;
+    font-weight: 900; letter-spacing: -.5px;
+    background: linear-gradient(180deg,#fff,#ffd9a8); -webkit-background-clip: text;
+    background-clip: text; color: transparent; text-shadow: 0 2px 20px rgba(0,0,0,.4);
+  }
+  .sub { color: #c9c9d4; font-size: 14px; margin: 0; }
+  .cards { width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: 14px; margin-top: 18px; }
+  a.card {
+    display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit;
+    background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
+    border-radius: 20px; padding: 16px 18px; transition: transform .12s ease, background .12s ease, border-color .12s ease;
+  }
+  a.card:hover, a.card:active { transform: translateY(-2px); background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.22); }
+  .emoji { font-size: 40px; line-height: 1; filter: drop-shadow(0 4px 8px rgba(0,0,0,.4)); }
+  .ctext { flex: 1; min-width: 0; }
+  .ctitle { font-size: 19px; font-weight: 800; }
+  .cdesc { font-size: 12.5px; color: #b9b9c6; margin-top: 2px; }
+  .play { font-size: 12px; font-weight: 800; color: #ffd9a8; white-space: nowrap; }
+  .hero .star { color: #ffd9a8; }
+  footer { margin-top: auto; padding-top: 26px; text-align: center; color: #8a8a96; font-size: 12px; line-height: 1.6; }
+  footer a { color: #ffd9a8; text-decoration: none; }
+</style>
+</head>
+<body>
+  <div class="hero">
+    <span class="badge">Bellepros · Laval</span>
+    <h1>Joue & gagne 🍟</h1>
+    <p class="sub">Choisis un jeu, bats ton record et viens chercher ta récompense en magasin.</p>
+  </div>
+
+  <div class="cards">
+    <a class="card" href="./bellepros-poutine-catch/">
+      <span class="emoji">🍟</span>
+      <span class="ctext">
+        <div class="ctitle">Pluie de Poutine</div>
+        <div class="cdesc">Attrape la poutine, évite la pluie — débloque de vrais coupons.</div>
+      </span>
+      <span class="play">JOUER ▸</span>
+    </a>
+    <a class="card" href="./bellepros-piri-rush/">
+      <span class="emoji">🌶️</span>
+      <span class="ctext">
+        <div class="ctitle">Piri Rush</div>
+        <div class="cdesc">L'autre défi Bellepros — rapidité et réflexes.</div>
+      </span>
+      <span class="play">JOUER ▸</span>
+    </a>
+  </div>
+
+  <footer>
+    Bellepros · 5600, boul. Robert-Bourassa, Laval<br />
+    <a href="https://www.google.com/maps/search/?api=1&query=Bellepros%2C%205600%20Boulevard%20Robert-Bourassa%2C%20Laval%2C%20QC">Voir l'itinéraire</a>
+  </footer>
+</body>
+</html>

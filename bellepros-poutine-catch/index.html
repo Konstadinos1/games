@@ -297,7 +297,7 @@
 
                             <!-- ===================== PAUSE SCREEN ===================== -->
                             <div id="screen-pause" class="overlay z-30 hidden" style="background:rgba(9,9,11,.78); backdrop-filter:blur(6px);">
-                                <i class="fa-solid fa-fleur text-amber-400 text-3xl mb-2"></i>
+                                <img src="assets/bellepros-logo.png" alt="Restaurant Bellepro's" style="width:140px;height:auto;margin-bottom:10px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5));" />
                                 <h2 id="pauseTitle" class="neon-title text-4xl text-amber-400 mb-6" data-i18n="pause_title">PAUSE</h2>
                                 <button id="btnResume" class="btn pulse-cta rounded-2xl px-8 py-3.5 text-xl font-display text-white mb-3 flex items-center gap-2"
                                         style="background:linear-gradient(180deg,#F59E0B,#E8192C); box-shadow:0 8px 24px rgba(232,25,44,.45);">
@@ -369,6 +369,7 @@
 
                             <!-- ===================== GAME OVER SCREEN ===================== -->
                             <div id="screen-gameover" class="overlay z-30 hidden" style="background:radial-gradient(100% 70% at 50% 25%, rgba(232,25,44,.2), rgba(9,9,11,.9) 70%); backdrop-filter:blur(4px);">
+                                <img src="assets/bellepros-logo.png" alt="Restaurant Bellepro's" style="width:118px;height:auto;margin-bottom:6px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5));" />
                                 <h2 id="goTitle" class="neon-title text-4xl text-red-500 mb-1" data-i18n="go_title">PARTIE TERMINÉE</h2>
                                 <div id="goNewBest" class="hidden text-amber-400 text-sm font-display mb-2 pop-in"><i class="fa-solid fa-trophy mr-1"></i><span data-i18n="go_newbest">Nouveau record!</span></div>
 
@@ -470,7 +471,7 @@
         const TARGET   = 100;                 // points for the first reward tier
         // Single, EXCLUSIVE location — every reward is redeemable here only
         const LOCATION = 'Bellepros Laval 440 · 5600 Robert-Bourassa, Laval';
-        const MAPS_URL = 'https://www.google.com/maps/search/?api=1&query=Bellepros%205600%20Robert-Bourassa%20Laval';
+        const MAPS_URL = 'https://maps.app.goo.gl/5AyH4m5ZeQJM4wdi9';
         // Escalating in-store rewards → reasons to keep playing AND to visit/buy
         const REWARD_TIERS = [
             { at:100, fr:{title:'DOUBLE FROMAGE GRATUIT',    sub:"à l'achat d'un combo", short:'Double fromage'}, en:{title:'FREE DOUBLE CHEESE', sub:'with any combo', short:'Double cheese'} },
@@ -773,10 +774,28 @@
         //  STATIC STOREFRONT FACADE  (rendered once to an offscreen canvas, then blit)
         // ============================================================================
         let facade = document.createElement('canvas');
+        // real storefront photo backdrop — rebuilds the facade once it loads; falls back to the drawn facade
+        const storefront = (typeof Image!=='undefined') ? new Image() : null;
+        if (storefront){ storefront.onload = ()=>{ try { buildFacade(); } catch(e){} }; storefront.src = 'assets/storefront.jpg'; }
+        function drawStorefront(g){
+            const cy = COUNTER_Y;
+            const iw = storefront.naturalWidth, ih = storefront.naturalHeight;
+            const scale = Math.max(DESIGN_W/iw, cy/ih);   // cover the area above the counter
+            const dw = iw*scale, dh = ih*scale;
+            g.drawImage(storefront, (DESIGN_W-dw)/2, 0, dw, dh);
+            // contrast scrim so falling items stay readable over the bright photo
+            const sc = g.createLinearGradient(0,0,0,cy);
+            sc.addColorStop(0,'rgba(10,7,12,.52)'); sc.addColorStop(0.30,'rgba(10,7,12,.20)');
+            sc.addColorStop(0.72,'rgba(10,7,12,.16)'); sc.addColorStop(1,'rgba(10,7,12,.34)');
+            g.fillStyle=sc; g.fillRect(0,0,DESIGN_W,cy);
+        }
         function buildFacade() {
             facade.width = DESIGN_W; facade.height = DESIGN_H;
             const g = facade.getContext('2d');
             g.clearRect(0,0,DESIGN_W,DESIGN_H);
+
+            const usePhoto = (storefront && storefront.complete && storefront.naturalWidth>0);
+            if (usePhoto){ drawStorefront(g); } else {
 
             // ---- night ambience behind the shop ----
             const sky = g.createLinearGradient(0,0,0,DESIGN_H);
@@ -865,6 +884,7 @@
             // awning valance shadow on bricks
             const ashadow=g.createLinearGradient(0,ah,0,ah+30); ashadow.addColorStop(0,'rgba(0,0,0,.35)'); ashadow.addColorStop(1,'rgba(0,0,0,0)');
             g.fillStyle=ashadow; g.fillRect(0,ah,DESIGN_W,30);
+            } // end drawn-facade upper section (skipped when the storefront photo is used)
 
             // ---- stainless steel counter ----
             const cy=COUNTER_Y;

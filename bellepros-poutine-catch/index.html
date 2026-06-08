@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#09090b">
-    <title>Pluie de Poutine — Bellepros Laval</title>
+    <title>Bellepros Laval 440 · 5600 Robert-Bourassa — Pluie de Poutine</title>
 
     <!-- Tailwind (CDN) — styling framework per spec. Game logic is pure vanilla JS so it still runs if the CDN is blocked. -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -168,7 +168,7 @@
                 </span>
                 <span class="font-display text-2xl tracking-wide"
                       style="color:#fff; text-shadow:0 0 12px rgba(232,25,44,.7);">BELLEPROS</span>
-                <span class="text-amber-400/80 text-sm font-bold tracking-[.3em] uppercase">Laval</span>
+                <span class="text-amber-400/80 text-sm font-bold tracking-[.3em] uppercase">Laval&nbsp;440</span>
             </div>
         </div>
 
@@ -247,13 +247,15 @@
 
                                 <!-- brand + title -->
                                 <div class="text-center float-soft">
-                                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-3"
-                                         style="background:var(--bp-red); box-shadow:0 6px 22px rgba(232,25,44,.45);">
-                                        <i class="fa-solid fa-fleur text-white"></i>
-                                        <span class="font-display text-lg tracking-wide">BELLEPROS</span>
-                                        <span class="text-white/70 text-xs font-bold tracking-[.25em] uppercase">Laval</span>
-                                    </div>
-                                    <h1 id="title" class="neon-title text-[44px] leading-[0.95] text-amber-400">PLUIE<br>DE POUTINE</h1>
+                                    <!-- official Restaurant Bellepro's logo -->
+                                    <img id="brandLogo" src="assets/bellepros-logo.png" alt="Restaurant Bellepro's — Laval 440"
+                                         style="display:block;margin:0 auto 4px;width:min(66%,215px);height:auto;filter:drop-shadow(0 6px 16px rgba(0,0,0,.55));" />
+                                    <h1 id="brandTitle" class="neon-title text-[22px] leading-none text-amber-400 mt-1">LAVAL 440</h1>
+                                    <p id="brandAddr" class="mt-1.5 text-zinc-100 text-[13px] font-bold"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i>5600 Robert-Bourassa, Laval</p>
+                                    <p class="mt-2.5">
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px] font-display tracking-wide text-white"
+                                              style="background:var(--bp-red); box-shadow:0 4px 16px rgba(232,25,44,.4);"><i class="fa-solid fa-fleur"></i><span id="gameNameTxt">Pluie de Poutine</span></span>
+                                    </p>
                                     <p id="subtitle" class="mt-2 text-zinc-300 text-sm font-semibold tracking-wide">Cantine • Poutine • Tradition québécoise</p>
                                 </div>
 
@@ -313,6 +315,7 @@
                             <div id="screen-coupon" class="overlay z-30 hidden" style="background:radial-gradient(100% 70% at 50% 30%, rgba(245,158,11,.18), rgba(9,9,11,.88) 70%); backdrop-filter:blur(4px);">
                                 <div class="pop-in w-full max-w-[330px]">
                                     <div class="text-center mb-3">
+                                        <img src="assets/bellepros-logo.png" alt="Restaurant Bellepro's" style="display:block;margin:0 auto 8px;width:150px;height:auto;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5));" />
                                         <div class="inline-block px-4 py-1 rounded-full text-xs font-black tracking-[.25em] uppercase mb-2"
                                              style="background:var(--bp-red);"><span data-i18n="reward_unlocked">Récompense débloquée</span></div>
                                         <h2 id="couponTitle" class="neon-title text-3xl text-amber-400" data-i18n="coupon_title">COUPON DÉBLOQUÉ!</h2>
@@ -323,7 +326,7 @@
                                     <div class="ticket-notch rounded-2xl overflow-hidden" style="background:#FFF6E6; color:#1c1917; box-shadow:0 18px 40px rgba(0,0,0,.55);">
                                         <div class="px-4 pt-4 pb-3 text-center" style="background:linear-gradient(180deg,#E8192C,#b91c1c); color:#fff;">
                                             <div class="flex items-center justify-center gap-2 text-[11px] font-bold tracking-[.2em] uppercase opacity-90">
-                                                <i class="fa-solid fa-fleur"></i> Bellepros Laval
+                                                <i class="fa-solid fa-fleur"></i> Bellepros Laval 440
                                             </div>
                                             <div id="couponOffer" class="font-display text-2xl mt-1 leading-tight">DOUBLE FROMAGE GRATUIT</div>
                                             <div id="couponOfferSub" class="text-[12px] font-semibold opacity-90">à l'achat d'un combo régulier</div>
@@ -424,7 +427,7 @@
                                     <div id="adCombo" class="font-display text-3xl text-amber-400 neon-title" data-i18n="ad_combo">LA POUTINE CLASSIQUE</div>
                                     <div id="adTag" class="text-zinc-300 text-sm font-semibold mt-1" data-i18n="ad_tag">Frites • Fromage squic-squic • Sauce brune</div>
                                     <div class="mt-2 inline-flex items-center gap-2 px-4 py-1.5 rounded-full" style="background:var(--bp-red);">
-                                        <i class="fa-solid fa-fleur"></i><span class="font-display tracking-wide">BELLEPROS LAVAL</span>
+                                        <i class="fa-solid fa-fleur"></i><span class="font-display tracking-wide">BELLEPROS LAVAL 440</span>
                                     </div>
                                 </div>
                                 <div class="flex-1"></div>
@@ -448,7 +451,7 @@
 
             <!-- cabinet bottom plate (desktop) -->
             <div class="hidden md:flex items-center justify-between mt-3 px-3">
-                <span class="text-[11px] text-zinc-500 font-semibold"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i>5600, boul. Robert-Bourassa, Laval</span>
+                <span class="text-[11px] text-zinc-500 font-semibold"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i>Bellepros Laval 440 · 5600 Robert-Bourassa, Laval</span>
                 <span class="text-[11px] text-amber-400/60 font-bold tracking-[.25em] uppercase">Scan • Play • Win</span>
             </div>
         </div>
@@ -466,7 +469,7 @@
         const DESIGN_W = 414, DESIGN_H = 736;
         const TARGET   = 100;                 // points for the first reward tier
         // Single, EXCLUSIVE location — every reward is redeemable here only
-        const LOCATION = '5600, boul. Robert-Bourassa, Laval';
+        const LOCATION = 'Bellepros Laval 440 · 5600 Robert-Bourassa, Laval';
         const MAPS_URL = 'https://www.google.com/maps/search/?api=1&query=Bellepros%205600%20Robert-Bourassa%20Laval';
         // Escalating in-store rewards → reasons to keep playing AND to visit/buy
         const REWARD_TIERS = [
@@ -500,16 +503,16 @@
         const I18N = {
             fr: {
                 lang_btn:'EN',
-                title_html:'PLUIE<br>DE POUTINE', subtitle:'Cantine • Poutine • Tradition québécoise',
+                title_html:'PLUIE<br>DE POUTINE', game_name:'Pluie de Poutine', subtitle:'Cantine • Poutine • Tradition québécoise',
                 tagline:'Attrape, évite la pluie et gagne de la VRAIE bouffe gratuite à échanger en magasin!',
                 play:'JOUER', best:'Record', menu:'Menu', restart:'Recommencer', resume:'Reprendre', pause_title:'PAUSE',
                 hud_score:'Pointage',
-                loc:'Bellepros • 5600, boul. Robert-Bourassa, Laval', hours:'Ouvert tous les jours · 11h–23h', scan:'Scanne • Joue • Mange',
-                directions:"M'y rendre", rewards_title:'Récompenses à gagner', redeem_at:'Échangeable seulement à ce Bellepros',
+                loc:'Bellepros Laval 440 • 5600 Robert-Bourassa, Laval', hours:'Ouvert tous les jours · 11h–23h', scan:'Scanne • Joue • Mange',
+                directions:"M'y rendre", rewards_title:'Récompenses à gagner', redeem_at:'Échangeable seulement à ce Bellepros Laval 440',
                 l_fries:'Frites', l_gravy:'Sauce brune', l_curds:'Fromage squic-squic', l_poutine:'Poutine maison', l_rain:'Goutte de pluie',
                 reward_unlocked:'Récompense débloquée', coupon_title:'COUPON DÉBLOQUÉ!', coupon_congrats:'Bravo! Tu as atteint {n} points.',
                 coupon_offer:'DOUBLE FROMAGE GRATUIT', coupon_offer_sub:"à l'achat d'un combo régulier",
-                coupon_code_label:'Code coupon', coupon_scan:'Présente ce code au Bellepros · 5600, boul. Robert-Bourassa, Laval.',
+                coupon_code_label:'Code coupon', coupon_scan:'Présente ce code au Bellepros Laval 440 · 5600 Robert-Bourassa, Laval.',
                 coupon_valid:"Aujourd'hui seulement • 1 par client • Ce comptoir seulement", coupon_continue:'Continuer',
                 go_title:'PARTIE TERMINÉE', go_score:'Pointage', go_best:'Record', go_newbest:'Nouveau record!',
                 revive_title:'Sauve ta séquence!', revive_desc:'Regarde une courte pub et récupère tes 3 vies — ton pointage reste intact.',
@@ -517,24 +520,24 @@
                 ad_label:'Publicité', ad_reward_in:'Récompense dans', ad_combo:'LA POUTINE CLASSIQUE', ad_tag:'Frites • Fromage squic-squic • Sauce brune', ad_cant_skip:'Pub non sautable',
                 t_miss:'RATÉ!', t_soggy:'DÉTREMPÉ!', t_perfect:'PARFAIT!', t_revived:'+3 VIES • C\'est reparti!', t_coupon_done:'Coupon réclamé ✓',
                 share_score:'Partager mon score', share_coupon:'Partager', link_copied:'Lien copié!',
-                share_text_score:"J'ai fait {n} points à Pluie de Poutine 🍟 Bats-moi et gagne de la bouffe gratuite chez Bellepros, 5600 Robert-Bourassa, Laval!",
-                share_text_coupon:"J'ai gagné {offer} chez Bellepros Laval 🎉 Joue à Pluie de Poutine et gagne la tienne!",
+                share_text_score:"J'ai fait {n} points à Pluie de Poutine 🍟 Bats-moi et gagne de la bouffe gratuite chez Bellepros Laval 440, 5600 Robert-Bourassa!",
+                share_text_coupon:"J'ai gagné {offer} chez Bellepros Laval 440 🎉 Joue à Pluie de Poutine et gagne la tienne!",
                 streak_days:'Série', daily_bonus:'+1 vie aujourd\'hui!', daily_bonus_toast:'Bonus quotidien : +1 vie ❤',
                 staff_redeem:'Personnel : marquer échangé', redeemed_stamp:'ÉCHANGÉ', already_redeemed:'Déjà échangé ✓',
                 m2:'2x ÉPICÉ!', m3:'3x CHAUD!', m4:'4x EN FEU!', m5:'5x BELLEPROS!'
             },
             en: {
                 lang_btn:'FR',
-                title_html:'POUTINE<br>DROP', subtitle:'Diner • Poutine • Québec tradition',
+                title_html:'POUTINE<br>DROP', game_name:'Poutine Drop', subtitle:'Diner • Poutine • Québec tradition',
                 tagline:'Catch, dodge the rain, and win REAL free food to redeem in-store!',
                 play:'PLAY', best:'Best', menu:'Menu', restart:'Restart', resume:'Resume', pause_title:'PAUSED',
                 hud_score:'Score',
-                loc:'Bellepros • 5600 Robert-Bourassa Blvd, Laval', hours:'Open daily · 11am–11pm', scan:'Scan • Play • Eat',
-                directions:'Get directions', rewards_title:'Rewards to win', redeem_at:'Redeem only at this Bellepros',
+                loc:'Bellepros Laval 440 • 5600 Robert-Bourassa Blvd, Laval', hours:'Open daily · 11am–11pm', scan:'Scan • Play • Eat',
+                directions:'Get directions', rewards_title:'Rewards to win', redeem_at:'Redeem only at this Bellepros Laval 440',
                 l_fries:'Fries', l_gravy:'Gravy', l_curds:'Cheese curds', l_poutine:'House poutine', l_rain:'Rain drop',
                 reward_unlocked:'Reward unlocked', coupon_title:'COUPON UNLOCKED!', coupon_congrats:'Nice! You reached {n} points.',
                 coupon_offer:'FREE DOUBLE CHEESE', coupon_offer_sub:'with any regular combo',
-                coupon_code_label:'Coupon code', coupon_scan:'Show this code at Bellepros · 5600 Robert-Bourassa Blvd, Laval.',
+                coupon_code_label:'Coupon code', coupon_scan:'Show this code at Bellepros Laval 440 · 5600 Robert-Bourassa Blvd, Laval.',
                 coupon_valid:'Today only • 1 per customer • This location only', coupon_continue:'Continue',
                 go_title:'GAME OVER', go_score:'Score', go_best:'Best', go_newbest:'New best!',
                 revive_title:'Save my streak!', revive_desc:'Watch a short ad to restore your 3 lives — your score stays intact.',
@@ -542,8 +545,8 @@
                 ad_label:'Advertisement', ad_reward_in:'Reward in', ad_combo:'THE CLASSIC POUTINE', ad_tag:'Fries • Cheese curds • Gravy', ad_cant_skip:'Ad cannot be skipped',
                 t_miss:'MISS!', t_soggy:'SOGGY!', t_perfect:'PERFECT!', t_revived:'+3 LIVES • Back in!', t_coupon_done:'Coupon claimed ✓',
                 share_score:'Share my score', share_coupon:'Share', link_copied:'Link copied!',
-                share_text_score:'I scored {n} in Poutine Drop 🍟 Beat me and win free food at Bellepros, 5600 Robert-Bourassa, Laval!',
-                share_text_coupon:'I won {offer} at Bellepros Laval 🎉 Play Poutine Drop and win yours!',
+                share_text_score:'I scored {n} in Poutine Drop 🍟 Beat me and win free food at Bellepros Laval 440, 5600 Robert-Bourassa!',
+                share_text_coupon:'I won {offer} at Bellepros Laval 440 🎉 Play Poutine Drop and win yours!',
                 streak_days:'Streak', daily_bonus:'+1 life today!', daily_bonus_toast:'Daily bonus: +1 life ❤',
                 staff_redeem:'Staff: mark redeemed', redeemed_stamp:'REDEEMED', already_redeemed:'Already redeemed ✓',
                 m2:'2x SPICY!', m3:'3x HOT!', m4:'4x FIRE!', m5:'5x BELLEPROS!'
@@ -884,7 +887,7 @@
             g.fillStyle='#fff'; g.font='900 22px Fredoka One, Outfit, sans-serif'; g.textAlign='center'; g.textBaseline='middle';
             g.fillText('BELLEPROS', DESIGN_W/2, plY+19);
             g.fillStyle='rgba(255,255,255,.9)'; g.font='800 9px Outfit, sans-serif';
-            g.fillText('• CANTINE QUÉBÉCOISE •', DESIGN_W/2, plY+37);
+            g.fillText('LAVAL 440 · 5600 ROBERT-BOURASSA', DESIGN_W/2, plY+37);
             fleur(g, plX+18, plY+plH/2, 9, 'rgba(255,255,255,.92)');
             fleur(g, plX+plW-18, plY+plH/2, 9, 'rgba(255,255,255,.92)');
             g.fillStyle='rgba(0,0,0,.25)'; g.fillRect(0,DESIGN_H-26,DESIGN_W,26);
@@ -1038,7 +1041,7 @@
         // ---- share (native share sheet → clipboard fallback) ----
         function shareText(text){
             const url = (typeof location!=='undefined' && location.href) ? location.href : '';
-            try { if (navigator.share){ navigator.share({ title:'Pluie de Poutine — Bellepros', text, url }).catch(()=>{}); return; } } catch(e){}
+            try { if (navigator.share){ navigator.share({ title:'Bellepros Laval 440 — Pluie de Poutine', text, url }).catch(()=>{}); return; } } catch(e){}
             try { if (navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText((text+' '+url).trim()).then(()=>showToast(t('link_copied'))).catch(()=>showToast(t('link_copied'))); return; } } catch(e){}
             showToast(t('link_copied'));
         }
@@ -1457,7 +1460,7 @@
         function applyLang(){
             document.documentElement.lang = lang;
             document.querySelectorAll('[data-i18n]').forEach(el=>{ const k=el.dataset.i18n; if (I18N[lang][k]!=null) el.textContent=I18N[lang][k]; });
-            $('title').innerHTML = t('title_html');
+            $('gameNameTxt').textContent = t('game_name');
             $('subtitle').textContent = t('subtitle');
             $('tagline').textContent = t('tagline');
             $('locText').textContent = t('loc');

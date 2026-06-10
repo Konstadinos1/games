@@ -496,9 +496,13 @@
             gravy:   { id:'gravy',   base:6,  size:38, premium:false, p:C.brown,  p2:C.brownDk },
             curds:   { id:'curds',   base:8,  size:40, premium:false, p:'#FFF3C9',p2:C.white  },
             poutine: { id:'poutine', base:15, size:52, premium:true,  p:C.gold,   p2:'#FFF3C9' },
-            rain:    { id:'rain',    base:0,  size:32, premium:false, p:C.blue,   p2:C.blueDk, hazard:true }
+            rain:    { id:'rain',    base:0,  size:32, premium:false, p:C.blue,   p2:C.blueDk, hazard:true },
+            magnet:  { id:'magnet',  base:0,  size:38, premium:false, powerup:'magnet', icon:'🧲', p:'#c4b5fd', p2:'#7c3aed' },
+            frenzy:  { id:'frenzy',  base:0,  size:38, premium:false, powerup:'frenzy', icon:'⚡', p:'#fdba74', p2:'#ea580c' },
+            life:    { id:'life',    base:0,  size:38, premium:false, powerup:'life',   icon:'❤️', p:'#fda4af', p2:'#e11d48' }
         };
         const GOOD_WEIGHTS = [['fries',34],['gravy',26],['curds',22],['poutine',10]];
+        const POWER_WEIGHTS = [['magnet',42],['frenzy',42],['life',16]];   // rare bonus drops
 
         // ---- Localization (FR Quebec slang / EN crisp QSR) --------------------------
         const I18N = {
@@ -520,6 +524,7 @@
                 revive_btn:'Regarder la pub', revive_used:'Sauvetage déjà utilisé', go_replay:'Rejouer',
                 ad_label:'Publicité', ad_reward_in:'Récompense dans', ad_combo:'LA POUTINE CLASSIQUE', ad_tag:'Frites • Fromage squic-squic • Sauce brune', ad_cant_skip:'Pub non sautable',
                 t_miss:'RATÉ!', t_soggy:'DÉTREMPÉ!', t_perfect:'PARFAIT!', t_revived:'+3 VIES • C\'est reparti!', t_coupon_done:'Coupon réclamé ✓',
+                pu_magnet:'AIMANT!', pu_frenzy:'FRÉNÉSIE 2×!', pu_life:'+1 VIE!',
                 share_score:'Partager mon score', share_coupon:'Partager', link_copied:'Lien copié!',
                 share_text_score:"J'ai fait {n} points à Pluie de Poutine 🍟 Bats-moi et gagne de la bouffe gratuite chez Bellepros Laval 440, 5600 Robert-Bourassa!",
                 share_text_coupon:"J'ai gagné {offer} chez Bellepros Laval 440 🎉 Joue à Pluie de Poutine et gagne la tienne!",
@@ -545,6 +550,7 @@
                 revive_btn:'Watch ad', revive_used:'Save already used', go_replay:'Play again',
                 ad_label:'Advertisement', ad_reward_in:'Reward in', ad_combo:'THE CLASSIC POUTINE', ad_tag:'Fries • Cheese curds • Gravy', ad_cant_skip:'Ad cannot be skipped',
                 t_miss:'MISS!', t_soggy:'SOGGY!', t_perfect:'PERFECT!', t_revived:'+3 LIVES • Back in!', t_coupon_done:'Coupon claimed ✓',
+                pu_magnet:'MAGNET!', pu_frenzy:'FRENZY 2×!', pu_life:'+1 LIFE!',
                 share_score:'Share my score', share_coupon:'Share', link_copied:'Link copied!',
                 share_text_score:'I scored {n} in Poutine Drop 🍟 Beat me and win free food at Bellepros Laval 440, 5600 Robert-Bourassa!',
                 share_text_coupon:'I won {offer} at Bellepros Laval 440 🎉 Play Poutine Drop and win yours!',
@@ -1040,6 +1046,7 @@
             items:[], spawnT:0, elapsed:0,
             tray:{ x:DESIGN_W/2, target:DESIGN_W/2, w:118 },
             shake:0, flash:0, grace:0, traySquash:0,
+            fx:{ magnet:0, frenzy:0 },   // active power-up timers (seconds remaining)
             rewardsClaimed:0, couponTier:null, usedRevive:false, couponCode:'',
             ad:{ remaining:0, angle:0, lastTick:0 }
         };
@@ -1077,6 +1084,11 @@
         }
         function pickType(){
             const d = difficulty();
+            // rare power-up drop (not in the first 10s, so the basics land first)
+            if (game.elapsed>10 && Math.random() < 0.045){
+                let pt=0; POWER_WEIGHTS.forEach(w=>pt+=w[1]); let pr=Math.random()*pt;
+                for (const w of POWER_WEIGHTS){ if ((pr-=w[1])<=0) return w[0]; }
+            }
             if (Math.random() < d.hazard) return 'rain';
             let total=0; GOOD_WEIGHTS.forEach(w=>total+=w[1]);
             let r=Math.random()*total;
@@ -1100,7 +1112,8 @@
 
         function onCatchGood(it){
             game.combo++; const prevMult=game.mult; setMult();
-            const pts = it.def.base * game.mult;
+            const frenzy = game.fx.frenzy>0;
+            const pts = it.def.base * game.mult * (frenzy?2:1);
             game.score += pts;
             Audio.play(it.def.premium ? 'premium' : 'catch');
             // particles + impact ring + tray bounce
@@ -1109,7 +1122,7 @@
             if (it.def.p2) burst(it.x, CATCH_Y, it.def.p2, it.def.premium?14:8, {shape, size:3});
             ring(it.x, CATCH_Y, it.def.premium?'rgba(255,214,80,.95)':'rgba(255,255,255,.85)', it.def.premium?64:44, it.def.premium?4:3);
             game.traySquash = 1;
-            floatText(it.x, CATCH_Y-18, '+'+pts, it.def.premium?C.gold:'#fff', it.def.premium?26:20);
+            floatText(it.x, CATCH_Y-18, '+'+pts, (it.def.premium||frenzy)?C.gold:'#fff', it.def.premium?26:20);
             if (it.def.premium) floatText(it.x, CATCH_Y-42, t('t_perfect'), C.gold, 20);
             if (game.mult>prevMult){
                 const lbl = game.mult>=5?t('m5'): game.mult>=4?t('m4'): game.mult>=3?t('m3'): t('m2');
@@ -1132,10 +1145,33 @@
         function onMissGood(){
             if (game.combo>0){ game.combo=0; setMult(); Audio.play('miss'); updateHud(); }
         }
+        function onCatchPower(it){
+            Audio.play('reward'); vibrate([30,30,70]);
+            game.traySquash=1;
+            burst(it.x, CATCH_Y, it.def.p, 30, {shape:'spark', size:4, maxSpeed:320});
+            ring(it.x, CATCH_Y, 'rgba(255,255,255,.92)', 64, 4);
+            const p = it.def.powerup;
+            if (p==='magnet'){ game.fx.magnet = 5.5; floatText(it.x, CATCH_Y-20, t('pu_magnet'), '#c4b5fd', 24); }
+            else if (p==='frenzy'){ game.fx.frenzy = 6.0; floatText(it.x, CATCH_Y-20, t('pu_frenzy'), '#fdba74', 24); }
+            else if (p==='life'){
+                if (game.lives < game.maxLives){ game.lives++; floatText(it.x, CATCH_Y-20, t('pu_life'), '#fda4af', 24); }
+                else { game.score += 50; floatText(it.x, CATCH_Y-20, '+50', C.gold, 24); }
+            }
+            updateHud();
+        }
+        function onCatchHazardSafe(it){   // rain caught during Frenzy — harmless splash + small points
+            game.score += 5; game.traySquash=1;
+            Audio.play('catch');
+            burst(it.x, CATCH_Y, C.blue, 16, {shape:'drop', size:3, maxSpeed:200});
+            floatText(it.x, CATCH_Y-18, '+5', '#bae6fd', 18);
+            updateHud();
+        }
 
         function updatePlay(dt){
             game.elapsed += dt;
             if (game.grace>0) game.grace -= dt;
+            if (game.fx.magnet>0) game.fx.magnet = Math.max(0, game.fx.magnet - dt);
+            if (game.fx.frenzy>0) game.fx.frenzy = Math.max(0, game.fx.frenzy - dt);
             if (game.traySquash>0) game.traySquash = Math.max(0, game.traySquash - dt*4.5);
             // spawn
             game.spawnT -= dt;
@@ -1147,13 +1183,18 @@
             for (let i=game.items.length-1;i>=0;i--){ const it=game.items[i];
                 it.y += it.vy*dt; it.rot += it.vr*dt; it.wob += dt*3;
                 it.x += Math.sin(it.wob)*it.def.size*0.16*dt; // gentle drift
+                // Magnet: good items curve toward the tray once they drop low enough
+                if (game.fx.magnet>0 && !it.def.hazard && it.y>180){
+                    it.x += (game.tray.x - it.x) * Math.min(1, dt*3.2);
+                }
                 if (!it.caught && it.y>=CATCH_Y && it.y<MISS_Y && Math.abs(it.x-game.tray.x) <= game.tray.w/2 + it.size*0.18){
                     it.caught=true; game.items.splice(i,1);
-                    if (it.def.hazard){ if (game.grace<=0) onCatchHazard(it); }
+                    if (it.def.powerup) onCatchPower(it);
+                    else if (it.def.hazard){ if (game.fx.frenzy>0) onCatchHazardSafe(it); else if (game.grace<=0) onCatchHazard(it); }
                     else onCatchGood(it);
                     continue;
                 }
-                if (it.y > MISS_Y+20){ game.items.splice(i,1); if (!it.def.hazard) onMissGood(); }
+                if (it.y > MISS_Y+20){ game.items.splice(i,1); if (!it.def.hazard && !it.def.powerup) onMissGood(); }
             }
         }
 
@@ -1188,8 +1229,22 @@
             ctx.restore();
         }
 
+        function drawPowerup(it){
+            const s=it.size, pulse=1+Math.sin(it.wob*2.4)*0.07;
+            ctx.save(); ctx.scale(pulse,pulse);
+            ctx.shadowColor=it.def.p; ctx.shadowBlur=22;
+            const g=ctx.createRadialGradient(-s*0.12,-s*0.12,2, 0,0,s*0.6);
+            g.addColorStop(0,'#ffffff'); g.addColorStop(0.45,it.def.p); g.addColorStop(1,it.def.p2);
+            ctx.fillStyle=g; ctx.beginPath(); ctx.arc(0,0,s*0.5,0,Math.PI*2); ctx.fill();
+            ctx.shadowBlur=0; ctx.lineWidth=2.5; ctx.strokeStyle='rgba(255,255,255,.95)'; ctx.stroke();
+            ctx.restore();
+            ctx.font=`${Math.round(s*0.56)}px "Apple Color Emoji","Segoe UI Emoji",sans-serif`;
+            ctx.textAlign='center'; ctx.textBaseline='middle';
+            ctx.fillText(it.def.icon, 0, 1);
+        }
         function drawItem(it){
             ctx.save(); ctx.translate(it.x, it.y);
+            if (it.def.powerup){ drawPowerup(it); ctx.restore(); return; }
             // premium poutine: glowing comet trail (world-aligned, before rotation)
             if (it.def.premium){
                 ctx.save();
@@ -1238,6 +1293,27 @@
         //  RENDER
         // ============================================================================
         let timeSec=0;
+        function drawFx(){   // active power-up badges + countdown bars (screen space)
+            const a=[];
+            if (game.fx.magnet>0) a.push({icon:'🧲', t:game.fx.magnet, max:5.5, c:'#a78bfa'});
+            if (game.fx.frenzy>0) a.push({icon:'⚡', t:game.fx.frenzy, max:6.0, c:'#fb923c'});
+            if (!a.length) return;
+            const pw=108, ph=21, gap=6; let y=92;
+            a.forEach(f=>{
+                const lx=DESIGN_W/2-pw/2;
+                ctx.save();
+                ctx.fillStyle='rgba(9,9,11,.62)'; roundRect(ctx, lx, y, pw, ph, 10); ctx.fill();
+                ctx.strokeStyle=f.c; ctx.lineWidth=1.5; roundRect(ctx, lx, y, pw, ph, 10); ctx.stroke();
+                const frac=Math.max(0,Math.min(1,f.t/f.max));
+                ctx.fillStyle=f.c; roundRect(ctx, lx+4, y+ph-5, (pw-8)*frac, 3, 2); ctx.fill();
+                ctx.font='13px "Apple Color Emoji","Segoe UI Emoji",sans-serif'; ctx.textAlign='left'; ctx.textBaseline='middle';
+                ctx.fillText(f.icon, lx+8, y+ph/2-1);
+                ctx.fillStyle='#fff'; ctx.font='800 11px Outfit, sans-serif';
+                ctx.fillText(Math.ceil(f.t)+'s', lx+30, y+ph/2-1);
+                ctx.restore();
+                y += ph+gap;
+            });
+        }
         function render(dt){
             timeSec += dt;
             ctx.clearRect(0,0,DESIGN_W,DESIGN_H);
@@ -1258,6 +1334,7 @@
             drawConfetti();
             ctx.restore();
 
+            if (game.state==='playing') drawFx();
             // damage flash (full-screen, not shaken)
             if (game.flash>0){ ctx.fillStyle=`rgba(239,68,68,${game.flash*0.45})`; ctx.fillRect(0,0,DESIGN_W,DESIGN_H); }
             // combo "heat" vignette — warms the edges as the streak climbs
@@ -1377,6 +1454,7 @@
             game.items=[]; game.spawnT=0.4; game.elapsed=0;
             game.tray.x=game.tray.target=DESIGN_W/2;
             game.shake=0; game.flash=0; game.grace=0.6;
+            game.fx={ magnet:0, frenzy:0 };
             game.rewardsClaimed=0; game.couponTier=null; game.usedRevive=false; game.couponCode='';
             particles=[]; floaters=[]; confetti=[];
             game.state='playing';
@@ -1429,7 +1507,7 @@
         }
         function finishRevive(){
             game.lives=game.maxLives; game.items=[]; game.combo=0; game.mult=1;
-            game.shake=0; game.flash=0; game.grace=1.2;
+            game.shake=0; game.flash=0; game.grace=1.2; game.fx={ magnet:0, frenzy:0 };
             game.state='playing'; lastT=performance.now();
             buildHearts(); updateHud(); hideAllScreens(); setHudVisible(true);
             Audio.play('reward'); confettiBurst();

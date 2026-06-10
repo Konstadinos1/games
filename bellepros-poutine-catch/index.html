@@ -263,7 +263,7 @@
                                 <div class="mt-5 w-full max-w-[330px] rounded-2xl p-3 backdrop-blur-md"
                                      style="background:rgba(24,24,27,.6); box-shadow:0 0 0 1px rgba(255,255,255,.08);">
                                     <p id="tagline" class="text-center text-[13px] text-zinc-300 leading-snug mb-3">Attrape, évite la pluie et gagne de la VRAIE bouffe gratuite à échanger en magasin!</p>
-                                    <div id="legend" class="grid grid-cols-5 gap-1.5"></div>
+                                    <div id="legend" style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px;"></div>
                                     <div class="my-2" style="border-top:1px dashed rgba(255,255,255,.14)"></div>
                                     <p class="text-center text-[10px] font-bold uppercase tracking-widest text-amber-300/80 mb-1.5"><i class="fa-solid fa-trophy mr-1"></i><span data-i18n="rewards_title">Récompenses à gagner</span></p>
                                     <div id="rewardsRow" class="grid grid-cols-3 gap-1.5"></div>
@@ -495,13 +495,15 @@
             fries:   { id:'fries',   base:5,  size:42, premium:false, p:C.yellow, p2:C.amber },
             gravy:   { id:'gravy',   base:6,  size:38, premium:false, p:C.brown,  p2:C.brownDk },
             curds:   { id:'curds',   base:8,  size:40, premium:false, p:'#FFF3C9',p2:C.white  },
+            hotdog:  { id:'hotdog',  base:7,  size:46, premium:false, p:'#E3AD5E', p2:'#A23B2C' },
+            burger:  { id:'burger',  base:9,  size:48, premium:false, p:'#E2A75A', p2:'#86BE52' },
             poutine: { id:'poutine', base:15, size:52, premium:true,  p:C.gold,   p2:'#FFF3C9' },
             rain:    { id:'rain',    base:0,  size:32, premium:false, p:C.blue,   p2:C.blueDk, hazard:true },
             magnet:  { id:'magnet',  base:0,  size:38, premium:false, powerup:'magnet', icon:'🧲', p:'#c4b5fd', p2:'#7c3aed' },
             frenzy:  { id:'frenzy',  base:0,  size:38, premium:false, powerup:'frenzy', icon:'⚡', p:'#fdba74', p2:'#ea580c' },
             life:    { id:'life',    base:0,  size:38, premium:false, powerup:'life',   icon:'❤️', p:'#fda4af', p2:'#e11d48' }
         };
-        const GOOD_WEIGHTS = [['fries',34],['gravy',26],['curds',22],['poutine',10]];
+        const GOOD_WEIGHTS = [['fries',28],['gravy',20],['curds',18],['hotdog',14],['burger',12],['poutine',8]];
         const POWER_WEIGHTS = [['magnet',42],['frenzy',42],['life',16]];   // rare bonus drops
 
         // ---- Localization (FR Quebec slang / EN crisp QSR) --------------------------
@@ -514,7 +516,8 @@
                 hud_score:'Pointage',
                 loc:'Bellepros Laval 440 • 5600 Robert-Bourassa, Laval', hours:'Ouvert tous les jours · 11h–23h', scan:'Scanne • Joue • Mange',
                 directions:"M'y rendre", rewards_title:'Récompenses à gagner', redeem_at:'Échangeable seulement à ce Bellepros Laval 440',
-                l_fries:'Frites', l_gravy:'Sauce brune', l_curds:'Fromage squic-squic', l_poutine:'Poutine maison', l_rain:'Goutte de pluie',
+                l_fries:'Frites', l_gravy:'Sauce brune', l_curds:'Fromage squic-squic', l_hotdog:'Hot-dog', l_burger:'Hambourgeois', l_poutine:'Poutine maison', l_rain:'Goutte de pluie',
+                rush_banner:'HEURE DE POINTE • ×1.5',
                 reward_unlocked:'Récompense débloquée', coupon_title:'COUPON DÉBLOQUÉ!', coupon_congrats:'Bravo! Tu as atteint {n} points.',
                 coupon_offer:'DOUBLE FROMAGE GRATUIT', coupon_offer_sub:"à l'achat d'un combo régulier",
                 coupon_code_label:'Code coupon', coupon_scan:'Présente ce code au Bellepros Laval 440 · 5600 Robert-Bourassa, Laval.',
@@ -540,7 +543,8 @@
                 hud_score:'Score',
                 loc:'Bellepros Laval 440 • 5600 Robert-Bourassa Blvd, Laval', hours:'Open daily · 11am–11pm', scan:'Scan • Play • Eat',
                 directions:'Get directions', rewards_title:'Rewards to win', redeem_at:'Redeem only at this Bellepros Laval 440',
-                l_fries:'Fries', l_gravy:'Gravy', l_curds:'Cheese curds', l_poutine:'House poutine', l_rain:'Rain drop',
+                l_fries:'Fries', l_gravy:'Gravy', l_curds:'Cheese curds', l_hotdog:'Hot dog', l_burger:'Burger', l_poutine:'House poutine', l_rain:'Rain drop',
+                rush_banner:'RUSH HOUR • ×1.5',
                 reward_unlocked:'Reward unlocked', coupon_title:'COUPON UNLOCKED!', coupon_congrats:'Nice! You reached {n} points.',
                 coupon_offer:'FREE DOUBLE CHEESE', coupon_offer_sub:'with any regular combo',
                 coupon_code_label:'Coupon code', coupon_scan:'Show this code at Bellepros Laval 440 · 5600 Robert-Bourassa Blvd, Laval.',
@@ -758,6 +762,45 @@
                 g.strokeStyle='rgba(255,255,255,.5)'; g.lineWidth=1.2; g.stroke();
                 g.fillStyle='rgba(255,255,255,.78)'; g.beginPath(); g.ellipse(-s*0.13,s*0.1,s*0.09,s*0.16,0,0,Math.PI*2); g.fill();
                 g.fillStyle='rgba(255,255,255,.4)'; g.beginPath(); g.arc(s*0.1,-s*0.06,s*0.05,0,Math.PI*2); g.fill();
+                g.restore();
+            },
+            hotdog(g,x,y,s){
+                g.save(); g.translate(x,y);
+                const w=s*0.98, h=s*0.52;
+                g.fillStyle='rgba(0,0,0,.15)'; g.beginPath(); g.ellipse(0,h*0.72,w*0.46,h*0.16,0,0,Math.PI*2); g.fill();
+                // bun
+                const bg=g.createLinearGradient(0,-h*0.5,0,h*0.5); bg.addColorStop(0,'#F4CD86'); bg.addColorStop(0.55,'#E3AD5E'); bg.addColorStop(1,'#C2853A');
+                g.fillStyle=bg; roundRect(g,-w*0.5,-h*0.5,w,h,h*0.5); g.fill();
+                g.fillStyle='rgba(255,255,255,.28)'; roundRect(g,-w*0.45,-h*0.44,w*0.9,h*0.14,h*0.07); g.fill();
+                // sausage
+                const sg=g.createLinearGradient(0,-h*0.34,0,h*0.34); sg.addColorStop(0,'#CC604D'); sg.addColorStop(0.5,'#A23B2C'); sg.addColorStop(1,'#7C281D');
+                g.fillStyle=sg; roundRect(g,-w*0.45,-h*0.32,w*0.9,h*0.64,h*0.32); g.fill();
+                g.fillStyle='rgba(255,190,160,.32)'; roundRect(g,-w*0.38,-h*0.26,w*0.74,h*0.12,h*0.06); g.fill();
+                // mustard zigzag
+                g.strokeStyle='#FFD21E'; g.lineWidth=Math.max(2,s*0.055); g.lineCap='round'; g.lineJoin='round';
+                g.beginPath(); const zN=6; for(let i=0;i<=zN;i++){ const zx=-w*0.36+(w*0.72)*(i/zN), zy=(i%2?h*0.13:-h*0.11); i?g.lineTo(zx,zy):g.moveTo(zx,zy);} g.stroke();
+                g.restore();
+            },
+            burger(g,x,y,s){
+                g.save(); g.translate(x,y);
+                const w=s*0.92;
+                g.fillStyle='rgba(0,0,0,.16)'; g.beginPath(); g.ellipse(0,s*0.44,w*0.48,s*0.12,0,0,Math.PI*2); g.fill();
+                // bottom bun
+                const bb=g.createLinearGradient(0,s*0.12,0,s*0.42); bb.addColorStop(0,'#E2A75A'); bb.addColorStop(1,'#BE8038');
+                g.fillStyle=bb; roundRect(g,-w*0.46,s*0.18,w*0.92,s*0.2,s*0.09); g.fill();
+                // patty
+                g.fillStyle='#5A3318'; roundRect(g,-w*0.5,s*0.07,w,s*0.16,s*0.07); g.fill();
+                g.fillStyle='rgba(0,0,0,.22)'; roundRect(g,-w*0.5,s*0.17,w,s*0.05,s*0.02); g.fill();
+                // cheese drip
+                g.fillStyle='#FFC23A'; g.beginPath(); g.moveTo(-w*0.5,s*0.05); g.lineTo(w*0.5,s*0.05); g.lineTo(w*0.4,s*0.16); g.lineTo(w*0.18,s*0.07); g.lineTo(0,s*0.17); g.lineTo(-w*0.2,s*0.07); g.lineTo(-w*0.4,s*0.16); g.closePath(); g.fill();
+                // lettuce frill
+                g.fillStyle='#86BE52'; g.beginPath(); g.moveTo(-w*0.5,s*0.06); const lN=8; for(let i=0;i<=lN;i++){ const lx=-w*0.5+w*(i/lN), ly=(i%2?s*0.04:-s*0.03); g.lineTo(lx,ly);} g.lineTo(w*0.5,s*0.06); g.closePath(); g.fill();
+                // top bun dome
+                const tb=g.createLinearGradient(0,-s*0.42,0,s*0.04); tb.addColorStop(0,'#F2C074'); tb.addColorStop(1,'#D89A4A');
+                g.fillStyle=tb; g.beginPath(); g.moveTo(-w*0.48,s*0.02); g.quadraticCurveTo(-w*0.46,-s*0.42,0,-s*0.42); g.quadraticCurveTo(w*0.46,-s*0.42,w*0.48,s*0.02); g.closePath(); g.fill();
+                g.fillStyle='rgba(255,255,255,.25)'; g.beginPath(); g.ellipse(-w*0.15,-s*0.24,w*0.18,s*0.07,-0.4,0,Math.PI*2); g.fill();
+                // sesame seeds
+                g.fillStyle='#FBE7C2'; [[-.22,-.16],[-.02,-.26],[.18,-.16],[.06,-.06],[-.12,-.05],[.26,-.05]].forEach(p=>{ g.save(); g.translate(p[0]*w,p[1]*s*1.6); g.rotate(p[0]*1.4); g.beginPath(); g.ellipse(0,0,s*0.052,s*0.026,0,0,Math.PI*2); g.fill(); g.restore(); });
                 g.restore();
             },
             draw(id,g,x,y,s){ this[id](g,x,y,s); }
@@ -1047,6 +1090,7 @@
             tray:{ x:DESIGN_W/2, target:DESIGN_W/2, w:118 },
             shake:0, flash:0, grace:0, traySquash:0,
             fx:{ magnet:0, frenzy:0 },   // active power-up timers (seconds remaining)
+            rush:{ t:18, active:0 },      // Rush Hour: t=countdown to next, active=seconds remaining
             rewardsClaimed:0, couponTier:null, usedRevive:false, couponCode:'',
             ad:{ remaining:0, angle:0, lastTick:0 }
         };
@@ -1112,8 +1156,8 @@
 
         function onCatchGood(it){
             game.combo++; const prevMult=game.mult; setMult();
-            const frenzy = game.fx.frenzy>0;
-            const pts = it.def.base * game.mult * (frenzy?2:1);
+            const frenzy = game.fx.frenzy>0, rush = game.rush.active>0;
+            const pts = Math.round(it.def.base * game.mult * (frenzy?2:1) * (rush?1.5:1));
             game.score += pts;
             Audio.play(it.def.premium ? 'premium' : 'catch');
             // particles + impact ring + tray bounce
@@ -1122,7 +1166,7 @@
             if (it.def.p2) burst(it.x, CATCH_Y, it.def.p2, it.def.premium?14:8, {shape, size:3});
             ring(it.x, CATCH_Y, it.def.premium?'rgba(255,214,80,.95)':'rgba(255,255,255,.85)', it.def.premium?64:44, it.def.premium?4:3);
             game.traySquash = 1;
-            floatText(it.x, CATCH_Y-18, '+'+pts, (it.def.premium||frenzy)?C.gold:'#fff', it.def.premium?26:20);
+            floatText(it.x, CATCH_Y-18, '+'+pts, (it.def.premium||frenzy||rush)?C.gold:'#fff', it.def.premium?26:20);
             if (it.def.premium) floatText(it.x, CATCH_Y-42, t('t_perfect'), C.gold, 20);
             if (game.mult>prevMult){
                 const lbl = game.mult>=5?t('m5'): game.mult>=4?t('m4'): game.mult>=3?t('m3'): t('m2');
@@ -1166,6 +1210,9 @@
             floatText(it.x, CATCH_Y-18, '+5', '#bae6fd', 18);
             updateHud();
         }
+        function startRush(){   // Rush Hour begins — sting + haptic; banner is drawn while active
+            Audio.play('reward'); Audio.play('tick'); vibrate([40,30,40,30,90]);
+        }
 
         function updatePlay(dt){
             game.elapsed += dt;
@@ -1173,9 +1220,17 @@
             if (game.fx.magnet>0) game.fx.magnet = Math.max(0, game.fx.magnet - dt);
             if (game.fx.frenzy>0) game.fx.frenzy = Math.max(0, game.fx.frenzy - dt);
             if (game.traySquash>0) game.traySquash = Math.max(0, game.traySquash - dt*4.5);
-            // spawn
+            // Rush Hour event loop — periodic bursts of food + bonus points
+            if (game.rush.active>0){
+                game.rush.active = Math.max(0, game.rush.active - dt);
+                if (game.rush.active===0) game.rush.t = 20 + Math.random()*8;   // schedule the next one
+            } else {
+                game.rush.t -= dt;
+                if (game.rush.t<=0){ game.rush.active = 5.0; startRush(); }
+            }
+            // spawn (rate spikes during Rush Hour)
             game.spawnT -= dt;
-            if (game.spawnT<=0){ spawnItem(); game.spawnT = difficulty().spawn * (0.8+Math.random()*0.5); }
+            if (game.spawnT<=0){ spawnItem(); game.spawnT = difficulty().spawn * (game.rush.active>0?0.5:1) * (0.8+Math.random()*0.5); }
             // tray follows target
             game.tray.x += (game.tray.target - game.tray.x) * Math.min(1, dt*20);
             game.tray.x = clamp(game.tray.x, game.tray.w/2+6, DESIGN_W-game.tray.w/2-6);
@@ -1314,6 +1369,20 @@
                 y += ph+gap;
             });
         }
+        function drawRush(){   // Rush Hour banner (screen space, fades in/out)
+            const a=game.rush.active; if (a<=0) return;
+            const w=DESIGN_W, yb=146, hb=34, pulse=0.88+0.12*Math.sin(timeSec*10);
+            ctx.save();
+            ctx.globalAlpha = Math.min(1, Math.min(a, 5-a)*3);
+            const g=ctx.createLinearGradient(0,yb,0,yb+hb); g.addColorStop(0,'#F2541B'); g.addColorStop(1,'#C01E1E');
+            ctx.fillStyle=g; ctx.fillRect(0,yb,w,hb);
+            ctx.fillStyle='rgba(255,255,255,.18)'; ctx.fillRect(0,yb,w,3);
+            ctx.fillStyle='rgba(0,0,0,.18)'; ctx.fillRect(0,yb+hb-3,w,3);
+            ctx.shadowColor='rgba(0,0,0,.4)'; ctx.shadowBlur=4;
+            ctx.fillStyle='#FFF3C9'; ctx.font=`900 ${Math.round(19*pulse)}px Fredoka One, Outfit, sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+            ctx.fillText(t('rush_banner'), w/2, yb+hb/2+1);
+            ctx.restore();
+        }
         function render(dt){
             timeSec += dt;
             ctx.clearRect(0,0,DESIGN_W,DESIGN_H);
@@ -1334,7 +1403,7 @@
             drawConfetti();
             ctx.restore();
 
-            if (game.state==='playing') drawFx();
+            if (game.state==='playing'){ drawFx(); drawRush(); }
             // damage flash (full-screen, not shaken)
             if (game.flash>0){ ctx.fillStyle=`rgba(239,68,68,${game.flash*0.45})`; ctx.fillRect(0,0,DESIGN_W,DESIGN_H); }
             // combo "heat" vignette — warms the edges as the streak climbs
@@ -1454,7 +1523,7 @@
             game.items=[]; game.spawnT=0.4; game.elapsed=0;
             game.tray.x=game.tray.target=DESIGN_W/2;
             game.shake=0; game.flash=0; game.grace=0.6;
-            game.fx={ magnet:0, frenzy:0 };
+            game.fx={ magnet:0, frenzy:0 }; game.rush={ t:18, active:0 };
             game.rewardsClaimed=0; game.couponTier=null; game.usedRevive=false; game.couponCode='';
             particles=[]; floaters=[]; confetti=[];
             game.state='playing';
@@ -1507,7 +1576,7 @@
         }
         function finishRevive(){
             game.lives=game.maxLives; game.items=[]; game.combo=0; game.mult=1;
-            game.shake=0; game.flash=0; game.grace=1.2; game.fx={ magnet:0, frenzy:0 };
+            game.shake=0; game.flash=0; game.grace=1.2; game.fx={ magnet:0, frenzy:0 }; game.rush={ t:18, active:0 };
             game.state='playing'; lastT=performance.now();
             buildHearts(); updateHud(); hideAllScreens(); setHudVisible(true);
             Audio.play('reward'); confettiBurst();
@@ -1591,7 +1660,7 @@
 
         function buildLegend(){
             const box=$('legend'); box.innerHTML='';
-            const items=[['fries','l_fries'],['gravy','l_gravy'],['curds','l_curds'],['poutine','l_poutine'],['rain','l_rain']];
+            const items=[['fries','l_fries'],['gravy','l_gravy'],['curds','l_curds'],['hotdog','l_hotdog'],['burger','l_burger'],['poutine','l_poutine'],['rain','l_rain']];
             items.forEach(([id,key])=>{
                 const cell=document.createElement('div'); cell.className='flex flex-col items-center gap-1';
                 const cv=document.createElement('canvas'); cv.width=88; cv.height=88; cv.style.width='44px'; cv.style.height='44px';

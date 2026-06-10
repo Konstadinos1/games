@@ -1,0 +1,69 @@
+/* Bellepro's Poutine Catch — English. Ported from the web I18N dict.
+   {n} / {offer} are runtime tokens substituted via L10n.format(_:_:). */
+
+/* --- menu / shell --- */
+"play"            = "PLAY";
+"best"            = "Best";
+"menu"            = "Menu";
+"restart"         = "Restart";
+"resume"          = "Resume";
+"pause_title"     = "PAUSED";
+"lang_btn"        = "FR";
+"hud_score"       = "SCORE";
+
+/* --- branding --- */
+"game_name"       = "Poutine Drop";
+"subtitle"        = "Diner • Poutine • Québec tradition";
+"tagline"         = "Catch, dodge the rain, and win REAL free food to redeem in-store!";
+"loc"             = "Bellepros Laval 440 • 5600 Robert-Bourassa Blvd, Laval";
+"hours"           = "Open daily · 11am–11pm";
+"scan"            = "Scan • Play • Eat";
+"directions"      = "Get directions";
+
+/* --- rewards / coupon --- */
+"rewards_title"   = "Rewards to win";
+"redeem_at"       = "Redeem only at this Bellepros Laval 440";
+"reward_unlocked" = "Reward unlocked";
+"coupon_title"    = "COUPON UNLOCKED!";
+"coupon_congrats" = "Nice! You reached {n} points.";
+"coupon_code_label" = "Coupon code";
+"coupon_scan"     = "Show this code at Bellepros Laval 440 · 5600 Robert-Bourassa Blvd, Laval.";
+"coupon_valid"    = "Valid 7 days • Limit 1 per customer";
+"coupon_continue" = "Continue";
+"staff_redeem"    = "Staff: mark redeemed";
+"redeemed_stamp"  = "REDEEMED";
+"already_redeemed" = "Already redeemed ✓";
+
+/* --- game over / revive --- */
+"go_title"        = "GAME OVER";
+"go_score"        = "Score";
+"go_best"         = "Best";
+"go_newbest"      = "New best!";
+"go_replay"       = "Replay";
+"revive_title"    = "Save my streak!";
+"revive_desc"     = "Watch a short ad to restore your 3 lives — your score stays intact.";
+"revive_btn"      = "Watch the ad";
+"revive_used"     = "Revive already used";
+
+/* --- share --- */
+"share_score"     = "Share my score";
+"share_coupon"    = "Share";
+"link_copied"     = "Link copied!";
+"share_text_score"  = "I scored {n} in Poutine Drop 🍟 Beat me and win free food at Bellepros Laval 440, 5600 Robert-Bourassa!";
+"share_text_coupon" = "I won {offer} at Bellepros Laval 440 🎉 Play Poutine Drop and win yours!";
+
+/* --- daily streak --- */
+"streak_days"        = "Streak";
+"daily_bonus"        = "+1 life today!";
+"daily_bonus_toast"  = "Daily bonus: +1 life ❤";
+
+/* --- in-play toasts / multipliers --- */
+"t_miss"          = "MISS!";
+"t_soggy"         = "SOGGY!";
+"t_perfect"       = "PERFECT!";
+"t_revived"       = "+3 LIVES • Back in!";
+"t_coupon_done"   = "Coupon claimed ✓";
+"m2"              = "2x SPICY!";
+"m3"              = "3x HOT!";
+"m4"              = "4x FIRE!";
+"m5"              = "5x BELLEPROS!";

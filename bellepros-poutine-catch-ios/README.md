@@ -55,7 +55,7 @@ self-contained set of types that everything else plugs into:
 | Step | Scope |
 |------|-------|
 | **1 ✅** | Foundation: project structure, `GameConfig`, models, `StorageService`, `GameViewModel` |
-| 2 | `AudioManager` + Haptics + `Localizable.strings` (fr/en) |
+| **2 ✅** | `AudioManager` (procedural SFX) + `Haptics` + `L10n` + `Localizable.strings` (fr/en) |
 | 3 | `GameScene` skeleton + `TrayNode` + touch input |
 | 4 | `Spawner` + `ItemNode` pool + difficulty ramp |
 | 5 | `CatchSystem`: catch/miss, scoring, combo, lives, grace |
@@ -64,4 +64,4 @@ self-contained set of types that everything else plugs into:
 | 8 | Coupon view + `QRGenerator` + `CouponService` (Supabase) + `ShareService` |
 | 9 | Polish: storefront backdrop, particles, screen shake, haptics, icon, launch screen |
 
-Say **“Build Step 2”** to continue.
+Say **“Build Step 3”** to continue.

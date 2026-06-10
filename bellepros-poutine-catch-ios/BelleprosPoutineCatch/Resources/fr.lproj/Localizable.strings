@@ -1,0 +1,69 @@
+/* Pluie de Poutine — Français. Porté du dictionnaire I18N web.
+   {n} / {offer} sont des jetons remplacés à l'exécution via L10n.format(_:_:). */
+
+/* --- menu / coquille --- */
+"play"            = "JOUER";
+"best"            = "Record";
+"menu"            = "Menu";
+"restart"         = "Recommencer";
+"resume"          = "Reprendre";
+"pause_title"     = "PAUSE";
+"lang_btn"        = "EN";
+"hud_score"       = "POINTAGE";
+
+/* --- image de marque --- */
+"game_name"       = "Pluie de Poutine";
+"subtitle"        = "Cantine • Poutine • Tradition québécoise";
+"tagline"         = "Attrape, évite la pluie et gagne de la VRAIE bouffe gratuite à échanger en magasin!";
+"loc"             = "Bellepros Laval 440 • 5600 Robert-Bourassa, Laval";
+"hours"           = "Ouvert tous les jours · 11h–23h";
+"scan"            = "Scanne • Joue • Mange";
+"directions"      = "M'y rendre";
+
+/* --- récompenses / coupon --- */
+"rewards_title"   = "Récompenses à gagner";
+"redeem_at"       = "Échangeable seulement à ce Bellepros Laval 440";
+"reward_unlocked" = "Récompense débloquée";
+"coupon_title"    = "COUPON DÉBLOQUÉ!";
+"coupon_congrats" = "Bravo! Tu as atteint {n} points.";
+"coupon_code_label" = "Code coupon";
+"coupon_scan"     = "Présente ce code au Bellepros Laval 440 · 5600 Robert-Bourassa, Laval.";
+"coupon_valid"    = "Valide 7 jours • Limite 1 par client";
+"coupon_continue" = "Continuer";
+"staff_redeem"    = "Personnel : marquer échangé";
+"redeemed_stamp"  = "ÉCHANGÉ";
+"already_redeemed" = "Déjà échangé ✓";
+
+/* --- partie terminée / sauvetage --- */
+"go_title"        = "PARTIE TERMINÉE";
+"go_score"        = "Pointage";
+"go_best"         = "Record";
+"go_newbest"      = "Nouveau record!";
+"go_replay"       = "Rejouer";
+"revive_title"    = "Sauve ta séquence!";
+"revive_desc"     = "Regarde une courte pub et récupère tes 3 vies — ton pointage reste intact.";
+"revive_btn"      = "Regarder la pub";
+"revive_used"     = "Sauvetage déjà utilisé";
+
+/* --- partage --- */
+"share_score"     = "Partager mon score";
+"share_coupon"    = "Partager";
+"link_copied"     = "Lien copié!";
+"share_text_score"  = "J'ai fait {n} points à Pluie de Poutine 🍟 Bats-moi et gagne de la bouffe gratuite chez Bellepros Laval 440, 5600 Robert-Bourassa!";
+"share_text_coupon" = "J'ai gagné {offer} chez Bellepros Laval 440 🎉 Joue à Pluie de Poutine et gagne la tienne!";
+
+/* --- série quotidienne --- */
+"streak_days"        = "Série";
+"daily_bonus"        = "+1 vie aujourd'hui!";
+"daily_bonus_toast"  = "Bonus quotidien : +1 vie ❤";
+
+/* --- messages en jeu / multiplicateurs --- */
+"t_miss"          = "RATÉ!";
+"t_soggy"         = "DÉTREMPÉ!";
+"t_perfect"       = "PARFAIT!";
+"t_revived"       = "+3 VIES • C'est reparti!";
+"t_coupon_done"   = "Coupon réclamé ✓";
+"m2"              = "2x ÉPICÉ!";
+"m3"              = "3x CHAUD!";
+"m4"              = "4x EN FEU!";
+"m5"              = "5x BELLEPROS!";

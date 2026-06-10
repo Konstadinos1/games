@@ -9,7 +9,8 @@ import Combine
 ///   through the `record*` hooks (wired in Steps 4–5).
 ///
 /// It is the only writer of `phase`, so there is no dual-source drift between
-/// the UIKit/SpriteKit world and SwiftUI.
+/// the UIKit/SpriteKit world and SwiftUI. It also owns the cross-cutting services
+/// (audio, localization) so transitions can fire SFX/haptics in one place.
 @MainActor
 final class GameViewModel: ObservableObject {
 
@@ -26,20 +27,27 @@ final class GameViewModel: ObservableObject {
     @Published private(set) var best = 0
     @Published private(set) var streak = 0
     @Published private(set) var dailyBonusActive = false
-    @Published var language: AppLanguage { didSet { store.language = language } }
-    @Published var isMuted: Bool { didSet { store.isMuted = isMuted } }
+    @Published var language: AppLanguage { didSet { l10n.setLanguage(language); store.language = language } }
+    @Published var isMuted: Bool { didSet { store.isMuted = isMuted; audio.isMuted = isMuted } }
 
     // MARK: Active coupon (valid while phase == .rewardUnlocked)
     @Published private(set) var activeCoupon: Coupon?
 
+    // MARK: Cross-cutting services
+    let l10n: L10n
+    private let audio = AudioManager.shared
     private let store: StorageService
 
     init(store: StorageService = .shared) {
         self.store = store
         self.best = store.best
-        self.language = store.language
+        let lang = store.language
+        self.language = lang
+        self.l10n = L10n(language: lang)
         self.isMuted = store.isMuted
+        self.audio.isMuted = store.isMuted
         self.streak = store.refreshStreak()
+        Haptics.prepare()
     }
 
     // MARK: - Top-level transitions
@@ -57,14 +65,15 @@ final class GameViewModel: ObservableObject {
         rewardsClaimed = 0
         activeCoupon = nil
         phase = .playing
+        audio.play(.click)
     }
 
-    func pause()  { if phase.isPlaying { phase = .paused } }
-    func resume() { if phase == .paused { phase = .playing } }
+    func pause()  { if phase.isPlaying { phase = .paused; audio.play(.click) } }
+    func resume() { if phase == .paused { phase = .playing; audio.play(.click) } }
     func togglePause() { phase.isPlaying ? pause() : resume() }
 
-    func goToMenu()        { phase = .mainMenu }
-    func showHighScores()  { phase = .highScores }
+    func goToMenu()        { phase = .mainMenu; audio.play(.click) }
+    func showHighScores()  { phase = .highScores; audio.play(.click) }
 
     // MARK: - Gameplay events (called by the scene's CatchSystem, Step 5)
 
@@ -75,6 +84,8 @@ final class GameViewModel: ObservableObject {
         multiplier = min(GameConfig.maxMultiplier, 1 + combo / GameConfig.comboPerMultiplier)
         let gained = item.points * multiplier
         score += gained
+        audio.play(.catchGood, combo: combo)
+        Haptics.tap()
         evaluateRewards()
         return gained
     }
@@ -82,11 +93,16 @@ final class GameViewModel: ObservableObject {
     /// A hazard (rain) was caught → break the combo and lose a life.
     func recordHazard() {
         resetCombo()
+        audio.play(.soggy)
+        Haptics.warning()
         loseLife()
     }
 
     /// A good item fell past the miss line → break the combo only.
-    func recordMiss() { resetCombo() }
+    func recordMiss() {
+        resetCombo()
+        audio.play(.miss)
+    }
 
     func loseLife() {
         lives = max(0, lives - 1)
@@ -94,6 +110,9 @@ final class GameViewModel: ObservableObject {
     }
 
     private func resetCombo() { combo = 0; multiplier = 1 }
+
+    /// Current multiplier banner key ("m2"…"m5"), or nil at 1x.
+    var multiplierKey: String? { multiplier >= 2 ? "m\(multiplier)" : nil }
 
     // MARK: - Rewards / coupon
 
@@ -104,11 +123,13 @@ final class GameViewModel: ObservableObject {
             rewardsClaimed += 1
             activeCoupon = Coupon.make(for: next)
             phase = .rewardUnlocked(tier: next)
+            audio.play(.reward)
+            Haptics.success()
         }
     }
 
     func continueAfterReward() {
-        if case .rewardUnlocked = phase { phase = .playing }
+        if case .rewardUnlocked = phase { phase = .playing; audio.play(.click) }
     }
 
     /// The next reward still to earn (drives the HUD progress bar), or nil if all claimed.
@@ -125,18 +146,21 @@ final class GameViewModel: ObservableObject {
             store.best = score
         }
         phase = .gameOver(score: score, isBest: isBest)
+        audio.play(.gameOver)
+        Haptics.thud()
     }
 
-    func beginAdRevive() { phase = .adRevive }
+    func beginAdRevive() { phase = .adRevive; audio.play(.whoosh) }
 
     /// Ad finished → restore lives and drop back into play.
     func grantRevive() {
         lives = maxLives
         resetCombo()
         phase = .playing
+        audio.play(.reward)
     }
 
     // MARK: - Settings
-    func toggleLanguage() { language = language.toggled }
-    func toggleMute()     { isMuted.toggle() }
+    func toggleLanguage() { language = language.toggled; audio.play(.click) }
+    func toggleMute()     { isMuted.toggle(); if !isMuted { audio.play(.click) } }
 }

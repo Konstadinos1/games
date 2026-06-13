@@ -285,6 +285,11 @@
                                     <span id="streakBonus" class="hidden rounded-full px-2 py-0.5 text-[10px] text-emerald-200" style="background:rgba(34,197,94,.2); box-shadow:0 0 0 1px rgba(34,197,94,.4)"><span data-i18n="daily_bonus">+1 vie aujourd'hui!</span></span>
                                 </div>
 
+                                <button id="btnLbMenu" class="lb-gated hidden btn mt-3 rounded-xl px-5 py-2 text-sm font-display text-amber-200 flex items-center gap-2"
+                                        style="background:rgba(245,158,11,.14); box-shadow:0 0 0 1px rgba(245,158,11,.35);">
+                                    <i class="fa-solid fa-ranking-star"></i><span data-i18n="lb_menu_btn">Classement</span>
+                                </button>
+
                                 <div class="flex-1"></div>
 
                                 <!-- storefront footer -->
@@ -396,7 +401,12 @@
                                 </div>
                                 <div id="reviveUsed" class="hidden text-xs text-zinc-500 mt-2"><i class="fa-solid fa-ban mr-1"></i><span data-i18n="revive_used">Sauvetage déjà utilisé</span></div>
 
-                                <button id="btnShareScore" class="btn w-full max-w-[320px] rounded-xl py-2.5 text-sm font-display text-white mt-3 flex items-center justify-center gap-2"
+                                <button id="btnLbGO" class="lb-gated hidden btn w-full max-w-[320px] rounded-xl py-2.5 text-sm font-display text-white mt-3 flex items-center justify-center gap-2"
+                                        style="background:linear-gradient(180deg,#F59E0B,#B45309); box-shadow:0 6px 18px rgba(245,158,11,.4);">
+                                    <i class="fa-solid fa-trophy"></i><span data-i18n="lb_go_btn">Soumettre au classement</span>
+                                </button>
+
+                                <button id="btnShareScore" class="btn w-full max-w-[320px] rounded-xl py-2.5 text-sm font-display text-white mt-2 flex items-center justify-center gap-2"
                                         style="background:linear-gradient(180deg,#3b82f6,#1d4ed8); box-shadow:0 6px 18px rgba(59,130,246,.4);">
                                     <i class="fa-solid fa-share"></i><span data-i18n="share_score">Partager mon score</span>
                                 </button>
@@ -409,6 +419,23 @@
                                         <i class="fa-solid fa-house mr-2"></i><span data-i18n="menu">Menu</span>
                                     </button>
                                 </div>
+                            </div>
+
+                            <!-- ===================== LEADERBOARD ===================== -->
+                            <div id="screen-leaderboard" class="overlay z-40 hidden" style="background:radial-gradient(100% 70% at 50% 18%, rgba(245,158,11,.18), rgba(9,9,11,.93) 70%); backdrop-filter:blur(5px);">
+                                <img src="assets/bellepros-logo.png" alt="Restaurant Bellepro's" style="width:104px;height:auto;margin-bottom:4px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5));" />
+                                <h2 class="neon-title text-3xl text-amber-400 mb-3"><i class="fa-solid fa-trophy mr-2"></i><span data-i18n="lb_title">Classement mondial</span></h2>
+                                <div id="lbSubmit" class="hidden w-full max-w-[330px] rounded-2xl p-3 mb-3 text-center" style="background:rgba(24,24,27,.7); box-shadow:0 0 0 1px rgba(245,158,11,.35);">
+                                    <div class="text-sm text-zinc-300 mb-2"><span data-i18n="lb_your_score">Ton score</span>: <span id="lbScoreVal" class="text-amber-300 font-display text-lg">0</span></div>
+                                    <div id="lbEntryRow" class="flex gap-2">
+                                        <input id="lbName" type="text" maxlength="12" autocomplete="off" spellcheck="false" placeholder="Ton nom"
+                                               class="flex-1 rounded-xl px-3 py-2 text-white text-base outline-none" style="background:rgba(0,0,0,.4); box-shadow:0 0 0 1px rgba(255,255,255,.16);" />
+                                        <button id="lbSubmitBtn" class="btn rounded-xl px-4 py-2 font-display text-white" style="background:linear-gradient(180deg,#22c55e,#15803d); box-shadow:0 6px 16px rgba(34,197,94,.4);"><span data-i18n="lb_submit">Soumettre</span></button>
+                                    </div>
+                                    <div id="lbMsg" class="text-xs mt-2 text-zinc-400" style="min-height:16px;"></div>
+                                </div>
+                                <div id="lbList" class="w-full max-w-[330px] rounded-2xl p-2 overflow-y-auto" style="max-height:46vh; background:rgba(24,24,27,.55); box-shadow:0 0 0 1px rgba(255,255,255,.08);"></div>
+                                <button id="lbClose" class="btn rounded-xl px-6 py-2.5 mt-4 text-zinc-200" style="background:rgba(255,255,255,.1); box-shadow:0 0 0 1px rgba(255,255,255,.15);"><i class="fa-solid fa-arrow-left mr-2"></i><span data-i18n="lb_back">Retour</span></button>
                             </div>
 
                             <!-- ===================== SIMULATED VIDEO AD ===================== -->
@@ -518,6 +545,11 @@
                 directions:"M'y rendre", rewards_title:'Récompenses à gagner', redeem_at:'Échangeable seulement à ce Bellepros Laval 440',
                 l_fries:'Frites', l_gravy:'Sauce brune', l_curds:'Fromage squic-squic', l_hotdog:'Hot-dog', l_burger:'Hambourgeois', l_poutine:'Poutine maison', l_rain:'Goutte de pluie',
                 rush_banner:'HEURE DE POINTE • ×1.5',
+                lb_title:'Classement mondial', lb_menu_btn:'Classement', lb_go_btn:'Soumettre au classement',
+                lb_your_score:'Ton score', lb_name_ph:'Ton nom', lb_submit:'Soumettre', lb_back:'Retour',
+                lb_loading:'Chargement…', lb_unavailable:'Classement hors ligne — réessaie plus tard',
+                lb_empty:'Sois le premier à marquer!', lb_you_are:'Tu es #{n} au monde! 🎉',
+                lb_need_name:'Entre ton nom', lb_submitting:'Envoi…', lb_error:"Échec de l'envoi — réessaie",
                 reward_unlocked:'Récompense débloquée', coupon_title:'COUPON DÉBLOQUÉ!', coupon_congrats:'Bravo! Tu as atteint {n} points.',
                 coupon_offer:'DOUBLE FROMAGE GRATUIT', coupon_offer_sub:"à l'achat d'un combo régulier",
                 coupon_code_label:'Code coupon', coupon_scan:'Présente ce code au Bellepros Laval 440 · 5600 Robert-Bourassa, Laval.',
@@ -545,6 +577,11 @@
                 directions:'Get directions', rewards_title:'Rewards to win', redeem_at:'Redeem only at this Bellepros Laval 440',
                 l_fries:'Fries', l_gravy:'Gravy', l_curds:'Cheese curds', l_hotdog:'Hot dog', l_burger:'Burger', l_poutine:'House poutine', l_rain:'Rain drop',
                 rush_banner:'RUSH HOUR • ×1.5',
+                lb_title:'World leaderboard', lb_menu_btn:'Leaderboard', lb_go_btn:'Submit to leaderboard',
+                lb_your_score:'Your score', lb_name_ph:'Your name', lb_submit:'Submit', lb_back:'Back',
+                lb_loading:'Loading…', lb_unavailable:'Leaderboard offline — try again later',
+                lb_empty:'Be the first to score!', lb_you_are:"You're #{n} in the world! 🎉",
+                lb_need_name:'Enter your name', lb_submitting:'Submitting…', lb_error:'Submit failed — try again',
                 reward_unlocked:'Reward unlocked', coupon_title:'COUPON UNLOCKED!', coupon_congrats:'Nice! You reached {n} points.',
                 coupon_offer:'FREE DOUBLE CHEESE', coupon_offer_sub:'with any regular combo',
                 coupon_code_label:'Coupon code', coupon_scan:'Show this code at Bellepros Laval 440 · 5600 Robert-Bourassa Blvd, Laval.',
@@ -571,7 +608,7 @@
         const canvas = $('game'), ctx = canvas.getContext('2d');
         const screens = {
             menu:$('screen-menu'), pause:$('screen-pause'), coupon:$('screen-coupon'),
-            gameover:$('screen-gameover'), ad:$('screen-ad')
+            gameover:$('screen-gameover'), leaderboard:$('screen-leaderboard'), ad:$('screen-ad')
         };
 
         // ============================================================================
@@ -1557,6 +1594,96 @@
         function toMenu(){ Audio.play('click'); game.state='menu'; game.items=[]; particles=[]; floaters=[]; confetti=[];
             $('menuBest').textContent=game.best; updateStreakUI(); showScreen('menu'); setHudVisible(false); }
 
+        // ============================================================================
+        //  GLOBAL LEADERBOARD — Supabase Edge Function (GET top 10 / POST signed submit)
+        //  Reads + writes both go through the function, so the client needs no anon key.
+        //  Submissions are HMAC-signed; degrade silently if the backend is unreachable.
+        // ============================================================================
+        const LB = {
+            base:'https://apiexzijdmvtrmrzxgcp.supabase.co/functions/v1/leaderboard',
+            anon:'__SUPABASE_ANON_KEY__',   // optional; only needed if the function gateway requires it
+            secret: atob('YnBfbHZsNDQwX3BjX3YxXzhLcTN3WjJ0UjduWDVtQjlwTDRjVjZ5RDFzSDBhSg=='),
+            _headers(extra){ const h=Object.assign({}, extra||{}); if(!this.anon.startsWith('__')){ h['apikey']=this.anon; h['Authorization']='Bearer '+this.anon; } return h; },
+            async _hmac(msg){
+                const enc=new TextEncoder();
+                const key=await crypto.subtle.importKey('raw', enc.encode(this.secret), {name:'HMAC',hash:'SHA-256'}, false, ['sign']);
+                const mac=await crypto.subtle.sign('HMAC', key, enc.encode(msg));
+                return [...new Uint8Array(mac)].map(b=>b.toString(16).padStart(2,'0')).join('');
+            },
+            async fetchTop(){
+                const r=await fetch(this.base,{method:'GET',headers:this._headers()});
+                if(!r.ok) throw new Error('http '+r.status);
+                const j=await r.json(); return Array.isArray(j.top)?j.top:[];
+            },
+            async submit(name, score){
+                const ts=Date.now(), nonce=Math.random().toString(36).slice(2,10);
+                const sig=await this._hmac(name+'|'+score+'|'+ts+'|'+nonce);
+                const r=await fetch(this.base,{method:'POST',headers:this._headers({'content-type':'application/json'}),body:JSON.stringify({name,score,ts,nonce,sig})});
+                const j=await r.json().catch(()=>({}));
+                if(!r.ok) throw new Error((j&&j.error)||('http '+r.status));
+                return j;
+            }
+        };
+        const _esc = s => String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        let _lbCtx = { score:0, fromGameover:false, myName:null };
+        function _lbInfo(msg){ return '<div class="text-center text-zinc-500 text-sm py-6">'+msg+'</div>'; }
+        function lbRenderList(rows, highlight){
+            const box=$('lbList');
+            if(!rows){ box.innerHTML=_lbInfo(t('lb_unavailable')); return; }
+            if(!rows.length){ box.innerHTML=_lbInfo(t('lb_empty')); return; }
+            const medal=['🥇','🥈','🥉'];
+            box.innerHTML = rows.map((r,i)=>{
+                const mine = highlight && r.name===highlight;
+                const rk = i<3?medal[i]:('#'+(i+1));
+                const bg = mine ? 'background:rgba(245,158,11,.22);box-shadow:0 0 0 1px rgba(245,158,11,.55)' : (i%2?'background:rgba(255,255,255,.03)':'');
+                return '<div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg" style="'+bg+'">'
+                    +'<span class="w-7 text-center font-display text-sm '+(i<3?'':'text-zinc-400')+'">'+rk+'</span>'
+                    +'<span class="flex-1 truncate text-sm '+(mine?'text-amber-200 font-bold':'text-zinc-100')+'">'+_esc(r.name)+'</span>'
+                    +'<span class="font-display text-amber-300 text-sm">'+Number(r.score)+'</span></div>';
+            }).join('');
+        }
+        async function lbLoad(highlight){
+            $('lbList').innerHTML=_lbInfo(t('lb_loading'));
+            try{ lbRenderList(await LB.fetchTop(), highlight); }
+            catch(e){ lbRenderList(null); }
+        }
+        function openLeaderboard(fromGameover){
+            Audio.play('click'); _lbCtx.fromGameover=!!fromGameover;
+            const sub=$('lbSubmit');
+            if(fromGameover){
+                sub.classList.remove('hidden'); $('lbEntryRow').classList.remove('hidden');
+                _lbCtx.score=game.score; $('lbScoreVal').textContent=game.score;
+                $('lbName').value=(localStorage.getItem('bp_pc_name')||''); $('lbName').placeholder=t('lb_name_ph');
+                $('lbMsg').textContent=''; $('lbSubmitBtn').disabled=false;
+            } else sub.classList.add('hidden');
+            showScreen('leaderboard'); setHudVisible(false);
+            lbLoad(_lbCtx.myName);
+        }
+        async function lbDoSubmit(){
+            const name=($('lbName').value||'').trim();
+            if(!name){ $('lbMsg').textContent=t('lb_need_name'); return; }
+            localStorage.setItem('bp_pc_name', name.slice(0,12));
+            $('lbSubmitBtn').disabled=true; $('lbMsg').textContent=t('lb_submitting');
+            try{
+                const res=await LB.submit(name, _lbCtx.score);
+                _lbCtx.myName = res.name || name;
+                $('lbEntryRow').classList.add('hidden');
+                $('lbMsg').innerHTML='<span class="text-emerald-300 font-bold">'+t('lb_you_are').replace('{n}', res.rank)+'</span>';
+                lbRenderList(res.top, _lbCtx.myName); Audio.play('reward'); confettiBurst();
+            }catch(e){
+                $('lbSubmitBtn').disabled=false; $('lbMsg').textContent=t('lb_error');
+            }
+        }
+        function lbBack(){ Audio.play('click'); showScreen(_lbCtx.fromGameover?'gameover':'menu'); setHudVisible(false); }
+        // Show the leaderboard entry points only when the backend actually responds
+        // (keeps a broken/offline board hidden until the table + function are live).
+        function lbHealthCheck(){
+            LB.fetchTop().then(()=>{
+                LB.enabled = true;
+                document.querySelectorAll('.lb-gated').forEach(el=>el.classList.remove('hidden'));
+            }).catch(()=>{ /* backend unreachable — leave entry points hidden */ });
+        }
+
         // ---- Ad-revive flow ----
         function startAd(){
             Audio.play('whoosh');
@@ -1637,6 +1764,7 @@
             $('btnLangTxt2').textContent = t('lang_btn');
             $('menuBest').textContent = game.best;
             $('hudScoreLabel').textContent = t('hud_score');
+            $('lbName').placeholder = t('lb_name_ph');
             buildLegend();
             buildRewards();
             updateStreakUI();
@@ -1703,6 +1831,11 @@
         $('btnReplay').addEventListener('click', startGame);
         $('btnMenu1').addEventListener('click', toMenu);
         $('btnMenu2').addEventListener('click', toMenu);
+        $('btnLbMenu').addEventListener('click', ()=>openLeaderboard(false));
+        $('btnLbGO').addEventListener('click', ()=>openLeaderboard(true));
+        $('lbSubmitBtn').addEventListener('click', lbDoSubmit);
+        $('lbName').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); lbDoSubmit(); } });
+        $('lbClose').addEventListener('click', lbBack);
         $('btnCouponContinue').addEventListener('click', continueAfterCoupon);
         $('btnRevive').addEventListener('click', startAd);
         // share (invite friends → more players → more traffic)
@@ -1763,6 +1896,7 @@
             resize();
             showScreen('menu'); setHudVisible(false);
             $('menuBest').textContent=game.best;
+            lbHealthCheck();   // reveal the leaderboard buttons only if the backend answers
             requestAnimationFrame(loop);
         }
         // fonts may still be loading — rebuild facade once they arrive so text is crisp

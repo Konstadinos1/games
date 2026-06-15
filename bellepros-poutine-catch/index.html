@@ -440,18 +440,23 @@
 
                             <!-- ===================== SIMULATED VIDEO AD ===================== -->
                             <div id="screen-ad" class="overlay z-40 hidden" style="background:transparent; padding:0;">
+                                <!-- owner promo video (shown only when videos are configured) -->
+                                <video id="adVideo" class="hidden" playsinline webkit-playsinline preload="auto"
+                                       style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; background:#000;"></video>
+                                <!-- brand bug over the ad -->
+                                <img id="adLogo" src="assets/bellepros-logo.png" alt="Restaurant Bellepro's" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); width:104px; height:auto; z-index:3; filter:drop-shadow(0 3px 10px rgba(0,0,0,.75)); display:none;" />
                                 <!-- the spinning combo is drawn on the main canvas; this layer holds the ad chrome -->
-                                <div class="absolute top-3 left-3 flex items-center gap-2 px-3 py-1.5 rounded-lg" style="background:rgba(0,0,0,.5);">
+                                <div class="absolute top-3 left-3 flex items-center gap-2 px-3 py-1.5 rounded-lg" style="background:rgba(0,0,0,.5); z-index:3;">
                                     <span class="w-2 h-2 rounded-full bg-red-500"></span>
                                     <span id="adLabel" class="text-[11px] font-bold tracking-widest uppercase text-zinc-200" data-i18n="ad_label">Publicité</span>
                                 </div>
-                                <div class="absolute top-3 right-3 flex items-center gap-2 px-3 py-1.5 rounded-lg" style="background:rgba(0,0,0,.5);">
+                                <div id="adCountBox" class="absolute top-3 right-3 flex items-center gap-2 px-3 py-1.5 rounded-lg" style="background:rgba(0,0,0,.5); z-index:3;">
                                     <span id="adCountLabel" class="text-[11px] font-semibold text-zinc-300" data-i18n="ad_reward_in">Récompense dans</span>
                                     <span id="adCount" class="font-display text-amber-400 text-lg">5</span><span class="text-zinc-400 text-xs">s</span>
                                 </div>
 
                                 <div class="flex-1"></div>
-                                <div class="text-center px-6 pointer-events-none">
+                                <div id="adSimBlock" class="text-center px-6 pointer-events-none">
                                     <div id="adCombo" class="font-display text-3xl text-amber-400 neon-title" data-i18n="ad_combo">LA POUTINE CLASSIQUE</div>
                                     <div id="adTag" class="text-zinc-300 text-sm font-semibold mt-1" data-i18n="ad_tag">Frites • Fromage squic-squic • Sauce brune</div>
                                     <div class="mt-2 inline-flex items-center gap-2 px-4 py-1.5 rounded-full" style="background:var(--bp-red);">
@@ -461,11 +466,30 @@
                                 <div class="flex-1"></div>
 
                                 <!-- ad progress -->
-                                <div class="w-full px-5 pb-4">
+                                <div class="w-full px-5 pb-4" style="position:relative; z-index:3;">
+                                    <div id="adButtons" class="hidden flex items-center justify-between mb-2">
+                                        <button id="adUnmute" class="hidden btn rounded-lg px-3 py-1.5 text-xs text-white" style="background:rgba(0,0,0,.55); box-shadow:0 0 0 1px rgba(255,255,255,.22);"><i class="fa-solid fa-volume-xmark mr-1"></i><span data-i18n="ad_tap_sound">Activer le son</span></button>
+                                        <span class="flex-1"></span>
+                                        <button id="adSkip" class="hidden btn rounded-lg px-4 py-1.5 text-xs font-display text-white" style="background:rgba(245,158,11,.92); box-shadow:0 0 0 1px rgba(255,255,255,.28);"><span data-i18n="ad_skip">Passer</span> <i class="fa-solid fa-forward-step ml-1"></i></button>
+                                    </div>
                                     <div class="h-1.5 w-full rounded-full overflow-hidden" style="background:rgba(255,255,255,.15);">
                                         <div id="adBar" class="h-full" style="width:0%; background:linear-gradient(90deg,#F59E0B,#FFD700);"></div>
                                     </div>
                                     <div id="adCantSkip" class="text-center text-[10px] text-zinc-500 mt-1.5 uppercase tracking-widest" data-i18n="ad_cant_skip">Pub non sautable</div>
+                                </div>
+                            </div>
+
+                            <!-- ===================== OWNER PANEL (triple-tap the logo) ===================== -->
+                            <div id="screen-owner" class="overlay z-50 hidden" style="z-index:60; background:rgba(9,9,11,.93); backdrop-filter:blur(6px);">
+                                <img src="assets/bellepros-logo.png" alt="Restaurant Bellepro's" style="width:120px;height:auto;margin-bottom:8px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5));" />
+                                <h2 class="neon-title text-2xl text-amber-400 mb-1"><i class="fa-solid fa-clapperboard mr-2"></i><span data-i18n="owner_title">Vidéos promo</span></h2>
+                                <p class="text-xs text-zinc-400 text-center max-w-[320px] mb-3" data-i18n="owner_desc">Une URL de vidéo par ligne. Enregistrées sur cet appareil et jouées comme pub « regarder pour revivre ».</p>
+                                <textarea id="ownerVids" rows="5" spellcheck="false" placeholder="https://.../promo.mp4"
+                                          class="w-full max-w-[340px] rounded-xl px-3 py-2 text-white text-sm outline-none" style="background:rgba(0,0,0,.45); box-shadow:0 0 0 1px rgba(255,255,255,.16); resize:none;"></textarea>
+                                <div class="flex gap-2 mt-3">
+                                    <button id="ownerSave" class="btn rounded-xl px-5 py-2.5 font-display text-white" style="background:linear-gradient(180deg,#22c55e,#15803d);"><span data-i18n="owner_save">Enregistrer</span></button>
+                                    <button id="ownerClear" class="btn rounded-xl px-4 py-2.5 text-zinc-200" style="background:rgba(255,255,255,.1); box-shadow:0 0 0 1px rgba(255,255,255,.15);"><span data-i18n="owner_clear">Effacer</span></button>
+                                    <button id="ownerClose" class="btn rounded-xl px-4 py-2.5 text-zinc-200" style="background:rgba(255,255,255,.1); box-shadow:0 0 0 1px rgba(255,255,255,.15);"><span data-i18n="owner_close">Fermer</span></button>
                                 </div>
                             </div>
 
@@ -550,6 +574,9 @@
                 lb_loading:'Chargement…', lb_unavailable:'Classement hors ligne — réessaie plus tard',
                 lb_empty:'Sois le premier à marquer!', lb_you_are:'Tu es #{n} au monde! 🎉',
                 lb_need_name:'Entre ton nom', lb_submitting:'Envoi…', lb_error:"Échec de l'envoi — réessaie",
+                ad_skip:'Passer', ad_tap_sound:'Activer le son',
+                owner_title:'Vidéos promo', owner_desc:'Une URL de vidéo par ligne. Enregistrées sur cet appareil et jouées comme pub « regarder pour revivre ».',
+                owner_save:'Enregistrer', owner_clear:'Effacer', owner_close:'Fermer', owner_saved:'Vidéos enregistrées ✓',
                 reward_unlocked:'Récompense débloquée', coupon_title:'COUPON DÉBLOQUÉ!', coupon_congrats:'Bravo! Tu as atteint {n} points.',
                 coupon_offer:'DOUBLE FROMAGE GRATUIT', coupon_offer_sub:"à l'achat d'un combo régulier",
                 coupon_code_label:'Code coupon', coupon_scan:'Présente ce code au Bellepros Laval 440 · 5600 Robert-Bourassa, Laval.',
@@ -582,6 +609,9 @@
                 lb_loading:'Loading…', lb_unavailable:'Leaderboard offline — try again later',
                 lb_empty:'Be the first to score!', lb_you_are:"You're #{n} in the world! 🎉",
                 lb_need_name:'Enter your name', lb_submitting:'Submitting…', lb_error:'Submit failed — try again',
+                ad_skip:'Skip', ad_tap_sound:'Tap for sound',
+                owner_title:'Promo videos', owner_desc:'One video URL per line. Saved on this device and played as the watch-to-revive ad.',
+                owner_save:'Save', owner_clear:'Clear', owner_close:'Close', owner_saved:'Videos saved ✓',
                 reward_unlocked:'Reward unlocked', coupon_title:'COUPON UNLOCKED!', coupon_congrats:'Nice! You reached {n} points.',
                 coupon_offer:'FREE DOUBLE CHEESE', coupon_offer_sub:'with any regular combo',
                 coupon_code_label:'Coupon code', coupon_scan:'Show this code at Bellepros Laval 440 · 5600 Robert-Bourassa Blvd, Laval.',
@@ -863,6 +893,9 @@
         // real storefront photo backdrop — rebuilds the facade once it loads; falls back to the drawn facade
         const storefront = (typeof Image!=='undefined') ? new Image() : null;
         if (storefront){ storefront.onload = ()=>{ try { buildFacade(); } catch(e){} }; storefront.src = 'assets/storefront.jpg'; }
+        // faint in-play brand watermark (drawn on the field during gameplay)
+        const logoImg = (typeof Image!=='undefined') ? new Image() : null;
+        if (logoImg){ logoImg.src = 'assets/bellepros-logo.png'; }
         function drawStorefront(g){
             const cy = COUNTER_Y;
             const iw = storefront.naturalWidth, ih = storefront.naturalHeight;
@@ -1424,7 +1457,7 @@
             timeSec += dt;
             ctx.clearRect(0,0,DESIGN_W,DESIGN_H);
 
-            if (game.state==='ad'){ renderAd(timeSec); return; }
+            if (game.state==='ad'){ if (game.ad.mode!=='video') renderAd(timeSec); return; }
 
             ctx.save();
             // screen shake
@@ -1433,6 +1466,13 @@
             ctx.drawImage(facade,0,0,DESIGN_W,DESIGN_H);
             drawDynamicFacade(timeSec);
             drawSnow();
+            // faint brand watermark on the field
+            if (game.state==='playing' && logoImg && logoImg.complete && logoImg.naturalWidth>0){
+                ctx.save(); ctx.globalAlpha=0.08;
+                const w=DESIGN_W*0.46, h=w*logoImg.naturalHeight/logoImg.naturalWidth;
+                ctx.drawImage(logoImg, (DESIGN_W-w)/2, DESIGN_H*0.33, w, h);
+                ctx.restore();
+            }
             // entities
             game.items.forEach(drawItem);
             drawTray();
@@ -1684,15 +1724,49 @@
             }).catch(()=>{ /* backend unreachable — leave entry points hidden */ });
         }
 
-        // ---- Ad-revive flow ----
+        // ---- Ad-revive flow (plays the owner's promo video when configured) ----
+        const AD_VIDEOS = [
+            // OWNER: add your promo videos here — file paths or full URLs (see assets/ads/README.md):
+            // 'assets/ads/promo1.mp4',
+        ];
+        (function initAdParam(){   // ?adv=URL1,URL2 sets videos once and persists them
+            try{ const a=new URLSearchParams(location.search).get('adv');
+                if(a){ localStorage.setItem('bp_pc_adv', JSON.stringify(a.split(',').map(s=>s.trim()).filter(Boolean))); } }catch(e){}
+        })();
+        function getAdVideos(){
+            let list = AD_VIDEOS.slice();
+            try{ const ls=localStorage.getItem('bp_pc_adv'); if(ls){ const a=JSON.parse(ls); if(Array.isArray(a)) list=list.concat(a); } }catch(e){}
+            return list.map(s=>String(s).trim()).filter(Boolean);
+        }
         function startAd(){
             Audio.play('whoosh');
-            game.usedRevive=true;
-            game.state='ad'; game.ad.remaining=5; game.ad.lastTick=6;
+            game.usedRevive=true; game.state='ad';
             hideAllScreens(); screens.ad.classList.remove('hidden'); setHudVisible(false);
+            $('adLogo').style.display='';
+            const vids=getAdVideos();
+            if (vids.length) startVideoAd(vids[Math.floor(Math.random()*vids.length)]);
+            else startSimAd();
+        }
+        function startSimAd(){
+            game.ad.mode='sim'; game.ad.remaining=5; game.ad.lastTick=6;
+            try{ $('adVideo').classList.add('hidden'); }catch(e){}
+            $('adSimBlock').classList.remove('hidden'); $('adCountBox').classList.remove('hidden');
+            $('adButtons').classList.add('hidden'); $('adCantSkip').classList.remove('hidden');
             $('adBar').style.width='0%'; $('adCount').textContent='5';
         }
+        function startVideoAd(src){
+            game.ad.mode='video'; game.ad.min=4;   // seconds watched before "Skip" appears
+            $('adSimBlock').classList.add('hidden'); $('adCantSkip').classList.add('hidden'); $('adCountBox').classList.add('hidden');
+            $('adButtons').classList.remove('hidden'); $('adSkip').classList.add('hidden'); $('adUnmute').classList.add('hidden');
+            $('adBar').style.width='0%';
+            try{
+                const v=$('adVideo'); v.classList.remove('hidden'); v.src=src; v.currentTime=0; v.muted=false;
+                const pp=v.play();
+                if (pp && pp.catch) pp.catch(()=>{ try{ v.muted=true; $('adUnmute').classList.remove('hidden'); v.play().catch(()=>startSimAd()); }catch(e){ startSimAd(); } });
+            }catch(e){ startSimAd(); }
+        }
         function updateAd(dt){
+            if (game.ad.mode==='video') return;   // video mode is driven by <video> events, not dt
             game.ad.remaining -= dt;
             const rem=Math.max(0, game.ad.remaining);
             const shown=Math.ceil(rem);
@@ -1702,6 +1776,8 @@
             if (game.ad.remaining<=0) finishRevive();
         }
         function finishRevive(){
+            try{ const v=$('adVideo'); v.pause(); v.removeAttribute('src'); v.load(); v.classList.add('hidden'); }catch(e){}
+            $('adLogo').style.display='none'; game.ad.mode=null;
             game.lives=game.maxLives; game.items=[]; game.combo=0; game.mult=1;
             game.shake=0; game.flash=0; game.grace=1.2; game.fx={ magnet:0, frenzy:0 }; game.rush={ t:18, active:0 };
             game.state='playing'; lastT=performance.now();
@@ -1709,6 +1785,29 @@
             Audio.play('reward'); confettiBurst();
             showToast(t('t_revived'));
         }
+        // video-ad: progress bar, skip gating, sound toggle, graceful fallback
+        (function wireAdVideo(){
+            const v=$('adVideo'); if(!v || !v.addEventListener) return;
+            v.addEventListener('timeupdate', ()=>{
+                if (game.ad.mode!=='video') return;
+                const d=v.duration||0, ct=v.currentTime||0;
+                if (d>0) $('adBar').style.width=Math.min(100, ct/d*100).toFixed(1)+'%';
+                if (ct>=(game.ad.min||4)) $('adSkip').classList.remove('hidden');
+            });
+            v.addEventListener('ended', ()=>{ if (game.ad.mode==='video') finishRevive(); });
+            v.addEventListener('error', ()=>{ if (game.ad.mode==='video') startSimAd(); });
+        })();
+        // ---- Owner panel: paste promo video URLs (triple-tap the logo to open) ----
+        function openOwner(){
+            try{ const ls=localStorage.getItem('bp_pc_adv'); const a=ls?JSON.parse(ls):[]; $('ownerVids').value=Array.isArray(a)?a.join('\n'):''; }catch(e){ $('ownerVids').value=''; }
+            $('screen-owner').classList.remove('hidden'); Audio.play('click');
+        }
+        function saveOwner(){
+            const arr=($('ownerVids').value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+            try{ localStorage.setItem('bp_pc_adv', JSON.stringify(arr)); }catch(e){}
+            Audio.play('reward'); showToast(t('owner_saved')); $('screen-owner').classList.add('hidden');
+        }
+        function clearOwner(){ try{ localStorage.removeItem('bp_pc_adv'); }catch(e){} $('ownerVids').value=''; Audio.play('click'); }
 
         // ============================================================================
         //  HUD
@@ -1836,6 +1935,13 @@
         $('lbSubmitBtn').addEventListener('click', lbDoSubmit);
         $('lbName').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); lbDoSubmit(); } });
         $('lbClose').addEventListener('click', lbBack);
+        $('adSkip').addEventListener('click', ()=>{ if (game.ad.mode==='video') finishRevive(); });
+        $('adUnmute').addEventListener('click', ()=>{ try{ const v=$('adVideo'); v.muted=false; $('adUnmute').classList.add('hidden'); }catch(e){} });
+        $('ownerSave').addEventListener('click', saveOwner);
+        $('ownerClear').addEventListener('click', clearOwner);
+        $('ownerClose').addEventListener('click', ()=>{ Audio.play('click'); $('screen-owner').classList.add('hidden'); });
+        (function tripleTapLogo(){ const el=$('brandLogo'); if(!el || !el.addEventListener) return; let n=0,t0=0;
+            el.addEventListener('click', ()=>{ const now=Date.now(); if(now-t0>600) n=0; n++; t0=now; if(n>=3){ n=0; openOwner(); } }); })();
         $('btnCouponContinue').addEventListener('click', continueAfterCoupon);
         $('btnRevive').addEventListener('click', startAd);
         // share (invite friends → more players → more traffic)

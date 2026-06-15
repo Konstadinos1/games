@@ -260,7 +260,7 @@
                                 </div>
 
                                 <!-- how-to legend -->
-                                <div class="mt-5 w-full max-w-[330px] rounded-2xl p-3 backdrop-blur-md"
+                                <div class="mt-3 w-full max-w-[330px] rounded-2xl p-3 backdrop-blur-md"
                                      style="background:rgba(24,24,27,.6); box-shadow:0 0 0 1px rgba(255,255,255,.08);">
                                     <p id="tagline" class="text-center text-[13px] text-zinc-300 leading-snug mb-3">Attrape, évite la pluie et gagne de la VRAIE bouffe gratuite à échanger en magasin!</p>
                                     <div id="legend" style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px;"></div>
@@ -270,8 +270,15 @@
                                     <p class="text-center text-[9px] text-zinc-400 mt-1.5"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i><span id="redeemLine"><span data-i18n="redeem_at">Échangeable seulement à ce Bellepros</span> · 5600 Robert-Bourassa</span></p>
                                 </div>
 
+                                <!-- daily challenge (engagement hook, right above Play) -->
+                                <div id="dcCard" class="mt-3 w-full max-w-[300px] rounded-xl px-3 py-1.5 text-center leading-tight" style="background:rgba(245,158,11,.12); box-shadow:0 0 0 1px rgba(245,158,11,.3);">
+                                    <span class="text-[10px] font-bold uppercase tracking-widest text-amber-300/80"><i class="fa-solid fa-bullseye mr-1"></i><span data-i18n="dc_title">Défi du jour</span>:</span>
+                                    <span id="dcText" class="text-[13px] text-zinc-100 font-semibold">—</span>
+                                    <span id="dcState" class="hidden text-[11px] text-emerald-300 font-bold ml-1"><i class="fa-solid fa-check"></i> <span data-i18n="dc_done">Réussi!</span></span>
+                                </div>
+
                                 <!-- play button -->
-                                <button id="btnPlay" class="btn pulse-cta mt-6 rounded-2xl px-10 py-4 text-2xl font-display text-white flex items-center gap-3"
+                                <button id="btnPlay" class="btn pulse-cta mt-3 rounded-2xl px-10 py-4 text-2xl font-display text-white flex items-center gap-3"
                                         style="background:linear-gradient(180deg,#F59E0B,#E8192C); box-shadow:0 10px 30px rgba(232,25,44,.5);">
                                     <i class="fa-solid fa-play"></i><span data-i18n="play">JOUER</span>
                                 </button>
@@ -377,6 +384,7 @@
                                 <img src="assets/bellepros-logo.png" alt="Restaurant Bellepro's" style="width:118px;height:auto;margin-bottom:6px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5));" />
                                 <h2 id="goTitle" class="neon-title text-4xl text-red-500 mb-1" data-i18n="go_title">PARTIE TERMINÉE</h2>
                                 <div id="goNewBest" class="hidden text-amber-400 text-sm font-display mb-2 pop-in"><i class="fa-solid fa-trophy mr-1"></i><span data-i18n="go_newbest">Nouveau record!</span></div>
+                                <div id="goChase" class="hidden text-zinc-300 text-xs font-semibold mb-2"></div>
 
                                 <div class="flex gap-3 my-3">
                                     <div class="rounded-2xl px-5 py-3 text-center backdrop-blur-md" style="background:rgba(24,24,27,.6); box-shadow:0 0 0 1px rgba(255,255,255,.08);">
@@ -582,6 +590,9 @@
                 coupon_code_label:'Code coupon', coupon_scan:'Présente ce code au Bellepros Laval 440 · 5600 Robert-Bourassa, Laval.',
                 coupon_valid:"Aujourd'hui seulement • 1 par client • Ce comptoir seulement", coupon_continue:'Continuer',
                 go_title:'PARTIE TERMINÉE', go_score:'Pointage', go_best:'Record', go_newbest:'Nouveau record!',
+                go_chase:'Plus que {n} pts pour battre ton record!',
+                dc_title:'Défi du jour', dc_done:'Réussi!', dc_done_toast:'Défi du jour réussi! 🎯 +50',
+                dc_catch:'Attrape {n} {item}', dc_combo:'Enchaîne {n} prises', dc_score:'Fais {n} points en une partie', dc_any:'Attrape {n} items',
                 revive_title:'Sauve ta séquence!', revive_desc:'Regarde une courte pub et récupère tes 3 vies — ton pointage reste intact.',
                 revive_btn:'Regarder la pub', revive_used:'Sauvetage déjà utilisé', go_replay:'Rejouer',
                 ad_label:'Publicité', ad_reward_in:'Récompense dans', ad_combo:'LA POUTINE CLASSIQUE', ad_tag:'Frites • Fromage squic-squic • Sauce brune', ad_cant_skip:'Pub non sautable',
@@ -617,6 +628,9 @@
                 coupon_code_label:'Coupon code', coupon_scan:'Show this code at Bellepros Laval 440 · 5600 Robert-Bourassa Blvd, Laval.',
                 coupon_valid:'Today only • 1 per customer • This location only', coupon_continue:'Continue',
                 go_title:'GAME OVER', go_score:'Score', go_best:'Best', go_newbest:'New best!',
+                go_chase:'{n} pts to beat your record!',
+                dc_title:'Daily challenge', dc_done:'Done!', dc_done_toast:'Daily challenge done! 🎯 +50',
+                dc_catch:'Catch {n} {item}', dc_combo:'Chain {n} catches', dc_score:'Score {n} in one run', dc_any:'Catch {n} items',
                 revive_title:'Save my streak!', revive_desc:'Watch a short ad to restore your 3 lives — your score stays intact.',
                 revive_btn:'Watch ad', revive_used:'Save already used', go_replay:'Play again',
                 ad_label:'Advertisement', ad_reward_in:'Reward in', ad_combo:'THE CLASSIC POUTINE', ad_tag:'Fries • Cheese curds • Gravy', ad_cant_skip:'Ad cannot be skipped',
@@ -1175,6 +1189,37 @@
             bonusAvailable(){ return this.streak>=2 && this.bonusDay!==this.today(); },
             consumeBonus(){ this.bonusDay=this.today(); localStorage.setItem('bp_pc_bonusday',this.bonusDay); }
         };
+        // ---- Daily Challenge: one rotating goal per day (same for everyone) → drives daily returns ----
+        const DC = {
+            key:'bp_pc_dc', day:'', done:false, type:0, target:0,
+            rt:{ poutine:0, good:0, maxCombo:0 },
+            today(){ return new Date().toISOString().slice(0,10); },
+            load(){
+                this.day=this.today();
+                try{ const s=JSON.parse(localStorage.getItem(this.key)||'{}'); this.done=(s.day===this.day)&&!!s.done; }catch(e){ this.done=false; }
+                const p=this.day.split('-'), sd=(parseInt(p[0],10)*372+parseInt(p[1],10)*31+parseInt(p[2],10))>>>0;
+                this.type=sd%4;
+                this.target=[6+sd%5, 8+(sd%4)*2, 250+(sd%5)*50, 35+(sd%4)*5][this.type];
+                this.resetRun();
+            },
+            resetRun(){ this.rt={ poutine:0, good:0, maxCombo:0 }; },
+            save(){ try{ localStorage.setItem(this.key, JSON.stringify({day:this.day, done:this.done})); }catch(e){} },
+            metric(){ return [this.rt.poutine, this.rt.maxCombo, game.score, this.rt.good][this.type]; },
+            label(){
+                return [ t('dc_catch').replace('{n}',this.target).replace('{item}', t('l_poutine')),
+                         t('dc_combo').replace('{n}',this.target),
+                         t('dc_score').replace('{n}',this.target),
+                         t('dc_any').replace('{n}',this.target) ][this.type] || '';
+            },
+            onGood(it){ if(this.done) return; this.rt.good++; if(it.id==='poutine') this.rt.poutine++; if(game.combo>this.rt.maxCombo) this.rt.maxCombo=game.combo; if(this.metric()>=this.target) this.complete(); },
+            complete(){ this.done=true; this.save(); game.score+=50; Audio.play('reward'); confettiBurst(); showToast(t('dc_done_toast')); updateHud(); renderDC(); }
+        };
+        function renderDC(){
+            const txt=$('dcText'); if(!txt) return;
+            txt.textContent = DC.label();
+            const st=$('dcState'); if(st) st.classList.toggle('hidden', !DC.done);
+            txt.style.opacity = DC.done ? '0.55' : '1';
+        }
         // ---- coupon redeemed registry (simulated staff validation, anti-reuse) ----
         function loadRedeemed(){ try { return new Set(JSON.parse(localStorage.getItem('bp_pc_redeemed')||'[]')); } catch(e){ return new Set(); } }
         function isRedeemed(code){ return !!code && loadRedeemed().has(code); }
@@ -1245,6 +1290,7 @@
             }
             updateHud();
             checkRewards();
+            DC.onGood(it);
         }
         function onCatchHazard(it){
             game.combo=0; setMult();
@@ -1600,7 +1646,7 @@
             game.items=[]; game.spawnT=0.4; game.elapsed=0;
             game.tray.x=game.tray.target=DESIGN_W/2;
             game.shake=0; game.flash=0; game.grace=0.6;
-            game.fx={ magnet:0, frenzy:0 }; game.rush={ t:18, active:0 };
+            game.fx={ magnet:0, frenzy:0 }; game.rush={ t:18, active:0 }; DC.resetRun();
             game.rewardsClaimed=0; game.couponTier=null; game.usedRevive=false; game.couponCode='';
             particles=[]; floaters=[]; confetti=[];
             game.state='playing';
@@ -1626,6 +1672,11 @@
             if (isBest){ game.best=game.score; localStorage.setItem('bp_pc_best', String(game.best)); }
             $('goScore').textContent=game.score; $('goBest').textContent=game.best;
             $('goNewBest').classList.toggle('hidden', !isBest);
+            // near-miss "beat your record" chase (retention hook)
+            const chase=$('goChase');
+            if (chase){ const gap=game.best-game.score;
+                if (!isBest && game.best>0 && gap>0){ chase.textContent=t('go_chase').replace('{n}', gap); chase.classList.remove('hidden'); }
+                else chase.classList.add('hidden'); }
             // revive only once per run
             $('reviveBox').classList.toggle('hidden', game.usedRevive);
             $('reviveUsed').classList.toggle('hidden', !game.usedRevive);
@@ -1867,6 +1918,7 @@
             buildLegend();
             buildRewards();
             updateStreakUI();
+            renderDC();
             if (game.state==='coupon' && game.couponTier) renderCoupon(game.couponTier);
             updateHud();
         }
@@ -1997,6 +2049,7 @@
             buildHearts();
             $('btnDirections').href = MAPS_URL;   // exclusive-location directions
             Daily.load(); Daily.refresh();        // daily streak (return-visit reward)
+            DC.load();                            // today's challenge
             applyLang();
             syncMute();
             resize();

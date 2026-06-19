@@ -542,6 +542,7 @@
         const CATCH_Y   = COUNTER_Y - 14;     // tray rim catch line
         const MISS_Y    = COUNTER_Y + 46;     // below this an item is "missed"
         const PLAY_MIN_X = 40, PLAY_MAX_X = DESIGN_W - 40;
+        const TRAY_KEY_SPEED = 520;            // tray travel speed (px/s) while an arrow key is held
 
         const C = {
             red:'#E8192C', redDk:'#7f1d1d', orange:'#FF6B35', amber:'#F59E0B', gold:'#FFD700',
@@ -1347,6 +1348,9 @@
             // spawn (rate spikes during Rush Hour)
             game.spawnT -= dt;
             if (game.spawnT<=0){ spawnItem(); game.spawnT = difficulty().spawn * (game.rush.active>0?0.5:1) * (0.8+Math.random()*0.5); }
+            // held arrow keys steer the tray continuously (smooth desktop/accessibility control)
+            const keyDir = (heldKeys.has('left')?-1:0) + (heldKeys.has('right')?1:0);
+            if (keyDir!==0) game.tray.target = keyTrayTarget(game.tray.target, keyDir, dt, DESIGN_W, TRAY_KEY_SPEED);
             // tray follows target
             game.tray.x += (game.tray.target - game.tray.x) * Math.min(1, dt*20);
             game.tray.x = clamp(game.tray.x, game.tray.w/2+6, DESIGN_W-game.tray.w/2-6);
@@ -1965,14 +1969,23 @@
         stage.addEventListener('mousedown',onDown); window.addEventListener('mousemove',onMove); window.addEventListener('mouseup',onUp);
         stage.addEventListener('touchstart',onDown,{passive:false}); stage.addEventListener('touchmove',onMove,{passive:false}); window.addEventListener('touchend',onUp);
         // also let a tap-anywhere move directly (nice on mobile)
+        // Held-key state so the tray glides smoothly while a key is down (see updatePlay),
+        // instead of stepping once per OS key-repeat event.
+        const heldKeys = new Set();
         document.addEventListener('keydown',(e)=>{
             if (game.state==='playing'){
-                if (e.key==='ArrowLeft'){ game.tray.target=clamp(game.tray.target-46, 0, DESIGN_W); }
-                else if (e.key==='ArrowRight'){ game.tray.target=clamp(game.tray.target+46, 0, DESIGN_W); }
+                if (e.key==='ArrowLeft'){ heldKeys.add('left'); e.preventDefault(); }
+                else if (e.key==='ArrowRight'){ heldKeys.add('right'); e.preventDefault(); }
                 else if (e.key===' '||e.key==='p'||e.key==='P') pauseGame();
             } else if (game.state==='paused' && (e.key===' '||e.key==='p'||e.key==='P')) resumeGame();
             else if (game.state==='menu' && e.key==='Enter') startGame();
         });
+        document.addEventListener('keyup',(e)=>{
+            if (e.key==='ArrowLeft') heldKeys.delete('left');
+            else if (e.key==='ArrowRight') heldKeys.delete('right');
+        });
+        // Dropping focus (tab-out, alt-tab) can swallow the keyup — clear held keys so the tray stops.
+        window.addEventListener('blur', ()=> heldKeys.clear());
 
         // buttons
         $('btnPlay').addEventListener('click', startGame);
@@ -2016,6 +2029,9 @@
         //  HELPERS + RESPONSIVE SCALING
         // ============================================================================
         function clamp(v,a,b){ return v<a?a:v>b?b:v; }
+        // Pure helper (unit-tested in tests/controls.test.js): tray target after dt seconds of held-key
+        // steering. dir is -1 (left), 0 (none) or 1 (right); result stays within [0, width].
+        function keyTrayTarget(target, dir, dt, width, speed){ return clamp(target + dir*speed*dt, 0, width); }
         function vibrate(p){ try{ if (navigator.vibrate) navigator.vibrate(p); }catch(e){} }
 
         function setupCanvas(){

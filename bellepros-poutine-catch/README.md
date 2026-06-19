@@ -20,6 +20,21 @@ python3 -m http.server 8080
 Or open `index.html` directly in a browser. To deploy for a QR campaign, host the folder
 anywhere static (Netlify, GitHub Pages, S3, …) and point the QR at the URL.
 
+## Controls
+
+- **Touch / mouse** — drag anywhere to slide the basket.
+- **Keyboard** — hold **←/→** to glide the basket smoothly, **Space** or **P** to pause/resume,
+  **Enter** to start from the menu.
+
+## Tests
+
+Zero-dependency Node suite (no browser needed) covering the keyboard steering math:
+
+```bash
+node tests/controls.test.js
+```
+
+
 ## What's inside (zero external game assets)
 
 | Requirement | Implementation |

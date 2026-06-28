@@ -600,6 +600,7 @@
                 t_miss:'RATÉ!', t_soggy:'DÉTREMPÉ!', t_perfect:'PARFAIT!', t_revived:'+3 VIES • C\'est reparti!', t_coupon_done:'Coupon réclamé ✓',
                 pu_magnet:'AIMANT!', pu_frenzy:'FRÉNÉSIE 2×!', pu_life:'+1 VIE!',
                 share_score:'Partager mon score', share_coupon:'Partager', link_copied:'Lien copié!',
+                sc_my_score:'Mon pointage', sc_beat:'Bats mon score!', sc_cta:'Joue gratis • gagne de la vraie bouffe', sc_saved:'Image enregistrée ✓',
                 share_text_score:"J'ai fait {n} points à Pluie de Poutine 🍟 Bats-moi et gagne de la bouffe gratuite chez Bellepros Laval 440, 5600 Robert-Bourassa!",
                 share_text_coupon:"J'ai gagné {offer} chez Bellepros Laval 440 🎉 Joue à Pluie de Poutine et gagne la tienne!",
                 streak_days:'Série', daily_bonus:'+1 vie aujourd\'hui!', daily_bonus_toast:'Bonus quotidien : +1 vie ❤',
@@ -638,6 +639,7 @@
                 t_miss:'MISS!', t_soggy:'SOGGY!', t_perfect:'PERFECT!', t_revived:'+3 LIVES • Back in!', t_coupon_done:'Coupon claimed ✓',
                 pu_magnet:'MAGNET!', pu_frenzy:'FRENZY 2×!', pu_life:'+1 LIFE!',
                 share_score:'Share my score', share_coupon:'Share', link_copied:'Link copied!',
+                sc_my_score:'My score', sc_beat:'Beat my score!', sc_cta:'Play free • win real food', sc_saved:'Image saved ✓',
                 share_text_score:'I scored {n} in Poutine Drop 🍟 Beat me and win free food at Bellepros Laval 440, 5600 Robert-Bourassa!',
                 share_text_coupon:'I won {offer} at Bellepros Laval 440 🎉 Play Poutine Drop and win yours!',
                 streak_days:'Streak', daily_bonus:'+1 life today!', daily_bonus_toast:'Daily bonus: +1 life ❤',
@@ -1231,6 +1233,64 @@
             try { if (navigator.share){ navigator.share({ title:'Bellepros Laval 440 — Pluie de Poutine', text, url }).catch(()=>{}); return; } } catch(e){}
             try { if (navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText((text+' '+url).trim()).then(()=>showToast(t('link_copied'))).catch(()=>showToast(t('link_copied'))); return; } } catch(e){}
             showToast(t('link_copied'));
+        }
+        // ---- Shareable score card (branded 1080² image → Web Share, virality) ----
+        function buildScoreCard(g, W, H){
+            const cx=W/2;
+            g.fillStyle='#0b0b0f'; g.fillRect(0,0,W,H);
+            const rg=g.createRadialGradient(cx,H*0.40,40,cx,H*0.40,W*0.95);
+            rg.addColorStop(0,'rgba(232,25,44,.5)'); rg.addColorStop(.45,'rgba(245,158,11,.13)'); rg.addColorStop(1,'rgba(11,11,15,0)');
+            g.fillStyle=rg; g.fillRect(0,0,W,H);
+            g.fillStyle='#E8192C'; g.fillRect(0,0,W,18); g.fillRect(0,H-18,W,18);
+            g.fillStyle='#F59E0B'; g.fillRect(0,18,W,7); g.fillRect(0,H-25,W,7);
+            g.textAlign='center'; g.textBaseline='alphabetic';
+            // layout flows downward from the logo's actual bottom (logo aspect-safe)
+            let y;
+            if (logoImg && logoImg.complete && logoImg.naturalWidth>0){
+                const lw=W*0.42, lh=lw*logoImg.naturalHeight/logoImg.naturalWidth, ly=H*0.05;
+                g.drawImage(logoImg, cx-lw/2, ly, lw, lh);
+                y = ly + lh + H*0.05;
+            } else { g.fillStyle='#fff'; g.font='900 64px Fredoka One, Outfit, sans-serif'; g.fillText("BELLEPRO'S", cx, H*0.15); y=H*0.20; }
+            g.fillStyle='#FFD24D'; g.font='900 50px Fredoka One, Outfit, sans-serif';
+            g.fillText(t('game_name').toUpperCase(), cx, y); y += H*0.072;
+            g.fillStyle='rgba(255,255,255,.85)'; g.font='800 30px Outfit, sans-serif';
+            g.fillText(t('sc_my_score').toUpperCase(), cx, y); y += H*0.16;
+            g.save(); g.shadowColor='rgba(245,158,11,.55)'; g.shadowBlur=46;
+            g.fillStyle='#F59E0B'; g.font='900 200px Fredoka One, Outfit, sans-serif';
+            g.fillText(String(game.score), cx, y); g.restore(); y += H*0.075;
+            try { if (typeof Sprite!=='undefined' && Sprite.poutine) Sprite.poutine(g, cx, y, 128); } catch(e){} y += H*0.10;
+            g.fillStyle='#fff'; g.font='900 52px Fredoka One, Outfit, sans-serif';
+            g.fillText(t('sc_beat'), cx, y); y += H*0.035;
+            const cardH=H*0.135;
+            g.fillStyle='rgba(255,255,255,.07)'; roundRect(g, W*0.08, y, W*0.84, cardH, 26); g.fill();
+            g.fillStyle='#fff'; g.font='700 28px Outfit, sans-serif';
+            g.fillText(t('sc_cta'), cx, y + cardH*0.34);
+            g.fillStyle='#FFD24D'; g.font='800 25px Outfit, sans-serif';
+            g.fillText('Bellepros Laval 440 · 5600 Robert-Bourassa', cx, y + cardH*0.62);
+            g.fillStyle='rgba(255,255,255,.55)'; g.font='700 23px Outfit, sans-serif';
+            g.fillText('konstadinos1.github.io/games', cx, y + cardH*0.88);
+        }
+        function shareScoreCard(){
+            Audio.play('click');
+            const msg = t('share_text_score').replace('{n}', game.score);
+            let cv, g;
+            try { cv=document.createElement('canvas'); cv.width=1080; cv.height=1080; g=cv.getContext('2d'); } catch(e){}
+            if (!g || !cv.toBlob){ shareText(msg); return; }
+            try { buildScoreCard(g, 1080, 1080); } catch(e){ shareText(msg); return; }
+            cv.toBlob(function(blob){
+                if (!blob){ shareText(msg); return; }
+                try {
+                    const file = new File([blob], 'bellepros-pointage.png', { type:'image/png' });
+                    const url = (typeof location!=='undefined'&&location.href)?location.href:'';
+                    if (navigator.canShare && navigator.canShare({ files:[file] }) && navigator.share){
+                        navigator.share({ files:[file], text:msg, url, title:'Bellepros Laval 440' }).catch(()=>{});
+                        return;
+                    }
+                    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='bellepros-pointage.png';
+                    document.body.appendChild(a); a.click(); a.remove();
+                    showToast(t('sc_saved')); shareText(msg);
+                } catch(e){ shareText(msg); }
+            }, 'image/png');
         }
 
         function difficulty(){
@@ -2010,7 +2070,7 @@
         $('btnCouponContinue').addEventListener('click', continueAfterCoupon);
         $('btnRevive').addEventListener('click', startAd);
         // share (invite friends → more players → more traffic)
-        $('btnShareScore').addEventListener('click', ()=>{ Audio.play('click'); shareText(t('share_text_score').replace('{n}', game.score)); });
+        $('btnShareScore').addEventListener('click', shareScoreCard);
         $('btnShareCoupon').addEventListener('click', ()=>{ Audio.play('click'); const tier=game.couponTier; const offer = tier ? (lang==='fr'?tier.fr:tier.en).title : ''; shareText(t('share_text_coupon').replace('{offer}', offer)); });
         // simulated staff redemption (anti-reuse)
         $('btnStaffRedeem').addEventListener('click', ()=>{ markRedeemed(game.couponCode); $('couponStamp').classList.remove('hidden'); $('btnStaffRedeem').classList.add('hidden'); Audio.play('tick'); showToast(t('already_redeemed')); });

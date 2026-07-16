@@ -330,7 +330,7 @@ class ScreenManager {
     const authBanner = document.getElementById('social-auth-banner');
     if (authBanner) {
       if (FirebaseBackend.isSignedIn()) {
-        authBanner.innerHTML = `<span style="color:var(--success)">✓ Signed in as ${FirebaseBackend.getDisplayName()}</span>`;
+        authBanner.innerHTML = `<span style="color:var(--success)">✓ Signed in as ${Utils.escapeHTML(FirebaseBackend.getDisplayName())}</span>`;
       } else {
         authBanner.innerHTML = `
           <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">Sign in to sync progress, challenge real players & appear on the global leaderboard</div>
@@ -428,8 +428,8 @@ class ScreenManager {
       const medals = { 1: '🥇', 2: '🥈', 3: '🥉' };
       div.innerHTML = `
         <div class="lb-rank">${medals[e.rank] || e.rank}</div>
-        <div class="lb-avatar">${e.avatar}</div>
-        <div class="lb-name">${e.name}${e.isPlayer ? ' (You)' : ''}</div>
+        <div class="lb-avatar">${Utils.escapeHTML(e.avatar)}</div>
+        <div class="lb-name">${Utils.escapeHTML(e.name)}${e.isPlayer ? ' (You)' : ''}</div>
         <div class="lb-score">${Utils.formatNumber(e.score)}</div>
       `;
       list.appendChild(div);

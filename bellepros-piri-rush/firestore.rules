@@ -20,13 +20,21 @@ service cloud.firestore {
       return level is int && level >= 1 && level <= 100;
     }
 
+    // Avatar is rendered in other players' UI — must be a short string
+    // (emoji), never markup. Optional field, validated when present.
+    function isValidAvatar(data) {
+      return !('avatar' in data)
+        || (data.avatar is string && data.avatar.size() <= 32);
+    }
+
     // ── User profiles (public read, owner write) ──────
     match /users/{uid} {
       allow read: if isAuth();
       allow write: if isOwner(uid)
         && request.resource.data.keys().hasOnly(['displayName', 'avatar', 'fcmToken', 'platform', 'lastSeen', 'updatedAt'])
         && request.resource.data.displayName is string
-        && request.resource.data.displayName.size() <= 30;
+        && request.resource.data.displayName.size() <= 30
+        && isValidAvatar(request.resource.data);
     }
 
     // ── Cloud saves (private to owner) ───────────────
@@ -46,7 +54,8 @@ service cloud.firestore {
         && isValidScore(request.resource.data.highScore)
         && isValidLevel(request.resource.data.level)
         && request.resource.data.displayName is string
-        && request.resource.data.displayName.size() <= 30;
+        && request.resource.data.displayName.size() <= 30
+        && isValidAvatar(request.resource.data);
     }
 
     // ── Challenges (inbox: target reads/writes, sender writes) ──
@@ -77,8 +86,21 @@ service cloud.firestore {
     }
 
     // ── FCM queue (auth write only, Cloud Function reads and deletes) ──
+    // Creates are shape-checked: sender must identify itself truthfully and
+    // notification text is capped, since the Cloud Function forwards it
+    // verbatim to the target's device.
     match /fcm_queue/{docId} {
-      allow create: if isAuth();
+      allow create: if isAuth()
+        && request.resource.data.keys().hasOnly(['targetUid', 'notification', 'sentAt', 'sentBy'])
+        && request.resource.data.sentBy == request.auth.uid
+        && request.resource.data.targetUid is string
+        && request.resource.data.targetUid.size() <= 128
+        && request.resource.data.notification is map
+        && request.resource.data.notification.keys().hasOnly(['title', 'body', 'data', 'image'])
+        && request.resource.data.notification.title is string
+        && request.resource.data.notification.title.size() <= 100
+        && request.resource.data.notification.body is string
+        && request.resource.data.notification.body.size() <= 200;
       allow read, delete: if false; // Cloud Function uses Admin SDK
     }
 

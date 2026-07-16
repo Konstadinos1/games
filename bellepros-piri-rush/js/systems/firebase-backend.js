@@ -294,10 +294,13 @@ class FirebaseBackendSystem {
         .get();
 
       const entries = [];
-      snapshot.forEach((doc, idx) => {
+      // QuerySnapshot.forEach passes no index — track rank manually
+      let rank = 0;
+      snapshot.forEach((doc) => {
+        rank += 1;
         const d = doc.data();
         entries.push({
-          rank:     idx + 1,
+          rank,
           uid:      d.uid,
           name:     d.displayName,
           avatar:   d.avatar,

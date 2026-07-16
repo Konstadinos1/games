@@ -29,6 +29,14 @@ const Utils = {
     return (n == null ? 0 : n).toLocaleString('en-CA');
   },
 
+  // For any user-controlled string that ends up in innerHTML (leaderboard
+  // names/avatars, OAuth display names) — Firestore rules don't strip HTML
+  escapeHTML(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+  },
+
   distanceBetween(lat1, lng1, lat2, lng2) {
     const R = 6371000;
     const φ1 = lat1 * Math.PI / 180;

@@ -124,6 +124,9 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers: H });
   } catch (e) {
-    return new Response(JSON.stringify({ error: String((e as Error)?.message ?? e) }), { status: 500, headers: H });
+    // Log the detail server-side; never echo internals (DB errors, stack
+    // fragments) back to an anonymous public client.
+    console.error("[leaderboard]", e);
+    return new Response(JSON.stringify({ error: "internal_error" }), { status: 500, headers: H });
   }
 });

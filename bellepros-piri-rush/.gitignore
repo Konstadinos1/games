@@ -35,3 +35,6 @@ Thumbs.db
 .idea/
 *.iml
 .vscode/
+
+# Compiled Cloud Functions output
+functions/lib/

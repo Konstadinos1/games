@@ -68,9 +68,12 @@ export const aggregateLeaderboard = functions.pubsub
       .limit(100)
       .get();
 
+    // QuerySnapshot.forEach passes no index — track rank manually
     const entries: any[] = [];
-    snap.forEach((doc, idx) => {
-      entries.push({ rank: idx + 1, ...doc.data(), uid: doc.id });
+    let rank = 0;
+    snap.forEach((doc) => {
+      rank += 1;
+      entries.push({ rank, ...doc.data(), uid: doc.id });
     });
 
     await db.doc('leaderboard/global/cache').set({
@@ -137,10 +140,12 @@ export const onUserDeleted = functions.auth.user().onDelete(async (user) => {
   const uid = user.uid;
   const batch = db.batch();
 
-  // Delete all user data
+  // Delete all user data (analytics included — Loi 25/GDPR erasure must
+  // cover every collection keyed by uid)
   batch.delete(db.doc(`users/${uid}`));
   batch.delete(db.doc(`saves/${uid}`));
   batch.delete(db.doc(`leaderboard/global/scores/${uid}`));
+  batch.delete(db.doc(`analytics/${uid}`));
 
   await batch.commit();
 

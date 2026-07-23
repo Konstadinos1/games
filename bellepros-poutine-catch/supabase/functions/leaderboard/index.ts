@@ -2,19 +2,34 @@
 //   GET  -> top 10 scores
 //   POST -> submit a score: { name, score, ts, nonce, sig }
 //
-// Hardened for a public client game: submissions must carry a valid HMAC-SHA256
-// signature (shared secret below, also embedded — obfuscated — in the game), the
-// score must be in range, and the timestamp must be fresh (anti-replay). Names are
-// sanitized + profanity-filtered server-side. Inserts use the service role, so the
-// table needs no anon write policy. Reads/writes both go through here, so the client
-// needs no anon key. (A determined reverse-engineer can still extract the client
-// secret — this raises the bar against casual cheating, it is not bulletproof.)
+// SECURITY: The HMAC secret is read from the HMAC_SECRET environment variable
+// (configured via `supabase secrets set HMAC_SECRET=...`). It MUST NOT be embedded
+// in client code — client-side secrets are trivially extractable. The previous
+// implementation shipped the secret in this file AND in index.html (base64); both
+// were removed on 2026-07-23 and the secret rotated.
+//
+// NOTE: Until the client is refactored to obtain a server-issued per-session token
+// (e.g. via Supabase Auth + a signed-challenge endpoint), POST submissions will be
+// rejected. The GET (read leaderboard) path is unaffected. This is the correct
+// secure state — a broken leaderboard is preferable to a trivially forgeable one.
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
-const SECRET = "bp_lvl440_pc_v1_8Kq3wZ2tR7nX5mB9pL4cV6yD1sH0aJ";
+const SECRET = Deno.env.get("HMAC_SECRET") ?? "";
+if (!SECRET) {
+  // Fail fast at cold-start if the operator forgot to set the secret.
+  console.error("FATAL: HMAC_SECRET env var is not set. POST submissions disabled.");
+}
 const MAX_SCORE = 100000;
 const REPLAY_WINDOW_MS = 5 * 60 * 1000;
+
+// Origins allowed to call this function. Add production game domains here.
+const ALLOWED_ORIGINS = new Set([
+  "https://konstadinos1.github.io",
+  "capacitor://localhost",
+  "http://localhost",
+  "http://localhost:7890",
+]);
 
 // light profanity guard (FR-Quebec + EN); blocked names fall back to "BELLEPRO"
 const BAD = [
@@ -24,12 +39,17 @@ const BAD = [
   "putain","merde","salope","connard","encule","pute","bordel","conard",
 ];
 
-const H = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "content-type, authorization, apikey, x-client-info",
-  "Content-Type": "application/json",
-};
+function corsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("Origin") ?? "";
+  const allowed = ALLOWED_ORIGINS.has(origin) ? origin : "https://konstadinos1.github.io";
+  return {
+    "Access-Control-Allow-Origin": allowed,
+    "Vary": "Origin",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "content-type, authorization, apikey, x-client-info",
+    "Content-Type": "application/json",
+  };
+}
 
 function sanitizeName(raw: unknown): string {
   const src = (typeof raw === "string" ? raw : "").normalize("NFC");
@@ -71,6 +91,7 @@ async function topTen(supabase: ReturnType<typeof createClient>) {
 }
 
 Deno.serve(async (req) => {
+  const H = corsHeaders(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: H });
 
   const supabase = createClient(
@@ -84,6 +105,10 @@ Deno.serve(async (req) => {
     }
 
     if (req.method === "POST") {
+      // Refuse writes if the operator has not provisioned the secret.
+      if (!SECRET) {
+        return new Response(JSON.stringify({ error: "server_misconfigured" }), { status: 503, headers: H });
+      }
       const body = await req.json().catch(() => ({}));
       const rawName = body.name;
       const ts = Number(body.ts);

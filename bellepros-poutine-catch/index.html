@@ -1752,31 +1752,26 @@
         // ============================================================================
         //  GLOBAL LEADERBOARD — Supabase Edge Function (GET top 10 / POST signed submit)
         //  Reads + writes both go through the function, so the client needs no anon key.
-        //  Submissions are HMAC-signed; degrade silently if the backend is unreachable.
+        //  Submissions require a server-issued token (see SECURITY note in the Edge
+        //  Function). The previously embedded shared secret was removed on 2026-07-23
+        //  because it was trivially extractable from public source. Until a proper
+        //  per-session auth flow is implemented, submit() will return gracefully
+        //  without posting. The leaderboard GET (read) path still works.
         // ============================================================================
         const LB = {
             base:'https://apiexzijdmvtrmrzxgcp.supabase.co/functions/v1/leaderboard',
             anon:'__SUPABASE_ANON_KEY__',   // optional; only needed if the function gateway requires it
-            secret: atob('YnBfbHZsNDQwX3BjX3YxXzhLcTN3WjJ0UjduWDVtQjlwTDRjVjZ5RDFzSDBhSg=='),
             _headers(extra){ const h=Object.assign({}, extra||{}); if(!this.anon.startsWith('__')){ h['apikey']=this.anon; h['Authorization']='Bearer '+this.anon; } return h; },
-            async _hmac(msg){
-                const enc=new TextEncoder();
-                const key=await crypto.subtle.importKey('raw', enc.encode(this.secret), {name:'HMAC',hash:'SHA-256'}, false, ['sign']);
-                const mac=await crypto.subtle.sign('HMAC', key, enc.encode(msg));
-                return [...new Uint8Array(mac)].map(b=>b.toString(16).padStart(2,'0')).join('');
-            },
             async fetchTop(){
                 const r=await fetch(this.base,{method:'GET',headers:this._headers()});
                 if(!r.ok) throw new Error('http '+r.status);
                 const j=await r.json(); return Array.isArray(j.top)?j.top:[];
             },
             async submit(name, score){
-                const ts=Date.now(), nonce=Math.random().toString(36).slice(2,10);
-                const sig=await this._hmac(name+'|'+score+'|'+ts+'|'+nonce);
-                const r=await fetch(this.base,{method:'POST',headers:this._headers({'content-type':'application/json'}),body:JSON.stringify({name,score,ts,nonce,sig})});
-                const j=await r.json().catch(()=>({}));
-                if(!r.ok) throw new Error((j&&j.error)||('http '+r.status));
-                return j;
+                // SECURITY: client-side signing removed. Returns a no-op result so the
+                // game does not crash; the score is not submitted until server-issued
+                // tokens are wired up. See leaderboard Edge Function for the plan.
+                return { ok:false, skipped:'client_signing_disabled' };
             }
         };
         const _esc = s => String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));

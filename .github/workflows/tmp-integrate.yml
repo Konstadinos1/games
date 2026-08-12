@@ -1,0 +1,60 @@
+name: One-shot integrate feature branch with main
+
+on:
+  push:
+    branches: ["claude/tmp-apply-index-patch"]
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Merge main into the feature branch, keeping the feature content
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git checkout claude/pensive-bardeen-x4arug
+          # -X ours keeps the feature branch's side of conflicting hunks. That is correct here:
+          # the feature branch already contains main's content for these files plus the fixes.
+          git merge origin/main -X ours --no-edit
+
+          # Refuse to publish unless the resulting tree is byte-identical to the locally verified one.
+          verify() {
+            actual="$(git hash-object "$1")"
+            if [ "$actual" != "$2" ]; then
+              echo "::error::$1 hash $actual != expected $2 — refusing to push"
+              exit 1
+            fi
+            echo "ok  $1  $actual"
+          }
+          verify bellepros-poutine-catch/index.html                 39c09f555c0c098bef902cb90ef9efeb2e379b93
+          verify bellepros-poutine-catch/tests/controls.test.js      69a8d0c50e0628e2014c1d79e1b6543a79679705
+          verify .gitignore                                          0547ded23e4e987843417f93eefebb5fb02a7c18
+          verify .github/workflows/deploy-pages.yml                  3e2bb66b1d3e979222e675c924305b52e59fd9af
+          verify bellepros-poutine-catch/supabase/functions/leaderboard/index.ts 8ff561f68569d5d23e870c4460a8d3e76b86179a
+
+          # Content that must have arrived from main.
+          test -f LICENSE
+          test -f .github/workflows/ci.yml
+
+          # The temp workflow must never reach the feature branch.
+          test ! -f .github/workflows/tmp-integrate.yml
+
+          # The retired HMAC secret must not reappear anywhere in the merged tree.
+          if git grep -qE 'bp_lvl440|YnBfbHZs' -- .; then
+            echo "::error::retired secret present in merged tree — refusing to push"
+            exit 1
+          fi
+
+          node bellepros-poutine-catch/tests/controls.test.js
+
+          git push origin claude/pensive-bardeen-x4arug
+          echo "merged head: $(git rev-parse HEAD)"

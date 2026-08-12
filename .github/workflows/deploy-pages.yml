@@ -2,8 +2,7 @@ name: Deploy games to GitHub Pages
 
 on:
   push:
-    # The repo's default branch (no `main` exists) — pushes to it go live.
-    branches: ["claude/bellepros-piri-rush-game-jcrsq"]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -27,9 +26,6 @@ jobs:
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
-        with:
-          # Self-enable Pages on first run so no manual settings step is needed
-          enablement: true
 
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3

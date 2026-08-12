@@ -2,7 +2,21 @@ name: Deploy games to GitHub Pages
 
 on:
   push:
-    branches: ["main"]
+    # Both branches are listed on purpose.
+    #
+    # `main` is the repository's default branch and the source of truth, but the
+    # `github-pages` environment currently only permits deployments from
+    # claude/bellepros-piri-rush-game-jcrsq — runs triggered from `main` are
+    # rejected before any step executes (a ~2s run with zero steps and no logs).
+    # Until Settings -> Environments -> github-pages -> deployment branches is
+    # widened to include `main`, publishing has to happen from the release branch.
+    #
+    # Listing both means the site still deploys today, and starts deploying from
+    # `main` automatically once that setting is changed. Do not narrow this to
+    # `main` alone before checking the environment's deployment-branch policy.
+    branches:
+      - main
+      - claude/bellepros-piri-rush-game-jcrsq
   workflow_dispatch:
 
 permissions:

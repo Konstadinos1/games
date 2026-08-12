@@ -543,6 +543,7 @@
         const MISS_Y    = COUNTER_Y + 46;     // below this an item is "missed"
         const PLAY_MIN_X = 40, PLAY_MAX_X = DESIGN_W - 40;
         const TRAY_KEY_SPEED = 520;            // tray travel speed (px/s) while an arrow key is held
+        const TRAY_EDGE_MARGIN = 6;            // gap kept between the tray rim and the stage edge
 
         const C = {
             red:'#E8192C', redDk:'#7f1d1d', orange:'#FF6B35', amber:'#F59E0B', gold:'#FFD700',
@@ -655,7 +656,8 @@
         const canvas = $('game'), ctx = canvas.getContext('2d');
         const screens = {
             menu:$('screen-menu'), pause:$('screen-pause'), coupon:$('screen-coupon'),
-            gameover:$('screen-gameover'), leaderboard:$('screen-leaderboard'), ad:$('screen-ad')
+            gameover:$('screen-gameover'), leaderboard:$('screen-leaderboard'), ad:$('screen-ad'),
+            owner:$('screen-owner')
         };
 
         // ============================================================================
@@ -1410,10 +1412,11 @@
             if (game.spawnT<=0){ spawnItem(); game.spawnT = difficulty().spawn * (game.rush.active>0?0.5:1) * (0.8+Math.random()*0.5); }
             // held arrow keys steer the tray continuously (smooth desktop/accessibility control)
             const keyDir = (heldKeys.has('left')?-1:0) + (heldKeys.has('right')?1:0);
-            if (keyDir!==0) game.tray.target = keyTrayTarget(game.tray.target, keyDir, dt, DESIGN_W, TRAY_KEY_SPEED);
+            if (keyDir!==0) game.tray.target = keyTrayTarget(game.tray.target, keyDir, dt, game.tray.w, DESIGN_W, TRAY_KEY_SPEED);
             // tray follows target
+            const trayLim = trayLimits(game.tray.w, DESIGN_W);
             game.tray.x += (game.tray.target - game.tray.x) * Math.min(1, dt*20);
-            game.tray.x = clamp(game.tray.x, game.tray.w/2+6, DESIGN_W-game.tray.w/2-6);
+            game.tray.x = clamp(game.tray.x, trayLim.min, trayLim.max);
             // items
             for (let i=game.items.length-1;i>=0;i--){ const it=game.items[i];
                 it.y += it.vy*dt; it.rot += it.vr*dt; it.wob += dt*3;
@@ -2027,13 +2030,27 @@
         // Held-key state so the tray glides smoothly while a key is down (see updatePlay),
         // instead of stepping once per OS key-repeat event.
         const heldKeys = new Set();
+        // While the player is typing (leaderboard nickname, owner ad URLs) the keyboard belongs to the
+        // field, not the game — otherwise arrows lose the caret and Space/Enter act on the run behind.
+        function isTypingTarget(el){
+            if (!el) return false;
+            const tag = el.tagName;
+            return tag==='INPUT' || tag==='TEXTAREA' || el.isContentEditable===true;
+        }
+        // An overlay that sits above the canvas (leaderboard, owner panel) owns the keyboard too.
+        function modalIsOpen(){
+            return ['leaderboard','owner'].some(k => screens[k] && !screens[k].classList.contains('hidden'));
+        }
         document.addEventListener('keydown',(e)=>{
+            if (isTypingTarget(e.target) || modalIsOpen()) return;
             if (game.state==='playing'){
                 if (e.key==='ArrowLeft'){ heldKeys.add('left'); e.preventDefault(); }
                 else if (e.key==='ArrowRight'){ heldKeys.add('right'); e.preventDefault(); }
-                else if (e.key===' '||e.key==='p'||e.key==='P') pauseGame();
-            } else if (game.state==='paused' && (e.key===' '||e.key==='p'||e.key==='P')) resumeGame();
-            else if (game.state==='menu' && e.key==='Enter') startGame();
+                // preventDefault stops Space from re-activating a focused HUD button on keyup,
+                // which would instantly undo the pause/resume we just performed.
+                else if (e.key===' '||e.key==='p'||e.key==='P'){ e.preventDefault(); pauseGame(); }
+            } else if (game.state==='paused' && (e.key===' '||e.key==='p'||e.key==='P')){ e.preventDefault(); resumeGame(); }
+            else if (game.state==='menu' && e.key==='Enter'){ e.preventDefault(); startGame(); }
         });
         document.addEventListener('keyup',(e)=>{
             if (e.key==='ArrowLeft') heldKeys.delete('left');
@@ -2084,9 +2101,20 @@
         //  HELPERS + RESPONSIVE SCALING
         // ============================================================================
         function clamp(v,a,b){ return v<a?a:v>b?b:v; }
+        // Leftmost/rightmost tray centre the stage allows, given the tray's width.
+        function trayLimits(trayW, width){
+            const half = trayW/2 + TRAY_EDGE_MARGIN;
+            return { min: half, max: width - half };
+        }
         // Pure helper (unit-tested in tests/controls.test.js): tray target after dt seconds of held-key
-        // steering. dir is -1 (left), 0 (none) or 1 (right); result stays within [0, width].
-        function keyTrayTarget(target, dir, dt, width, speed){ return clamp(target + dir*speed*dt, 0, width); }
+        // steering. dir is -1 (left), 0 (none) or 1 (right).
+        // Clamping to the REACHABLE range (not 0..width) matters: the rendered tray is limited to
+        // [half, width-half], so letting the target run past that would bank up invisible overshoot
+        // and the tray would ignore the opposite key until it unwound.
+        function keyTrayTarget(target, dir, dt, trayW, width, speed){
+            const lim = trayLimits(trayW, width);
+            return clamp(target + dir*speed*dt, lim.min, lim.max);
+        }
         function vibrate(p){ try{ if (navigator.vibrate) navigator.vibrate(p); }catch(e){} }
 
         function setupCanvas(){

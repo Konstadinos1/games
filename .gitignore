@@ -1,0 +1,34 @@
+# Secrets — never commit. This repo is public AND auto-published to GitHub Pages,
+# so anything tracked here is served at https://konstadinos1.github.io/games/<path>.
+.env
+.env.*
+!.env.example
+
+# Supabase CLI local state (supabase/.env holds the service-role key)
+**/supabase/.env
+**/supabase/.temp/
+**/supabase/.branches/
+
+# Mobile signing material & platform secrets
+google-services.json
+GoogleService-Info.plist
+*.jks
+*.keystore
+*.p12
+*.mobileprovision
+
+# Dependencies & build output
+node_modules/
+dist/
+build/
+www/
+
+# Python
+__pycache__/
+.venv/
+*.pyc
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
